@@ -1,28 +1,5 @@
 <app-navbar></app-navbar>
 
 <div class="content-container">
-  <h1>Welcome to {{ title() }}</h1>
-
-  @if (title().length > 0) {
-    <p>Your application is ready!</p>
-  } @else {
-    <p>Please set a title for your application</p>
-  }
-
-  <div>
-    @for (item of ['Movies', 'TV Shows', 'Favorites']; track $index) {
-      <button>{{ item }}</button>
-    }
-  </div>
-
-  <div>
-    @switch (title()) {
-      @case ('nova-reel') {
-        <p>You're using Nova Reel!</p>
-      }
-      @default {
-        <p>Unknown application</p>
-      }
-    }
-  </div>
+  <router-outlet></router-outlet>
 </div>

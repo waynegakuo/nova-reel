@@ -4,41 +4,9 @@
   padding: 2rem 1rem;
 }
 
-button {
-  background-color: #e94560;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Roboto', sans-serif;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #c23251;
-  }
-}
-
-h1 {
-  color: #1a1a2e;
-  font-family: 'Bangers', cursive;
-  margin-bottom: 1rem;
-}
-
-p {
-  font-family: 'Source Sans 3', sans-serif;
-  color: #333;
-  margin-bottom: 1.5rem;
-}
-
 // Mobile responsive styles
 @media (max-width: 768px) {
   .content-container {
     padding: 1.5rem 1rem;
-  }
-
-  h1 {
-    font-size: 1.8rem;
   }
 }
