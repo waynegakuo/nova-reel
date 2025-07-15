@@ -7,3 +7,31 @@ body {
   padding: 0;
   overflow-x: hidden;
 }
+
+/* Font Classes */
+.font-primary {
+  font-family: "Architects Daughter", serif;
+}
+
+.font-secondary {
+  font-family: "Source Sans 3", sans-serif;
+}
+
+/* Typography Utility Classes */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Architects Daughter", serif;
+}
+
+p, span, a, button, input, textarea, .body-text {
+  font-family: "Source Sans 3", sans-serif;
+}
+
+.nav-link {
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+}
+
+.btn {
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+}

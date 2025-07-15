@@ -83,6 +83,7 @@
   font-size: 0.9rem;
   color: #666;
   margin: 0 0 10px 0;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .media-overview {
@@ -94,6 +95,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  font-family: 'Source Sans 3', sans-serif;
 }
 
 .media-actions {
@@ -111,6 +113,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: 'Architects Daughter', serif;
 
     svg {
       margin-right: 5px;
