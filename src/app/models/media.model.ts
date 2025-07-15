@@ -1,4 +1,4 @@
-interface MediaBase {
+export interface MediaBase {
   adult: boolean;
   backdrop_path: string;
   genre_ids: number[];
@@ -11,15 +11,14 @@ interface MediaBase {
   vote_count: number;
 }
 
-
-interface Movie extends MediaBase {
+export interface Movie extends MediaBase {
   original_title: string;
   release_date: string;
   title: string;
   video: boolean;
 }
 
-interface TvShow extends MediaBase {
+export interface TvShow extends MediaBase {
   origin_country: string[];
   original_name: string;
   first_air_date: string;
