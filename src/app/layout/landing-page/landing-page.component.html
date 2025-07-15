@@ -1,26 +1,44 @@
-<section>
-  <h1>Welcome to {{ title() }}</h1>
+<section class="landing-container">
+  <div class="header">
+    <h1>Welcome to {{ title() }}</h1>
+    <p class="subtitle">Discover the best movies and TV shows</p>
+  </div>
 
-  @if (title().length > 0) {
-    <p>Your application is ready!</p>
-  } @else {
-    <p>Please set a title for your application</p>
-  }
-
-  <div>
-    @for (item of ['Movies', 'TV Shows', 'Favorites']; track $index) {
-      <button>{{ item }}</button>
+  <div class="tabs">
+    @for (tab of ['Movies', 'TV Shows', 'Favorites']; track $index) {
+      <button
+        [class.active]="activeTab() === tab"
+        (click)="setActiveTab(tab)">
+        {{ tab }}
+      </button>
     }
   </div>
 
-  <div>
-    @switch (title()) {
-      @case ('nova-reel') {
-        <p>You're using Nova Reel!</p>
-      }
-      @default {
-        <p>Unknown application</p>
-      }
+  <div class="content">
+    @if (activeTab() === 'Movies') {
+      <div class="media-grid">
+        @for (movie of movies(); track movie.id) {
+          <app-media-card
+            [item]="movie"
+            type="movie"
+            (share)="onShareMedia($event)">
+          </app-media-card>
+        }
+      </div>
+    } @else if (activeTab() === 'TV Shows') {
+      <div class="media-grid">
+        @for (tvShow of tvShows(); track tvShow.id) {
+          <app-media-card
+            [item]="tvShow"
+            type="tvshow"
+            (share)="onShareMedia($event)">
+          </app-media-card>
+        }
+      </div>
+    } @else {
+      <div class="favorites-placeholder">
+        <p>Your favorites will appear here</p>
+      </div>
     }
   </div>
 </section>

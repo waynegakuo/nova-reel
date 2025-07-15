@@ -1,38 +1,124 @@
-button {
-  background-color: #e94560;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Roboto', sans-serif;
-  transition: background-color 0.3s ease;
+.landing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
 
-  &:hover {
-    background-color: #c23251;
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    color: #1a1a2e;
+    font-family: 'Bangers', cursive;
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+  }
+
+  .subtitle {
+    font-family: 'Source Sans 3', sans-serif;
+    color: #666;
+    font-size: 1.2rem;
   }
 }
 
-h1 {
-  color: #1a1a2e;
-  font-family: 'Bangers', cursive;
-  margin-bottom: 1rem;
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+
+  button {
+    background-color: transparent;
+    color: #1a1a2e;
+    border: 2px solid #e94560;
+    padding: 0.7rem 1.5rem;
+    margin: 0 0.5rem;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: rgba(233, 69, 96, 0.1);
+    }
+
+    &.active {
+      background-color: #e94560;
+      color: white;
+    }
+  }
 }
 
-p {
-  font-family: 'Source Sans 3', sans-serif;
-  color: #333;
-  margin-bottom: 1.5rem;
+.content {
+  min-height: 500px;
+}
+
+.media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.favorites-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+
+  p {
+    font-family: 'Source Sans 3', sans-serif;
+    color: #666;
+    font-size: 1.2rem;
+  }
+}
+
+// Animation for cards
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+app-media-card {
+  animation: fadeIn 0.5s ease forwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
 }
 
 // Mobile responsive styles
 @media (max-width: 768px) {
-  .content-container {
+  .landing-container {
     padding: 1.5rem 1rem;
   }
 
-  h1 {
-    font-size: 1.8rem;
+  .header {
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+    }
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+
+    button {
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .media-grid {
+    gap: 1rem;
   }
 }
