@@ -1,24 +1,28 @@
-<h1>Welcome to {{ title() }}</h1>
+<app-navbar></app-navbar>
 
-@if (title().length > 0) {
-  <p>Your application is ready!</p>
-} @else {
-  <p>Please set a title for your application</p>
-}
+<div class="content-container">
+  <h1>Welcome to {{ title() }}</h1>
 
-<div>
-  @for (item of ['Movies', 'TV Shows', 'Favorites']; track $index) {
-    <button>{{ item }}</button>
+  @if (title().length > 0) {
+    <p>Your application is ready!</p>
+  } @else {
+    <p>Please set a title for your application</p>
   }
-</div>
 
-<div>
-  @switch (title()) {
-    @case ('nova-reel') {
-      <p>You're using Nova Reel!</p>
+  <div>
+    @for (item of ['Movies', 'TV Shows', 'Favorites']; track $index) {
+      <button>{{ item }}</button>
     }
-    @default {
-      <p>Unknown application</p>
+  </div>
+
+  <div>
+    @switch (title()) {
+      @case ('nova-reel') {
+        <p>You're using Nova Reel!</p>
+      }
+      @default {
+        <p>Unknown application</p>
+      }
     }
-  }
+  </div>
 </div>
