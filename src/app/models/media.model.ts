@@ -24,3 +24,10 @@ export interface TvShow extends MediaBase {
   first_air_date: string;
   name: string;
 }
+
+export interface MediaResponse {
+  page: number;
+  results: (Movie | TvShow)[];
+  total_pages: number;
+  total_results: number;
+}

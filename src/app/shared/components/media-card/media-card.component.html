@@ -1,6 +1,6 @@
 <div class="media-card">
   <div class="media-card-image">
-    <img [src]="item.poster_path" [alt]="getTitle()">
+    <img [src]="getImageUrl(item.poster_path)" [alt]="getTitle()">
     <div class="media-badge">{{ isMovie() ? 'Movie' : 'TV Show' }}</div>
     <div class="media-rating">
       <span class="star">★</span>

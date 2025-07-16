@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .landing-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -52,6 +54,113 @@
 
 .content {
   min-height: 500px;
+}
+
+.dynamic-content {
+  margin-top: 1rem;
+  min-height: 300px;
+  transition: all 0.3s ease;
+}
+
+// Loading spinner
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(233, 69, 96, 0.2);
+    border-top: 5px solid #e94560;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-family: 'Source Sans 3', sans-serif;
+    color: #666;
+    font-size: 1.2rem;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Error container
+.error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background-color: rgba(233, 69, 96, 0.1);
+  border-radius: 8px;
+  padding: 2rem;
+
+  p {
+    font-family: 'Source Sans 3', sans-serif;
+    color: #e94560;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  button {
+    background-color: #e94560;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: 'Architects Daughter', serif;
+    font-weight: bold;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: color.adjust(#e94560, $lightness: -10%);
+    }
+  }
+}
+
+// Category selector
+.category-selector {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+
+  .category-btn {
+    background-color: transparent;
+    color: #1a1a2e;
+    border: 1px solid #e94560;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem 0.5rem 0.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: rgba(233, 69, 96, 0.1);
+    }
+
+    &:active {
+      background-color: #e94560;
+      color: white;
+    }
+
+    &.active {
+      background-color: #e94560;
+      color: white;
+    }
+  }
 }
 
 .media-grid {

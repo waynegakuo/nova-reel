@@ -15,30 +15,83 @@
   </div>
 
   <div class="content">
+    <!-- Category selectors - always visible based on active tab -->
     @if (activeTab() === 'Movies') {
-      <div class="media-grid">
-        @for (movie of movies(); track movie.id) {
-          <app-media-card
-            [item]="movie"
-            type="movie"
-            (share)="onShareMedia($event)">
-          </app-media-card>
-        }
+      <div class="category-selector">
+        <button (click)="loadMovies('popular')" class="category-btn" [class.active]="activeMovieCategory() === 'popular'">Popular</button>
+        <button (click)="loadMovies('top_rated')" class="category-btn" [class.active]="activeMovieCategory() === 'top_rated'">Top Rated</button>
+        <button (click)="loadMovies('now_playing')" class="category-btn" [class.active]="activeMovieCategory() === 'now_playing'">Now Playing</button>
+        <button (click)="loadMovies('upcoming')" class="category-btn" [class.active]="activeMovieCategory() === 'upcoming'">Upcoming</button>
       </div>
     } @else if (activeTab() === 'TV Shows') {
-      <div class="media-grid">
-        @for (tvShow of tvShows(); track tvShow.id) {
-          <app-media-card
-            [item]="tvShow"
-            type="tvshow"
-            (share)="onShareMedia($event)">
-          </app-media-card>
-        }
-      </div>
-    } @else {
-      <div class="favorites-placeholder">
-        <p>Your favorites will appear here</p>
+      <div class="category-selector">
+        <button (click)="loadTVShows('popular')" class="category-btn" [class.active]="activeTVShowCategory() === 'popular'">Popular</button>
+        <button (click)="loadTVShows('top_rated')" class="category-btn" [class.active]="activeTVShowCategory() === 'top_rated'">Top Rated</button>
+        <button (click)="loadTVShows('on_the_air')" class="category-btn" [class.active]="activeTVShowCategory() === 'on_the_air'">On The Air</button>
+        <button (click)="loadTVShows('airing_today')" class="category-btn" [class.active]="activeTVShowCategory() === 'airing_today'">Airing Today</button>
       </div>
     }
+
+    <!-- Dynamic content area that refreshes -->
+    <div class="dynamic-content">
+      <!-- Loading indicator -->
+      @if (isLoading()) {
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading content...</p>
+        </div>
+      }
+
+      <!-- Error message -->
+      @if (error()) {
+        <div class="error-container">
+          <p>{{ error() }}</p>
+          <button (click)="activeTab() === 'Movies' ? loadMovies('popular') : loadTVShows('popular')">
+            Try Again
+          </button>
+        </div>
+      }
+
+      <!-- Movies tab content -->
+      @if (activeTab() === 'Movies' && !isLoading() && !error()) {
+        <div class="media-grid">
+          @if (movies().length === 0 && !isLoading()) {
+            <p>No movies found.</p>
+          } @else {
+            @for (movie of movies(); track movie.id) {
+              <app-media-card
+                [item]="movie"
+                type="movie"
+                (share)="onShareMedia($event)">
+              </app-media-card>
+            }
+          }
+        </div>
+      }
+
+      <!-- TV Shows tab content -->
+      @else if (activeTab() === 'TV Shows' && !isLoading() && !error()) {
+        <div class="media-grid">
+          @if (tvShows().length === 0 && !isLoading()) {
+            <p>No TV shows found.</p>
+          } @else {
+            @for (tvShow of tvShows(); track tvShow.id) {
+              <app-media-card
+                [item]="tvShow"
+                type="tvshow"
+                (share)="onShareMedia($event)">
+              </app-media-card>
+            }
+          }
+        </div>
+      }
+
+      <!-- Favorites tab content -->
+      @else if (activeTab() === 'Favorites' && !isLoading()) {
+        <div class="favorites-placeholder">
+          <p>Your favorites will appear here</p>
+        </div>
+      }
+    </div>
   </div>
 </section>

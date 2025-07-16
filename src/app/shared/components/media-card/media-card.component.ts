@@ -41,4 +41,24 @@ export class MediaCardComponent {
       type: this.isMovie() ? 'movie' : 'tvshow'
     });
   }
+
+  // Helper method to get the full image URL
+  getImageUrl(posterPath: string): string {
+    if (!posterPath) {
+      return 'assets/images/no-poster.jpg'; // Fallback image
+    }
+
+    // Check if the path already includes the base URL
+    if (posterPath.startsWith('http')) {
+      return posterPath;
+    }
+
+    // TMDB image base URL
+    const baseUrl = 'https://image.tmdb.org/t/p/w500';
+
+    // Ensure the path starts with a slash
+    const path = posterPath.startsWith('/') ? posterPath : `/${posterPath}`;
+
+    return `${baseUrl}${path}`;
+  }
 }
