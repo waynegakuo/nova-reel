@@ -38,7 +38,7 @@ export const getTmdbData = onCall(
     // logger.info("User ID:", request.auth.uid);
 
     // Get the parameters from the client (e.g., movie ID, search query, endpoint path - movie, tv, list - popular, upcoming)
-    const { id, query, endpoint, list } = request.data; // Example of data sent from client
+    const { id, query, endpoint, list, page } = request.data; // Example of data sent from client
 
     if (!endpoint) {
       throw new HttpsError('invalid-argument', 'Endpoint parameter is required.');
@@ -46,7 +46,7 @@ export const getTmdbData = onCall(
 
     // Construct the TMDB API URL
     const baseUrl = 'https://api.themoviedb.org/3';
-    let url = `${baseUrl}/${endpoint}/${list}?language=en-US&page=1`;
+    let url = `${baseUrl}/${endpoint}/${list}?language=en-US&page=${page}`;
 
     // Add query parameters based on the request
     if (id) {
