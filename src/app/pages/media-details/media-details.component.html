@@ -1,4 +1,10 @@
 <div class="details-container dark-theme">
+  <!-- Notification -->
+  @if (notification()) {
+    <div class="notification" [class.success]="notification()!.type === 'success'" [class.error]="notification()!.type === 'error'">
+      <p>{{ notification()!.message }}</p>
+    </div>
+  }
   <!-- Loading indicator -->
   @if (isLoading()) {
     <div class="loading-container">
@@ -53,11 +59,11 @@
                       Watch Trailer
                     </button>
                   }
-                  <button class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <button class="btn btn-secondary" (click)="toggleFavorite('movie')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" [attr.fill]="isFavorited() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Add to Favorites
+                    {{ isFavorited() ? 'Remove from Favorites' : 'Add to Favorites' }}
                   </button>
                   <button class="btn btn-secondary" (click)="shareMedia()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -261,11 +267,11 @@
                       Watch Trailer
                     </button>
                   }
-                  <button class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <button class="btn btn-secondary" (click)="toggleFavorite('tv')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" [attr.fill]="isFavorited() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    Add to Favorites
+                    {{ isFavorited() ? 'Remove from Favorites' : 'Add to Favorites' }}
                   </button>
                   <button class="btn btn-secondary" (click)="shareMedia()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {Component, OnInit, inject, signal, OnDestroy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaService } from '../../services/media/media.service';
 import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew } from '../../models/media-details.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import {Subject, takeUntil} from 'rxjs';
 
 @Component({
   selector: 'app-media-details',
@@ -12,7 +13,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss'
 })
-export class MediaDetailsComponent implements OnInit {
+export class MediaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   router = inject(Router); // Made public for template access
   private mediaService = inject(MediaService);
@@ -27,6 +28,11 @@ export class MediaDetailsComponent implements OnInit {
   tvShowDetails = signal<TvShowDetails | null>(null);
   trailerUrl = signal<SafeResourceUrl | null>(null);
   showTrailer = signal<boolean>(false);
+  notification = signal<{message: string, type: 'success' | 'error'} | null>(null);
+  isFavorited = signal<boolean>(false);
+
+  // Subject for managing subscriptions
+  private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -61,12 +67,16 @@ export class MediaDetailsComponent implements OnInit {
   loadMediaDetails(): void {
     this.isLoading.set(true);
     this.error.set(null);
+    this.isFavorited.set(false); // Reset favorite status
 
     if (this.mediaType() === 'movie') {
-      this.mediaService.getMovieDetails(this.mediaId()).subscribe({
+      this.mediaService.getMovieDetails(this.mediaId()).pipe(takeUntil(this.destroy$)).subscribe({
         next: (details) => {
           this.movieDetails.set(details);
           this.isLoading.set(false);
+
+          // Check if this movie is in favorites
+          this.checkFavoriteStatus();
         },
         error: (err) => {
           console.error('Error fetching movie details:', err);
@@ -75,15 +85,36 @@ export class MediaDetailsComponent implements OnInit {
         }
       });
     } else {
-      this.mediaService.getTVShowDetails(this.mediaId()).subscribe({
+      this.mediaService.getTVShowDetails(this.mediaId()).pipe(takeUntil(this.destroy$)).subscribe({
         next: (details) => {
           this.tvShowDetails.set(details);
           this.isLoading.set(false);
+
+          // Check if this TV show is in favorites
+          this.checkFavoriteStatus();
         },
         error: (err) => {
           console.error('Error fetching TV show details:', err);
           this.error.set('Failed to load TV show details. Please try again later.');
           this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
+  /**
+   * Checks if the current media item is in favorites
+   */
+  private checkFavoriteStatus(): void {
+    if (this.mediaId() > 0) {
+      this.mediaService.checkFavoriteStatus(this.mediaId()).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (isFavorited) => {
+          this.isFavorited.set(isFavorited);
+        },
+        error: (err) => {
+          console.error('Error checking favorite status:', err);
+          // Default to not favorited in case of error
+          this.isFavorited.set(false);
         }
       });
     }
@@ -270,5 +301,112 @@ export class MediaDetailsComponent implements OnInit {
   navigateToDetails(type: 'movie' | 'tvshow', id: number): void {
     // Navigate to the details page
     this.router.navigate(['/details', type, id]);
+  }
+
+  /**
+   * Toggles the favorite status of the current media item
+   * @param mediaType - The type of media ('movie' or 'tv')
+   */
+  toggleFavorite(mediaType: 'movie' | 'tv'): void {
+    // Clear any existing notification
+    this.notification.set(null);
+
+    try {
+      if (this.isFavorited()) {
+        // Remove from favorites
+        this.mediaService.removeFavorite(this.mediaId())
+          .then(() => {
+            // Update favorite status
+            this.isFavorited.set(false);
+
+            // Show success notification
+            const mediaName = mediaType === 'movie'
+              ? this.movieDetails()?.title
+              : this.tvShowDetails()?.name;
+
+            this.notification.set({
+              message: `${mediaName} has been removed from your favorites`,
+              type: 'success'
+            });
+
+            // Clear notification after 3 seconds
+            setTimeout(() => this.notification.set(null), 3000);
+          })
+          .catch(error => {
+            console.error('Error removing from favorites:', error);
+            this.notification.set({
+              message: 'Failed to remove from favorites. Please try again.',
+              type: 'error'
+            });
+          });
+      } else {
+        // Add to favorites
+        if (mediaType === 'movie' && this.movieDetails()) {
+          // Add movie to favorites
+          this.mediaService.addFavorites(this.movieDetails()!, 'movie')
+            .then(() => {
+              // Update favorite status
+              this.isFavorited.set(true);
+
+              // Show success notification
+              this.notification.set({
+                message: `${this.movieDetails()!.title} has been added to your favorites`,
+                type: 'success'
+              });
+
+              // Clear notification after 3 seconds
+              setTimeout(() => this.notification.set(null), 3000);
+            })
+            .catch(error => {
+              console.error('Error adding movie to favorites:', error);
+              this.notification.set({
+                message: 'Failed to add movie to favorites. Please try again.',
+                type: 'error'
+              });
+            });
+        } else if (mediaType === 'tv' && this.tvShowDetails()) {
+          // Add TV show to favorites
+          this.mediaService.addFavorites(this.tvShowDetails()!, 'tv')
+            .then(() => {
+              // Update favorite status
+              this.isFavorited.set(true);
+
+              // Show success notification
+              this.notification.set({
+                message: `${this.tvShowDetails()!.name} has been added to your favorites`,
+                type: 'success'
+              });
+
+              // Clear notification after 3 seconds
+              setTimeout(() => this.notification.set(null), 3000);
+            })
+            .catch(error => {
+              console.error('Error adding TV show to favorites:', error);
+              this.notification.set({
+                message: 'Failed to add TV show to favorites. Please try again.',
+                type: 'error'
+              });
+            });
+        } else {
+          // No valid media details available
+          this.notification.set({
+            message: 'Unable to add to favorites. Media details not available.',
+            type: 'error'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error in toggleFavorite:', error);
+      this.notification.set({
+        message: 'An unexpected error occurred. Please try again.',
+        type: 'error'
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Complete the subject to unsubscribe from all subscriptions
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

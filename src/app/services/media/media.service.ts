@@ -1,10 +1,11 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, shareReplay, BehaviorSubject, switchMap} from 'rxjs';
+import {Observable, shareReplay, BehaviorSubject, switchMap, from, of} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails} from '../../models/media-details.model';
 import {HttpClient} from '@angular/common/http';
 import {FirebaseApp} from '@angular/fire/app';
 import {getFunctions, httpsCallable} from '@angular/fire/functions';
+import {Firestore, collection, doc, setDoc, getDoc, deleteDoc} from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ export class MediaService {
 
   http = inject(HttpClient);
   firebaseApp = inject(FirebaseApp);
+  firestore = inject(Firestore);
   private functions;
 
   constructor() {
@@ -312,5 +314,77 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshTVShowDetailsCache$.next(true);
+  }
+
+  /**
+   * Adds a movie or TV show to the favorites collection in Firestore
+   * @param mediaItem - The movie or TV show details to add to favorites
+   * @param mediaType - The type of media ('movie' or 'tv')
+   * @returns Promise that resolves when the operation is complete
+   */
+  addFavorites(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tv'): Promise<void> {
+    try {
+      // Create a reference to the favorites collection
+      const favoritesCollection = collection(this.firestore, 'favorites');
+
+      // Create a document with the media item data and type
+      // We use the media item's ID as the document ID to prevent duplicates
+      const docRef = doc(favoritesCollection, mediaItem.id.toString());
+
+      // Prepare the data to store
+      const favoriteData = {
+        ...mediaItem,
+        mediaType: mediaType, // Add the media type to distinguish between movies and TV shows
+        addedAt: new Date().toISOString(), // Add timestamp for potential sorting/filtering
+      };
+
+      // Add the document to the collection
+      return setDoc(docRef, favoriteData);
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Checks if a media item is in the favorites collection
+   * @param mediaId - The ID of the media item to check
+   * @returns Observable that emits true if the item is favorited, false otherwise
+   */
+  checkFavoriteStatus(mediaId: number): Observable<boolean> {
+    try {
+      // Create a reference to the document in the favorites collection
+      const favoritesCollection = collection(this.firestore, 'favorites');
+      const docRef = doc(favoritesCollection, mediaId.toString());
+
+      // Check if the document exists
+      return from(getDoc(docRef)).pipe(
+        switchMap(docSnap => {
+          return of(docSnap.exists());
+        })
+      );
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+      return of(false);
+    }
+  }
+
+  /**
+   * Removes a media item from the favorites collection
+   * @param mediaId - The ID of the media item to remove
+   * @returns Promise that resolves when the operation is complete
+   */
+  removeFavorite(mediaId: number): Promise<void> {
+    try {
+      // Create a reference to the document in the favorites collection
+      const favoritesCollection = collection(this.firestore, 'favorites');
+      const docRef = doc(favoritesCollection, mediaId.toString());
+
+      // Delete the document from the collection
+      return deleteDoc(docRef);
+    } catch (error) {
+      console.error('Error removing from favorites:', error);
+      throw error;
+    }
   }
 }
