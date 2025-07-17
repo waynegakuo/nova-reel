@@ -4,6 +4,7 @@ import { MediaCardComponent } from '../../shared/components/media-card/media-car
 import { Movie, TvShow } from '../../models/media.model';
 import {MediaService} from '../../services/media/media.service';
 import {Subject, takeUntil} from 'rxjs';
+import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
 
 @Component({
   selector: 'app-landing-page',
@@ -18,6 +19,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Using signals for reactive state management
   movies = signal<Movie[]>([]);
   tvShows = signal<TvShow[]>([]);
+  favorites = signal<((MovieDetails | TvShowDetails) & Favorite)[]>([]);
   activeTab = signal<string>('Movies');
   activeMovieCategory = signal<string>('popular');
   activeTVShowCategory = signal<string>('popular');
@@ -49,6 +51,31 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Method to handle tab changes
   setActiveTab(tab: string): void {
     this.activeTab.set(tab);
+
+    // Load favorites when the Favorites tab is selected
+    if (tab === 'Favorites') {
+      this.loadFavorites();
+    }
+  }
+
+  // Method to load favorites from Firestore
+  loadFavorites(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    this.mediaService.getFavorites()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.favorites.set(data);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading favorites:', err);
+          this.error.set('Failed to load favorites. Please try again later.');
+          this.isLoading.set(false);
+        }
+      });
   }
 
   // Method to load movies from the API

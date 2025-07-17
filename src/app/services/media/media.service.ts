@@ -1,11 +1,11 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, shareReplay, BehaviorSubject, switchMap, from, of} from 'rxjs';
+import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
-import {MovieDetails, TvShowDetails} from '../../models/media-details.model';
+import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
 import {HttpClient} from '@angular/common/http';
 import {FirebaseApp} from '@angular/fire/app';
 import {getFunctions, httpsCallable} from '@angular/fire/functions';
-import {Firestore, collection, doc, setDoc, getDoc, deleteDoc} from '@angular/fire/firestore';
+import {Firestore, collection, doc, setDoc, getDoc, deleteDoc, getDocs, query, orderBy} from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -319,10 +319,10 @@ export class MediaService {
   /**
    * Adds a movie or TV show to the favorites collection in Firestore
    * @param mediaItem - The movie or TV show details to add to favorites
-   * @param mediaType - The type of media ('movie' or 'tv')
+   * @param mediaType - The type of media ('movie' or 'tvshow')
    * @returns Promise that resolves when the operation is complete
    */
-  addFavorites(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tv'): Promise<void> {
+  addFavorites(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tvshow'): Promise<void> {
     try {
       // Create a reference to the favorites collection
       const favoritesCollection = collection(this.firestore, 'favorites');
@@ -385,6 +385,38 @@ export class MediaService {
     } catch (error) {
       console.error('Error removing from favorites:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Fetches all favorites from Firestore
+   * @returns Observable that emits an array of favorites (MovieDetails or TvShowDetails with additional fields)
+   */
+  getFavorites(): Observable<((MovieDetails | TvShowDetails) & Favorite)[]> {
+    try {
+      // Create a reference to the favorites collection
+      const favoritesCollection = collection(this.firestore, 'favorites');
+
+      // Create a query ordered by addedAt (most recent first)
+      const favoritesQuery = query(favoritesCollection, orderBy('addedAt', 'desc'));
+
+      // Execute the query and transform the results
+      return from(getDocs(favoritesQuery)).pipe(
+        map(querySnapshot => {
+          const favorites: ((MovieDetails | TvShowDetails) & Favorite)[] = [];
+
+          querySnapshot.forEach(doc => {
+            // Get the document data
+            const data = doc.data() as ((MovieDetails | TvShowDetails) & Favorite);
+            favorites.push(data);
+          });
+
+          return favorites;
+        })
+      );
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      return of([]);
     }
   }
 }

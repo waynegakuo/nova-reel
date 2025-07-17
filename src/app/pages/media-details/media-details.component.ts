@@ -305,9 +305,9 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
 
   /**
    * Toggles the favorite status of the current media item
-   * @param mediaType - The type of media ('movie' or 'tv')
+   * @param mediaType - The type of media ('movie' or 'tvshow')
    */
-  toggleFavorite(mediaType: 'movie' | 'tv'): void {
+  toggleFavorite(mediaType: 'movie' | 'tvshow'): void {
     // Clear any existing notification
     this.notification.set(null);
 
@@ -364,9 +364,9 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
                 type: 'error'
               });
             });
-        } else if (mediaType === 'tv' && this.tvShowDetails()) {
+        } else if (mediaType === 'tvshow' && this.tvShowDetails()) {
           // Add TV show to favorites
-          this.mediaService.addFavorites(this.tvShowDetails()!, 'tv')
+          this.mediaService.addFavorites(this.tvShowDetails()!, 'tvshow')
             .then(() => {
               // Update favorite status
               this.isFavorited.set(true);

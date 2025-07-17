@@ -140,9 +140,21 @@
       }
 
       <!-- Favorites tab content -->
-      @if (activeTab() === 'Favorites' && !isLoading()) {
-        <div class="favorites-placeholder">
-          <p>Your favorites will appear here</p>
+      @if (activeTab() === 'Favorites' && !isLoading() && !error()) {
+        <div class="media-grid">
+          @if (favorites().length === 0) {
+            <div class="favorites-placeholder">
+              <p>You haven't added any favorites yet</p>
+            </div>
+          } @else {
+            @for (favorite of favorites(); track favorite.id) {
+              <app-media-card
+                [item]="favorite"
+                [type]="favorite.mediaType"
+                (share)="onShareMedia($event)">
+              </app-media-card>
+            }
+          }
         </div>
       }
     </div>

@@ -2,6 +2,14 @@ import { Movie, TvShow } from './media.model';
 
 // Common interfaces for both movie and TV show details
 
+// Favorite interface for items stored in Firestore
+export interface Favorite {
+  mediaType: 'movie' | 'tvshow';
+  addedAt: string;
+  id: number;
+  // Other properties will come from MovieDetails or TvShowDetails
+}
+
 export interface Genre {
   id: number;
   name: string;
