@@ -114,7 +114,7 @@
           <section class="crew-section">
             <h2>Crew</h2>
             <div class="crew-grid">
-              @for (crewMember of getKeyCrewMembers(movieDetails()!.credits.crew); track crewMember.id) {
+              @for (crewMember of getKeyCrewMembers(movieDetails()!.credits.crew); track crewMember.id + '-' + crewMember.job) {
                 <div class="crew-card">
                   <h3>{{ crewMember.name }}</h3>
                   <p>{{ crewMember.job }}</p>
