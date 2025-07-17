@@ -1,6 +1,7 @@
 import {inject, Injectable} from '@angular/core';
 import {Observable, shareReplay, BehaviorSubject, switchMap} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
+import {MovieDetails, TvShowDetails} from '../../models/media-details.model';
 import {HttpClient} from '@angular/common/http';
 import {FirebaseApp} from '@angular/fire/app';
 import {getFunctions, httpsCallable} from '@angular/fire/functions';
@@ -21,23 +22,35 @@ export class MediaService {
   // Cache storage for movies and TV shows
   private movieCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
   private tvShowCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
+  private movieDetailsCache: Record<number, Observable<MovieDetails>> = {};
+  private tvShowDetailsCache: Record<number, Observable<TvShowDetails>> = {};
 
   // Refresh triggers for cache invalidation
   private refreshMoviesCache$ = new BehaviorSubject<boolean>(true);
   private refreshTVShowsCache$ = new BehaviorSubject<boolean>(true);
+  private refreshMovieDetailsCache$ = new BehaviorSubject<boolean>(true);
+  private refreshTVShowDetailsCache$ = new BehaviorSubject<boolean>(true);
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
    * @param endpoint - The TMDB API endpoint ('movie' or 'tv')
    * @param list - Optional parameter specifying the list type (e.g. 'popular', 'top_rated')
    * @param page - Optional parameter specifying the page number
+   * @param queryParams - Optional parameter specifying additional query parameters
+   * @param id
    * @returns Promise containing the API response data
    * @throws Error if the API request fails
    */
-  async getTmdbData(endpoint: string, list?: string, page?: number): Promise<unknown> {
+  async getTmdbData(endpoint: string, list?: string, page?: number, queryParams?: string, id?:number): Promise<unknown> {
     const callableGetTmdbData = httpsCallable(this.functions, 'getTmdbData');
     try {
-      const result = await callableGetTmdbData({ endpoint: endpoint, list: list, page: page });
+      const result = await callableGetTmdbData({
+        endpoint: endpoint,
+        list: list,
+        page: page,
+        queryParams: queryParams,
+        id: id
+      });
       return result.data; // The data returned from your Cloud Function
     } catch (error: any) {
       console.error('Error fetching movie details from Cloud Function:', error);
@@ -185,5 +198,119 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshTVShowsCache$.next(true);
+  }
+
+  /**
+   * Fetches detailed information about a specific movie
+   * @param movieId - The ID of the movie to fetch details for
+   * @param forceRefresh - Whether to force a refresh of the cache
+   * @returns An Observable containing the MovieDetails object
+   */
+  getMovieDetails(movieId: number, forceRefresh: boolean = false): Observable<MovieDetails> {
+    // Force refresh if requested
+    if (forceRefresh) {
+      this.refreshMovieDetailsCache(movieId);
+    }
+
+    // Create the cache if it doesn't exist for this movie
+    if (!this.movieDetailsCache[movieId]) {
+      this.movieDetailsCache[movieId] = this.refreshMovieDetailsCache$.pipe(
+        // Only proceed when refresh is triggered
+        switchMap(() => {
+          // Use the Firebase Function to get the data
+          return new Observable<MovieDetails>(observer => {
+            this.getTmdbData('movie', undefined, undefined, 'append_to_response=credits,videos,similar,recommendations', movieId)
+              .then((response: any) => {
+                observer.next(response as MovieDetails);
+                observer.complete();
+              })
+              .catch(error => {
+                console.error(`Error fetching movie details for ID ${movieId}:`, error);
+                observer.error(error);
+              });
+          }).pipe(
+            // Cache the result for 5 minutes (300000ms) and share it with all subscribers
+            // Buffer size of 1 means we only keep the latest value
+            shareReplay({ bufferSize: 1, refCount: false, windowTime: 300000 })
+          );
+        })
+      );
+    }
+
+    return this.movieDetailsCache[movieId];
+  }
+
+  /**
+   * Manually refreshes the movie details cache for a specific movie
+   * @param movieId - The ID of the movie to refresh (optional)
+   */
+  refreshMovieDetailsCache(movieId?: number): void {
+    if (movieId) {
+      // If a specific movie ID is provided, clear only that cache
+      delete this.movieDetailsCache[movieId];
+    } else {
+      // Otherwise clear all movie details caches
+      this.movieDetailsCache = {};
+    }
+
+    // Trigger a refresh
+    this.refreshMovieDetailsCache$.next(true);
+  }
+
+  /**
+   * Fetches detailed information about a specific TV show
+   * @param tvShowId - The ID of the TV show to fetch details for
+   * @param forceRefresh - Whether to force a refresh of the cache
+   * @returns An Observable containing the TvShowDetails object
+   */
+  getTVShowDetails(tvShowId: number, forceRefresh: boolean = false): Observable<TvShowDetails> {
+    // Force refresh if requested
+    if (forceRefresh) {
+      this.refreshTVShowDetailsCache(tvShowId);
+    }
+
+    // Create the cache if it doesn't exist for this TV show
+    if (!this.tvShowDetailsCache[tvShowId]) {
+      this.tvShowDetailsCache[tvShowId] = this.refreshTVShowDetailsCache$.pipe(
+        // Only proceed when refresh is triggered
+        switchMap(() => {
+          // Use the Firebase Function to get the data
+          return new Observable<TvShowDetails>(observer => {
+            this.getTmdbData('tv', undefined, undefined, 'append_to_response=credits,videos,similar,recommendations', tvShowId)
+              .then((response: any) => {
+                observer.next(response as TvShowDetails);
+                observer.complete();
+              })
+              .catch(error => {
+                console.error(`Error fetching TV show details for ID ${tvShowId}:`, error);
+                observer.error(error);
+              });
+          }).pipe(
+            // Cache the result for 5 minutes (300000ms) and share it with all subscribers
+            // Buffer size of 1 means we only keep the latest value
+            shareReplay({ bufferSize: 1, refCount: false, windowTime: 300000 })
+          );
+        })
+      );
+    }
+
+    return this.tvShowDetailsCache[tvShowId];
+  }
+
+  /**
+   * Manually refreshes the TV show details cache for a specific TV show
+   * @param tvShowId - The ID of the TV show to refresh (optional)
+   */
+  refreshTVShowDetailsCache(tvShowId?: number): void {
+    if (tvShowId) {
+      // If a specific TV show ID is provided, clear only that cache
+      delete this.tvShowDetailsCache[tvShowId];
+    } else {
+      // Otherwise clear all TV show details caches
+      this.tvShowDetailsCache = {};
+    }
+
+    // Trigger a refresh
+    this.refreshTVShowDetailsCache$.next(true);
   }
 }

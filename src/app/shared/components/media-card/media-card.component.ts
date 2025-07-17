@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Movie, TvShow } from '../../../models/media.model';
 
 @Component({
@@ -10,6 +11,8 @@ import { Movie, TvShow } from '../../../models/media.model';
   styleUrl: './media-card.component.scss'
 })
 export class MediaCardComponent {
+  private router = inject(Router);
+
   @Input() item!: Movie | TvShow;
   @Input() type: 'movie' | 'tvshow' = 'movie';
 
@@ -40,6 +43,12 @@ export class MediaCardComponent {
       item: this.item,
       type: this.isMovie() ? 'movie' : 'tvshow'
     });
+  }
+
+  // Method to navigate to details page
+  onViewDetails(): void {
+    const type = this.isMovie() ? 'movie' : 'tvshow';
+    this.router.navigate(['/details', type, this.item.id]);
   }
 
   // Helper method to get the full image URL

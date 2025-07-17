@@ -46,14 +46,34 @@ export const getTmdbData = onCall(
 
     // Construct the TMDB API URL
     const baseUrl = 'https://api.themoviedb.org/3';
-    let url = `${baseUrl}/${endpoint}/${list}?language=en-US&page=${page}`;
+    let url = `${baseUrl}/${endpoint}`;
 
-    // Add query parameters based on the request
+    // Add list if provided (for category listings like popular, top_rated, etc.)
+    if (list) {
+      url += `/${list}`;
+    }
+
+    // Add ID if provided (for specific movie/tv show details)
     if (id) {
       url += `/${id}`;
     }
+
+    // Add query parameters
+    url += `?language=en-US`;
+
+    // Add page parameter if provided
+    if (page) {
+      url += `&page=${page}`;
+    }
+
+    // Add additional query parameters if provided
+    if (request.data.queryParams) {
+      url += `&${request.data.queryParams}`;
+    }
+
+    // Add search query if provided
     if (query) {
-      url += `?query=${encodeURIComponent(query)}`;
+      url += `&query=${encodeURIComponent(query)}`;
     }
 
     // You might want more sophisticated URL construction based on TMDB API.

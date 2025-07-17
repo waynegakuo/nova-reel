@@ -14,7 +14,7 @@
     <p class="media-overview">{{ item.overview.length > 100 ? (item.overview | slice:0:100) + '...' : item.overview }}</p>
 
     <div class="media-actions">
-      <button class="btn-details">Details</button>
+      <button class="btn-details" (click)="onViewDetails()">Details</button>
       <button class="btn-share" (click)="onShare()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18" cy="5" r="3"></circle>

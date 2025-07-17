@@ -9,6 +9,7 @@ import {Subject, takeUntil} from 'rxjs';
   selector: 'app-landing-page',
   imports: [CommonModule, MediaCardComponent],
   templateUrl: './landing-page.component.html',
+  standalone: true,
   styleUrl: './landing-page.component.scss'
 })
 export class LandingPageComponent implements OnInit, OnDestroy {
