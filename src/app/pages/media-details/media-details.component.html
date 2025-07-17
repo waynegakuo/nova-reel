@@ -11,8 +11,8 @@
   @if (error()) {
     <div class="error-container">
       <p>{{ error() }}</p>
-      <button (click)="loadMediaDetails()">Try Again</button>
-      <button (click)="router.navigate(['/'])">Back to Home</button>
+      <button class="btn btn-primary" (click)="loadMediaDetails()">Try Again</button>
+      <button class="btn btn-secondary" (click)="router.navigate(['/'])">Back to Home</button>
     </div>
   }
 
@@ -46,20 +46,20 @@
                 </div>
                 <div class="actions">
                   @if (movieDetails()!.videos && movieDetails()!.videos.results.length > 0) {
-                    <button class="btn-primary" (click)="playTrailer(movieDetails()!.videos.results[0].key)">
+                    <button class="btn btn-primary" (click)="playTrailer(movieDetails()!.videos.results[0].key)">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                       Watch Trailer
                     </button>
                   }
-                  <button class="btn-secondary">
+                  <button class="btn btn-secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                     </svg>
                     Add to Favorites
                   </button>
-                  <button class="btn-secondary" (click)="shareMedia()">
+                  <button class="btn btn-secondary" (click)="shareMedia()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="18" cy="5" r="3"></circle>
                       <circle cx="6" cy="12" r="3"></circle>
@@ -254,20 +254,20 @@
                 </div>
                 <div class="actions">
                   @if (tvShowDetails()!.videos && tvShowDetails()!.videos.results.length > 0) {
-                    <button class="btn-primary" (click)="playTrailer(tvShowDetails()!.videos.results[0].key)">
+                    <button class="btn btn-primary" (click)="playTrailer(tvShowDetails()!.videos.results[0].key)">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                       </svg>
                       Watch Trailer
                     </button>
                   }
-                  <button class="btn-secondary">
+                  <button class="btn btn-secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                     </svg>
                     Add to Favorites
                   </button>
-                  <button class="btn-secondary" (click)="shareMedia()">
+                  <button class="btn btn-secondary" (click)="shareMedia()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="18" cy="5" r="3"></circle>
                       <circle cx="6" cy="12" r="3"></circle>

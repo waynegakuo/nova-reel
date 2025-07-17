@@ -1,4 +1,4 @@
-@use '../../styles/variables' as variables;
+@use '../../../styles/variables' as variables;
 
 // Landing page specific styles
 .landing-container {
@@ -28,28 +28,6 @@
   display: flex;
   justify-content: center;
   margin-bottom: 2rem;
-
-  button {
-    background-color: transparent;
-    color: variables.$text-color-light;
-    border: 2px solid variables.$primary-color;
-    padding: 0.7rem 1.5rem;
-    margin: 0 0.5rem;
-    border-radius: variables.$border-radius-lg;
-    cursor: pointer;
-    font-family: 'Architects Daughter', serif;
-    font-weight: bold;
-    transition: all 0.3s;
-
-    &:hover {
-      background-color: rgba(variables.$primary-color, 0.1);
-    }
-
-    &.active {
-      background-color: variables.$primary-color;
-      color: white;
-    }
-  }
 }
 
 .content {
@@ -68,27 +46,6 @@
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 2rem;
-
-  .category-btn {
-    background-color: transparent;
-    color: variables.$text-color-light;
-    border: 1px solid variables.$primary-color;
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem 0.5rem 0.5rem;
-    border-radius: variables.$border-radius-md;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-
-    &:hover {
-      background-color: rgba(variables.$primary-color, 0.1);
-    }
-
-    &.active {
-      background-color: variables.$primary-color;
-      color: white;
-    }
-  }
 }
 
 .media-grid {
@@ -117,44 +74,6 @@
   align-items: center;
   margin: 2rem 0;
   flex-wrap: wrap;
-
-  .pagination-btn {
-    background-color: transparent;
-    color: variables.$text-color-light;
-    border: 1px solid variables.$primary-color;
-    padding: 0.5rem 1rem;
-    margin: 0 0.3rem;
-    border-radius: variables.$border-radius-md;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-    min-width: 40px;
-
-    &:hover:not([disabled]) {
-      background-color: rgba(variables.$primary-color, 0.1);
-    }
-
-    &:active:not([disabled]) {
-      background-color: variables.$primary-color;
-      color: white;
-    }
-
-    &.active {
-      background-color: variables.$primary-color;
-      color: white;
-    }
-
-    &.page-number {
-      font-weight: bold;
-    }
-
-    &[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
-      border-color: #ccc;
-      color: #999;
-    }
-  }
 }
 
 // Animation for cards - using global animation

@@ -7,6 +7,7 @@
   <div class="tabs">
     @for (tab of ['Movies', 'TV Shows', 'Favorites']; track $index) {
       <button
+        class="btn-tab"
         [class.active]="activeTab() === tab"
         (click)="setActiveTab(tab)">
         {{ tab }}
@@ -18,17 +19,17 @@
     <!-- Category selectors - always visible based on active tab -->
     @if (activeTab() === 'Movies') {
       <div class="category-selector">
-        <button (click)="loadMovies('popular')" class="category-btn" [class.active]="activeMovieCategory() === 'popular'">Popular</button>
-        <button (click)="loadMovies('top_rated')" class="category-btn" [class.active]="activeMovieCategory() === 'top_rated'">Top Rated</button>
-        <button (click)="loadMovies('now_playing')" class="category-btn" [class.active]="activeMovieCategory() === 'now_playing'">Now Playing</button>
-        <button (click)="loadMovies('upcoming')" class="category-btn" [class.active]="activeMovieCategory() === 'upcoming'">Upcoming</button>
+        <button (click)="loadMovies('popular')" class="btn-category" [class.active]="activeMovieCategory() === 'popular'">Popular</button>
+        <button (click)="loadMovies('top_rated')" class="btn-category" [class.active]="activeMovieCategory() === 'top_rated'">Top Rated</button>
+        <button (click)="loadMovies('now_playing')" class="btn-category" [class.active]="activeMovieCategory() === 'now_playing'">Now Playing</button>
+        <button (click)="loadMovies('upcoming')" class="btn-category" [class.active]="activeMovieCategory() === 'upcoming'">Upcoming</button>
       </div>
     } @else if (activeTab() === 'TV Shows') {
       <div class="category-selector">
-        <button (click)="loadTVShows('popular')" class="category-btn" [class.active]="activeTVShowCategory() === 'popular'">Popular</button>
-        <button (click)="loadTVShows('top_rated')" class="category-btn" [class.active]="activeTVShowCategory() === 'top_rated'">Top Rated</button>
-        <button (click)="loadTVShows('on_the_air')" class="category-btn" [class.active]="activeTVShowCategory() === 'on_the_air'">On The Air</button>
-        <button (click)="loadTVShows('airing_today')" class="category-btn" [class.active]="activeTVShowCategory() === 'airing_today'">Airing Today</button>
+        <button (click)="loadTVShows('popular')" class="btn-category" [class.active]="activeTVShowCategory() === 'popular'">Popular</button>
+        <button (click)="loadTVShows('top_rated')" class="btn-category" [class.active]="activeTVShowCategory() === 'top_rated'">Top Rated</button>
+        <button (click)="loadTVShows('on_the_air')" class="btn-category" [class.active]="activeTVShowCategory() === 'on_the_air'">On The Air</button>
+        <button (click)="loadTVShows('airing_today')" class="btn-category" [class.active]="activeTVShowCategory() === 'airing_today'">Airing Today</button>
       </div>
     }
 
@@ -46,7 +47,7 @@
       @if (error()) {
         <div class="error-container">
           <p>{{ error() }}</p>
-          <button (click)="activeTab() === 'Movies' ? loadMovies('popular') : loadTVShows('popular')">
+          <button class="btn-primary" (click)="activeTab() === 'Movies' ? loadMovies('popular') : loadTVShows('popular')">
             Try Again
           </button>
         </div>
@@ -71,7 +72,7 @@
         <!-- Pagination controls for Movies -->
         <div class="pagination-controls">
           <button
-            class="pagination-btn"
+            class="btn-pagination"
             [disabled]="currentMoviePage() <= 1"
             (click)="prevMoviePage()">
             Previous
@@ -79,7 +80,7 @@
 
           @for (page of [1, 2, 3, 4, 5]; track page) {
             <button
-              class="pagination-btn page-number"
+              class="btn-pagination page-number"
               [class.active]="currentMoviePage() === page"
               (click)="goToMoviePage(page)">
               {{ page }}
@@ -87,7 +88,7 @@
           }
 
           <button
-            class="pagination-btn"
+            class="btn-pagination"
             [disabled]="currentMoviePage() >= MAX_PAGES"
             (click)="nextMoviePage()">
             Next
@@ -114,7 +115,7 @@
         <!-- Pagination controls for TV Shows -->
         <div class="pagination-controls">
           <button
-            class="pagination-btn"
+            class="btn-pagination"
             [disabled]="currentTVShowPage() <= 1"
             (click)="prevTVShowPage()">
             Previous
@@ -122,7 +123,7 @@
 
           @for (page of [1, 2, 3, 4, 5]; track page) {
             <button
-              class="pagination-btn page-number"
+              class="btn-pagination page-number"
               [class.active]="currentTVShowPage() === page"
               (click)="goToTVShowPage(page)">
               {{ page }}
@@ -130,7 +131,7 @@
           }
 
           <button
-            class="pagination-btn"
+            class="btn-pagination"
             [disabled]="currentTVShowPage() >= MAX_PAGES"
             (click)="nextTVShowPage()">
             Next

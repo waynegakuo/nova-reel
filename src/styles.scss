@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 // Import variables
-@use 'app/styles/variables' as variables;
+@use 'styles/variables' as variables;
 
 // Dark theme styles for media details
 .dark-theme {
@@ -31,6 +31,16 @@
 
     p {
       color: variables.$text-secondary-dark;
+    }
+  }
+
+  // Fix for secondary buttons on dark backgrounds
+  .btn-secondary {
+    color: white;
+    border: 2px solid variables.$primary-color;
+
+    &:hover {
+      background-color: rgba(variables.$primary-color, 0.2);
     }
   }
 }
@@ -173,6 +183,90 @@ p, span, a, button, input, textarea, .body-text {
   }
 }
 
+// Tab buttons
+.btn-tab {
+  background-color: transparent;
+  color: variables.$text-color-light;
+  border: 2px solid variables.$primary-color;
+  padding: 0.7rem 1.5rem;
+  margin: 0 0.5rem;
+  border-radius: variables.$border-radius-lg;
+  cursor: pointer;
+  font-family: 'Architects Daughter', serif;
+  font-weight: bold;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: rgba(variables.$primary-color, 0.1);
+  }
+
+  &.active {
+    background-color: variables.$primary-color;
+    color: white;
+  }
+}
+
+// Category buttons
+.btn-category {
+  background-color: transparent;
+  color: variables.$text-color-light;
+  border: 1px solid variables.$primary-color;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem 0.5rem 0.5rem;
+  border-radius: variables.$border-radius-md;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: rgba(variables.$primary-color, 0.1);
+  }
+
+  &.active {
+    background-color: variables.$primary-color;
+    color: white;
+  }
+}
+
+// Pagination buttons
+.btn-pagination {
+  background-color: transparent;
+  color: variables.$text-color-light;
+  border: 1px solid variables.$primary-color;
+  padding: 0.5rem 1rem;
+  margin: 0 0.3rem;
+  border-radius: variables.$border-radius-md;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  min-width: 40px;
+
+  &:hover:not([disabled]) {
+    background-color: rgba(variables.$primary-color, 0.1);
+  }
+
+  &:active:not([disabled]) {
+    background-color: variables.$primary-color;
+    color: white;
+  }
+
+  &.active {
+    background-color: variables.$primary-color;
+    color: white;
+  }
+
+  &.page-number {
+    font-weight: bold;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #ccc;
+    color: #999;
+  }
+}
+
 // Loading Spinner
 .loading-container {
   @include flex-center;
@@ -212,18 +306,7 @@ p, span, a, button, input, textarea, .body-text {
 
   button {
     margin-top: 1rem;
-    background-color: variables.$primary-color;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: variables.$border-radius-lg;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
-
-    &:hover {
-      background-color: variables.$primary-color-dark;
-    }
+    margin-right: 0.5rem;
   }
 }
 
