@@ -1,7 +1,97 @@
 /* You can add global styles to this file, and also import other style files */
 
+// Import variables
+@use 'app/styles/variables' as variables;
+
+// Dark theme styles for media details
+.dark-theme {
+  background-color: variables.$background-color-dark;
+  color: variables.$text-color-dark;
+
+  .backdrop {
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    position: relative;
+
+    .backdrop-overlay {
+      background: linear-gradient(to bottom, rgba(20, 20, 20, 0.5) 0%, rgba(20, 20, 20, 0.9) 100%);
+      padding: 3rem 0;
+    }
+  }
+
+  .section-heading {
+    h2::after {
+      background-color: variables.$primary-color;
+    }
+  }
+
+  .card {
+    background-color: variables.$card-background-dark;
+
+    p {
+      color: variables.$text-secondary-dark;
+    }
+  }
+}
+
+// Global Mixins
+@mixin flex-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin grid-layout($min-width: 180px) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(calc($min-width - 30px), 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(calc($min-width - 60px), 1fr));
+  }
+}
+
+@mixin card-base($bg-color: variables.$card-background-light, $radius: variables.$border-radius-sm) {
+  background-color: $bg-color;
+  border-radius: $radius;
+  overflow: hidden;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+  }
+
+  div {
+    padding: 1rem;
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: variables.$text-secondary-light;
+    }
+  }
+}
+
+// Base Styles
 body {
-  background-color: rgb(253, 253, 253);
+  background-color: variables.$background-color-light;
   margin: 0;
   font-family: "Architects Daughter", serif;
   padding: 0;
@@ -31,7 +121,132 @@ p, span, a, button, input, textarea, .body-text {
   font-weight: 600;
 }
 
+// Common Components
+
+// Container
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+// Button Styles
 .btn {
   font-family: "Source Sans 3", sans-serif;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: variables.$border-radius-sm;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.btn-primary {
+  background-color: variables.$primary-color;
+  color: white;
+
+  &:hover {
+    background-color: variables.$primary-color-dark;
+  }
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: variables.$text-color-light;
+  border: 2px solid variables.$primary-color;
+
+  &:hover {
+    background-color: rgba(variables.$primary-color, 0.1);
+  }
+
+  &.active {
+    background-color: variables.$primary-color;
+    color: white;
+  }
+}
+
+// Loading Spinner
+.loading-container {
+  @include flex-center;
+  min-height: 300px;
+  text-align: center;
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(variables.$primary-color, 0.2);
+    border-top: 5px solid variables.$primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: variables.$text-secondary-light;
+    font-size: 1.2rem;
+  }
+}
+
+// Error Container
+.error-container {
+  @include flex-center;
+  min-height: 300px;
+  background-color: rgba(variables.$primary-color, 0.1);
+  border-radius: variables.$border-radius-md;
+  padding: 2rem;
+  text-align: center;
+
+  p {
+    color: variables.$primary-color;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  button {
+    margin-top: 1rem;
+    background-color: variables.$primary-color;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: variables.$border-radius-lg;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: variables.$primary-color-dark;
+    }
+  }
+}
+
+// Common Animations
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Media Queries
+@mixin responsive-mobile {
+  @media (max-width: 480px) {
+    @content;
+  }
+}
+
+@mixin responsive-tablet {
+  @media (max-width: 768px) {
+    @content;
+  }
 }

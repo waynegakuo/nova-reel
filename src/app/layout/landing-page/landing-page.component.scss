@@ -1,5 +1,6 @@
-@use "sass:color";
+@use '../../styles/variables' as variables;
 
+// Landing page specific styles
 .landing-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -11,15 +12,14 @@
   margin-bottom: 2rem;
 
   h1 {
-    color: #1a1a2e;
+    color: variables.$secondary-color;
     font-family: 'Bangers', cursive;
     margin-bottom: 0.5rem;
     font-size: 2.5rem;
   }
 
   .subtitle {
-    font-family: 'Source Sans 3', sans-serif;
-    color: #666;
+    color: variables.$text-secondary-light;
     font-size: 1.2rem;
   }
 }
@@ -31,22 +31,22 @@
 
   button {
     background-color: transparent;
-    color: #1a1a2e;
-    border: 2px solid #e94560;
+    color: variables.$text-color-light;
+    border: 2px solid variables.$primary-color;
     padding: 0.7rem 1.5rem;
     margin: 0 0.5rem;
-    border-radius: 30px;
+    border-radius: variables.$border-radius-lg;
     cursor: pointer;
     font-family: 'Architects Daughter', serif;
     font-weight: bold;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 
     &:hover {
-      background-color: rgba(233, 69, 96, 0.1);
+      background-color: rgba(variables.$primary-color, 0.1);
     }
 
     &.active {
-      background-color: #e94560;
+      background-color: variables.$primary-color;
       color: white;
     }
   }
@@ -62,72 +62,6 @@
   transition: all 0.3s ease;
 }
 
-// Loading spinner
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-
-  .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(233, 69, 96, 0.2);
-    border-top: 5px solid #e94560;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    font-family: 'Source Sans 3', sans-serif;
-    color: #666;
-    font-size: 1.2rem;
-  }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-// Error container
-.error-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  background-color: rgba(233, 69, 96, 0.1);
-  border-radius: 8px;
-  padding: 2rem;
-
-  p {
-    font-family: 'Source Sans 3', sans-serif;
-    color: #e94560;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-
-  button {
-    background-color: #e94560;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: 30px;
-    cursor: pointer;
-    font-family: 'Architects Daughter', serif;
-    font-weight: bold;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background-color: color.adjust(#e94560, $lightness: -10%);
-    }
-  }
-}
-
 // Category selector
 .category-selector {
   display: flex;
@@ -137,27 +71,21 @@
 
   .category-btn {
     background-color: transparent;
-    color: #1a1a2e;
-    border: 1px solid #e94560;
+    color: variables.$text-color-light;
+    border: 1px solid variables.$primary-color;
     padding: 0.5rem 1rem;
     margin: 0 0.5rem 0.5rem 0.5rem;
-    border-radius: 20px;
+    border-radius: variables.$border-radius-md;
     cursor: pointer;
-    font-family: 'Source Sans 3', sans-serif;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 
     &:hover {
-      background-color: rgba(233, 69, 96, 0.1);
-    }
-
-    &:active {
-      background-color: #e94560;
-      color: white;
+      background-color: rgba(variables.$primary-color, 0.1);
     }
 
     &.active {
-      background-color: #e94560;
+      background-color: variables.$primary-color;
       color: white;
     }
   }
@@ -171,16 +99,13 @@
 }
 
 .favorites-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include variables.flex-center;
   height: 300px;
   background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
+  border-radius: variables.$border-radius-md;
 
   p {
-    font-family: 'Source Sans 3', sans-serif;
-    color: #666;
+    color: variables.$text-secondary-light;
     font-size: 1.2rem;
   }
 }
@@ -195,38 +120,32 @@
 
   .pagination-btn {
     background-color: transparent;
-    color: #1a1a2e;
-    border: 1px solid #e94560;
+    color: variables.$text-color-light;
+    border: 1px solid variables.$primary-color;
     padding: 0.5rem 1rem;
     margin: 0 0.3rem;
-    border-radius: 20px;
+    border-radius: variables.$border-radius-md;
     cursor: pointer;
-    font-family: 'Source Sans 3', sans-serif;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
     min-width: 40px;
 
     &:hover:not([disabled]) {
-      background-color: rgba(233, 69, 96, 0.1);
+      background-color: rgba(variables.$primary-color, 0.1);
     }
 
     &:active:not([disabled]) {
-      background-color: #e94560;
+      background-color: variables.$primary-color;
       color: white;
     }
 
     &.active {
-      background-color: #e94560;
+      background-color: variables.$primary-color;
       color: white;
     }
 
     &.page-number {
       font-weight: bold;
-
-      &.active {
-        background-color: #e94560;
-        color: white;
-      }
     }
 
     &[disabled] {
@@ -238,12 +157,7 @@
   }
 }
 
-// Animation for cards
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
+// Animation for cards - using global animation
 app-media-card {
   animation: fadeIn 0.5s ease forwards;
 
@@ -254,8 +168,8 @@ app-media-card {
   }
 }
 
-// Mobile responsive styles
-@media (max-width: 768px) {
+// Mobile responsive styles - using global mixins
+@include variables.responsive-tablet {
   .landing-container {
     padding: 1.5rem 1rem;
   }
@@ -292,14 +206,15 @@ app-media-card {
       margin: 0.2rem;
       font-size: 0.8rem;
       min-width: 35px;
+    }
+  }
+}
 
-      // Hide text on small screens for Previous/Next buttons
-      &:first-child, &:last-child {
-        @media (max-width: 480px) {
-          font-size: 0.7rem;
-          padding: 0.4rem 0.6rem;
-        }
-      }
+@include variables.responsive-mobile {
+  .pagination-btn {
+    &:first-child, &:last-child {
+      font-size: 0.7rem;
+      padding: 0.4rem 0.6rem;
     }
   }
 }

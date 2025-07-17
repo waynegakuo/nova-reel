@@ -1,0 +1,280 @@
+// Global Variables
+$primary-color: #e94560;
+$primary-color-dark: #d03a50; // Pre-calculated darker version
+$secondary-color: #1a1a2e;
+$background-color-light: rgb(253, 253, 253);
+$background-color-dark: #141414;
+$text-color-light: #1a1a2e;
+$text-color-dark: #ffffff;
+$text-secondary-light: #666;
+$text-secondary-dark: #b3b3b3;
+$card-background-light: #ffffff;
+$card-background-dark: #1f1f1f;
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 30px;
+
+// Global Mixins
+@mixin flex-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin grid-layout($min-width: 180px) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(calc($min-width - 30px), 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(calc($min-width - 60px), 1fr));
+  }
+}
+
+@mixin card-base($bg-color: $card-background-light, $radius: $border-radius-sm) {
+  background-color: $bg-color;
+  border-radius: $radius;
+  overflow: hidden;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+  }
+
+  div {
+    padding: 1rem;
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: $text-secondary-light;
+    }
+  }
+}
+
+// Media specific mixins
+@mixin media-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+
+  .poster {
+    flex: 0 0 300px;
+
+    img {
+      width: 100%;
+      border-radius: $border-radius-sm;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .media-info {
+    flex: 1;
+    min-width: 300px;
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2.5rem;
+
+      .year {
+        font-weight: normal;
+        opacity: 0.8;
+      }
+    }
+
+    .tagline {
+      font-style: italic;
+      color: $text-secondary-dark;
+      margin-bottom: 1.5rem;
+    }
+
+    .meta-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .rating .star {
+        color: gold;
+      }
+    }
+
+    .genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+
+      .genre-tag {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+      }
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  }
+
+  @include responsive-tablet {
+    .poster {
+      flex: 0 0 200px;
+    }
+
+    .media-info h1 {
+      font-size: 2rem;
+    }
+  }
+
+  @include responsive-mobile {
+    flex-direction: column;
+
+    .poster {
+      flex: 0 0 auto;
+      max-width: 200px;
+      margin: 0 auto;
+    }
+
+    .media-info {
+      text-align: center;
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .meta-info, .genres, .actions {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@mixin section-heading {
+  margin: 3rem 0;
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 50px;
+      height: 4px;
+      background-color: $primary-color;
+    }
+  }
+
+  @include responsive-mobile {
+    h2 {
+      font-size: 1.5rem;
+
+      &::after {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+  }
+}
+
+@mixin media-grids {
+  // Grid layouts for various sections
+  .cast-grid, .crew-grid, .videos-grid, .similar-grid,
+  .recommendations-grid, .seasons-grid, .creators-grid {
+    @include grid-layout;
+  }
+
+  // Card styles
+  .cast-card, .crew-card, .similar-card,
+  .recommendation-card, .season-card, .creator-card {
+    @include card-base($card-background-dark, $border-radius-sm);
+
+    div p {
+      color: $text-secondary-dark;
+    }
+  }
+
+  // Video card specific styles
+  .video-card {
+    @include card-base($card-background-dark, $border-radius-sm);
+    cursor: pointer;
+
+    .video-thumbnail {
+      position: relative;
+
+      img {
+        aspect-ratio: 16/9;
+      }
+
+      .play-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+      }
+
+      &:hover .play-icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  // Additional info section
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+
+    .info-item {
+      h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.1rem;
+        color: $text-secondary-dark;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Media Queries
+@mixin responsive-mobile {
+  @media (max-width: 480px) {
+    @content;
+  }
+}
+
+@mixin responsive-tablet {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
