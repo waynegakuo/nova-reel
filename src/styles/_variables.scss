@@ -217,6 +217,10 @@ $border-radius-lg: 30px;
     }
   }
 
+  .crew-card {
+    padding: 0 2rem;
+  }
+
   // Video card specific styles
   .video-card {
     @include card-base($card-background-dark, $border-radius-sm);
@@ -250,6 +254,7 @@ $border-radius-lg: 30px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
+    padding-bottom: 2rem;
 
     .info-item {
       h3 {
