@@ -1,0 +1,461 @@
+<div class="details-container">
+  <!-- Loading indicator -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading content...</p>
+    </div>
+  }
+
+  <!-- Error message -->
+  @if (error()) {
+    <div class="error-container">
+      <p>{{ error() }}</p>
+      <button (click)="loadMediaDetails()">Try Again</button>
+      <button (click)="router.navigate(['/'])">Back to Home</button>
+    </div>
+  }
+
+  <!-- Movie Details -->
+  @if (!isLoading() && !error() && mediaType() === 'movie' && movieDetails()) {
+    <div class="media-details movie-details">
+      <!-- Backdrop -->
+      <div class="backdrop" [style.background-image]="'url(' + getImageUrl(movieDetails()!.backdrop_path, 'backdrop') + ')'">
+        <div class="backdrop-overlay">
+          <div class="container">
+            <div class="media-header">
+              <div class="poster">
+                <img [src]="getImageUrl(movieDetails()!.poster_path, 'poster')" [alt]="movieDetails()!.title">
+              </div>
+              <div class="media-info">
+                <h1>{{ movieDetails()!.title }} <span class="year">({{ movieDetails()!.release_date | date:'yyyy' }})</span></h1>
+                @if (movieDetails()!.tagline) {
+                  <p class="tagline">"{{ movieDetails()!.tagline }}"</p>
+                }
+                <div class="meta-info">
+                  <span class="rating">
+                    <span class="star">★</span> {{ movieDetails()!.vote_average.toFixed(1) }}/10
+                  </span>
+                  <span class="runtime">{{ formatRuntime(movieDetails()!.runtime) }}</span>
+                  <span class="release-date">{{ movieDetails()!.release_date | date:'mediumDate' }}</span>
+                </div>
+                <div class="genres">
+                  @for (genre of movieDetails()!.genres; track genre.id) {
+                    <span class="genre-tag">{{ genre.name }}</span>
+                  }
+                </div>
+                <div class="actions">
+                  @if (movieDetails()!.videos && movieDetails()!.videos.results.length > 0) {
+                    <button class="btn-primary" (click)="playTrailer(movieDetails()!.videos.results[0].key)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                      Watch Trailer
+                    </button>
+                  }
+                  <button class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Add to Favorites
+                  </button>
+                  <button class="btn-secondary" (click)="shareMedia()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="18" cy="5" r="3"></circle>
+                      <circle cx="6" cy="12" r="3"></circle>
+                      <circle cx="18" cy="19" r="3"></circle>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    Share
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Overview Section -->
+        <section class="overview-section">
+          <h2>Overview</h2>
+          <p>{{ movieDetails()!.overview }}</p>
+        </section>
+
+        <!-- Cast Section -->
+        @if (movieDetails()!.credits && movieDetails()!.credits.cast.length > 0) {
+          <section class="cast-section">
+            <h2>Top Cast</h2>
+            <div class="cast-grid">
+              @for (actor of movieDetails()!.credits.cast.slice(0, 6); track actor.id) {
+                <div class="cast-card">
+                  <div class="cast-image">
+                    <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
+                  </div>
+                  <div class="cast-info">
+                    <h3>{{ actor.name }}</h3>
+                    <p>{{ actor.character }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Crew Section -->
+        @if (movieDetails()!.credits && movieDetails()!.credits.crew.length > 0) {
+          <section class="crew-section">
+            <h2>Crew</h2>
+            <div class="crew-grid">
+              @for (crewMember of getKeyCrewMembers(movieDetails()!.credits.crew); track crewMember.id) {
+                <div class="crew-card">
+                  <h3>{{ crewMember.name }}</h3>
+                  <p>{{ crewMember.job }}</p>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Videos Section -->
+        @if (movieDetails()!.videos && movieDetails()!.videos.results.length > 0) {
+          <section class="videos-section">
+            <h2>Videos</h2>
+            <div class="videos-grid">
+              @for (video of movieDetails()!.videos.results.slice(0, 3); track video.id) {
+                <div class="video-card" (click)="playTrailer(video.key)">
+                  <div class="video-thumbnail">
+                    <img [src]="getYouTubeThumbnail(video.key)" [alt]="video.name">
+                    <div class="play-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="video-info">
+                    <h3>{{ video.name }}</h3>
+                    <p>{{ video.type }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Similar Movies Section -->
+        @if (movieDetails()!.similar && movieDetails()!.similar.results.length > 0) {
+          <section class="similar-section">
+            <h2>Similar Movies</h2>
+            <div class="similar-grid">
+              @for (movie of movieDetails()!.similar.results.slice(0, 6); track movie.id) {
+                <div class="similar-card" (click)="navigateToDetails('movie', movie.id)">
+                  <div class="similar-image">
+                    <img [src]="getImageUrl(movie.poster_path, 'poster')" [alt]="movie.title">
+                  </div>
+                  <div class="similar-info">
+                    <h3>{{ movie.title }}</h3>
+                    <p>{{ movie.release_date | date:'yyyy' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Recommendations Section -->
+        @if (movieDetails()!.recommendations && movieDetails()!.recommendations.results.length > 0) {
+          <section class="recommendations-section">
+            <h2>Recommendations</h2>
+            <div class="recommendations-grid">
+              @for (movie of movieDetails()!.recommendations.results.slice(0, 6); track movie.id) {
+                <div class="recommendation-card" (click)="navigateToDetails('movie', movie.id)">
+                  <div class="recommendation-image">
+                    <img [src]="getImageUrl(movie.poster_path, 'poster')" [alt]="movie.title">
+                  </div>
+                  <div class="recommendation-info">
+                    <h3>{{ movie.title }}</h3>
+                    <p>{{ movie.release_date | date:'yyyy' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Additional Information Section -->
+        <section class="additional-info-section">
+          <h2>Additional Information</h2>
+          <div class="info-grid">
+            @if (movieDetails()!.budget > 0) {
+              <div class="info-item">
+                <h3>Budget</h3>
+                <p>{{ formatCurrency(movieDetails()!.budget) }}</p>
+              </div>
+            }
+            @if (movieDetails()!.revenue > 0) {
+              <div class="info-item">
+                <h3>Revenue</h3>
+                <p>{{ formatCurrency(movieDetails()!.revenue) }}</p>
+              </div>
+            }
+            @if (movieDetails()!.status) {
+              <div class="info-item">
+                <h3>Status</h3>
+                <p>{{ movieDetails()!.status }}</p>
+              </div>
+            }
+            @if (movieDetails()!.original_language) {
+              <div class="info-item">
+                <h3>Original Language</h3>
+                <p>{{ getLanguageName(movieDetails()!.original_language) }}</p>
+              </div>
+            }
+            @if (movieDetails()!.production_companies && movieDetails()!.production_companies.length > 0) {
+              <div class="info-item">
+                <h3>Production Companies</h3>
+                <p>{{ getProductionCompanies(movieDetails()!.production_companies) }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    </div>
+  }
+
+  <!-- TV Show Details -->
+  @if (!isLoading() && !error() && mediaType() === 'tvshow' && tvShowDetails()) {
+    <div class="media-details tvshow-details">
+      <!-- Backdrop -->
+      <div class="backdrop" [style.background-image]="'url(' + getImageUrl(tvShowDetails()!.backdrop_path, 'backdrop') + ')'">
+        <div class="backdrop-overlay">
+          <div class="container">
+            <div class="media-header">
+              <div class="poster">
+                <img [src]="getImageUrl(tvShowDetails()!.poster_path, 'poster')" [alt]="tvShowDetails()!.name">
+              </div>
+              <div class="media-info">
+                <h1>{{ tvShowDetails()!.name }} <span class="year">({{ tvShowDetails()!.first_air_date | date:'yyyy' }})</span></h1>
+                @if (tvShowDetails()!.tagline) {
+                  <p class="tagline">"{{ tvShowDetails()!.tagline }}"</p>
+                }
+                <div class="meta-info">
+                  <span class="rating">
+                    <span class="star">★</span> {{ tvShowDetails()!.vote_average.toFixed(1) }}/10
+                  </span>
+                  <span class="seasons">{{ tvShowDetails()!.number_of_seasons }} Season{{ tvShowDetails()!.number_of_seasons !== 1 ? 's' : '' }}</span>
+                  <span class="episodes">{{ tvShowDetails()!.number_of_episodes }} Episode{{ tvShowDetails()!.number_of_episodes !== 1 ? 's' : '' }}</span>
+                </div>
+                <div class="genres">
+                  @for (genre of tvShowDetails()!.genres; track genre.id) {
+                    <span class="genre-tag">{{ genre.name }}</span>
+                  }
+                </div>
+                <div class="actions">
+                  @if (tvShowDetails()!.videos && tvShowDetails()!.videos.results.length > 0) {
+                    <button class="btn-primary" (click)="playTrailer(tvShowDetails()!.videos.results[0].key)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                      Watch Trailer
+                    </button>
+                  }
+                  <button class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Add to Favorites
+                  </button>
+                  <button class="btn-secondary" (click)="shareMedia()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="18" cy="5" r="3"></circle>
+                      <circle cx="6" cy="12" r="3"></circle>
+                      <circle cx="18" cy="19" r="3"></circle>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    Share
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Overview Section -->
+        <section class="overview-section">
+          <h2>Overview</h2>
+          <p>{{ tvShowDetails()!.overview }}</p>
+        </section>
+
+        <!-- Seasons Section -->
+        @if (tvShowDetails()!.seasons && tvShowDetails()!.seasons.length > 0) {
+          <section class="seasons-section">
+            <h2>Seasons</h2>
+            <div class="seasons-grid">
+              @for (season of tvShowDetails()!.seasons; track season.id) {
+                <div class="season-card">
+                  <div class="season-image">
+                    <img [src]="getImageUrl(season.poster_path, 'poster')" [alt]="season.name">
+                  </div>
+                  <div class="season-info">
+                    <h3>{{ season.name }}</h3>
+                    <p>{{ season.episode_count }} Episode{{ season.episode_count !== 1 ? 's' : '' }}</p>
+                    @if (season.air_date) {
+                      <p>{{ season.air_date | date:'mediumDate' }}</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Cast Section -->
+        @if (tvShowDetails()!.credits && tvShowDetails()!.credits.cast.length > 0) {
+          <section class="cast-section">
+            <h2>Top Cast</h2>
+            <div class="cast-grid">
+              @for (actor of tvShowDetails()!.credits.cast.slice(0, 6); track actor.id) {
+                <div class="cast-card">
+                  <div class="cast-image">
+                    <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
+                  </div>
+                  <div class="cast-info">
+                    <h3>{{ actor.name }}</h3>
+                    <p>{{ actor.character }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Creators Section -->
+        @if (tvShowDetails()!.created_by && tvShowDetails()!.created_by.length > 0) {
+          <section class="creators-section">
+            <h2>Created By</h2>
+            <div class="creators-grid">
+              @for (creator of tvShowDetails()!.created_by; track creator.id) {
+                <div class="creator-card">
+                  <div class="creator-image">
+                    <img [src]="getImageUrl(creator.profile_path, 'profile')" [alt]="creator.name">
+                  </div>
+                  <div class="creator-info">
+                    <h3>{{ creator.name }}</h3>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Videos Section -->
+        @if (tvShowDetails()!.videos && tvShowDetails()!.videos.results.length > 0) {
+          <section class="videos-section">
+            <h2>Videos</h2>
+            <div class="videos-grid">
+              @for (video of tvShowDetails()!.videos.results.slice(0, 3); track video.id) {
+                <div class="video-card" (click)="playTrailer(video.key)">
+                  <div class="video-thumbnail">
+                    <img [src]="getYouTubeThumbnail(video.key)" [alt]="video.name">
+                    <div class="play-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="video-info">
+                    <h3>{{ video.name }}</h3>
+                    <p>{{ video.type }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Similar TV Shows Section -->
+        @if (tvShowDetails()!.similar && tvShowDetails()!.similar.results.length > 0) {
+          <section class="similar-section">
+            <h2>Similar TV Shows</h2>
+            <div class="similar-grid">
+              @for (tvShow of tvShowDetails()!.similar.results.slice(0, 6); track tvShow.id) {
+                <div class="similar-card" (click)="navigateToDetails('tvshow', tvShow.id)">
+                  <div class="similar-image">
+                    <img [src]="getImageUrl(tvShow.poster_path, 'poster')" [alt]="tvShow.name">
+                  </div>
+                  <div class="similar-info">
+                    <h3>{{ tvShow.name }}</h3>
+                    <p>{{ tvShow.first_air_date | date:'yyyy' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Recommendations Section -->
+        @if (tvShowDetails()!.recommendations && tvShowDetails()!.recommendations.results.length > 0) {
+          <section class="recommendations-section">
+            <h2>Recommendations</h2>
+            <div class="recommendations-grid">
+              @for (tvShow of tvShowDetails()!.recommendations.results.slice(0, 6); track tvShow.id) {
+                <div class="recommendation-card" (click)="navigateToDetails('tvshow', tvShow.id)">
+                  <div class="recommendation-image">
+                    <img [src]="getImageUrl(tvShow.poster_path, 'poster')" [alt]="tvShow.name">
+                  </div>
+                  <div class="recommendation-info">
+                    <h3>{{ tvShow.name }}</h3>
+                    <p>{{ tvShow.first_air_date | date:'yyyy' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Additional Information Section -->
+        <section class="additional-info-section">
+          <h2>Additional Information</h2>
+          <div class="info-grid">
+            @if (tvShowDetails()!.status) {
+              <div class="info-item">
+                <h3>Status</h3>
+                <p>{{ tvShowDetails()!.status }}</p>
+              </div>
+            }
+            @if (tvShowDetails()!.type) {
+              <div class="info-item">
+                <h3>Type</h3>
+                <p>{{ tvShowDetails()!.type }}</p>
+              </div>
+            }
+            @if (tvShowDetails()!.original_language) {
+              <div class="info-item">
+                <h3>Original Language</h3>
+                <p>{{ getLanguageName(tvShowDetails()!.original_language) }}</p>
+              </div>
+            }
+            @if (tvShowDetails()!.networks && tvShowDetails()!.networks.length > 0) {
+              <div class="info-item">
+                <h3>Networks</h3>
+                <p>{{ getNetworks(tvShowDetails()!.networks) }}</p>
+              </div>
+            }
+            @if (tvShowDetails()!.production_companies && tvShowDetails()!.production_companies.length > 0) {
+              <div class="info-item">
+                <h3>Production Companies</h3>
+                <p>{{ getProductionCompanies(tvShowDetails()!.production_companies) }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    </div>
+  }
+</div>

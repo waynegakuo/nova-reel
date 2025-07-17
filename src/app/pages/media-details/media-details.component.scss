@@ -1,0 +1,345 @@
+// Variables
+$primary-color: #e50914;
+$secondary-color: #564d4d;
+$background-color: #141414;
+$text-color: #ffffff;
+$text-secondary: #b3b3b3;
+$card-background: #1f1f1f;
+$border-radius: 4px;
+
+// Container styles
+.details-container {
+  background-color: $background-color;
+  color: $text-color;
+  min-height: 100vh;
+}
+
+// Loading and error containers
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 2rem;
+
+  button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: $primary-color;
+    color: $text-color;
+    border: none;
+    border-radius: $border-radius;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid $primary-color;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Backdrop styles
+.backdrop {
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  position: relative;
+
+  .backdrop-overlay {
+    background: linear-gradient(to bottom, rgba(20, 20, 20, 0.5) 0%, rgba(20, 20, 20, 0.9) 100%);
+    padding: 3rem 0;
+  }
+}
+
+// Container for content
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+// Media header styles
+.media-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+
+  .poster {
+    flex: 0 0 300px;
+
+    img {
+      width: 100%;
+      border-radius: $border-radius;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  .media-info {
+    flex: 1;
+    min-width: 300px;
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 2.5rem;
+
+      .year {
+        font-weight: normal;
+        opacity: 0.8;
+      }
+    }
+
+    .tagline {
+      font-style: italic;
+      color: $text-secondary;
+      margin-bottom: 1.5rem;
+    }
+
+    .meta-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .rating {
+        .star {
+          color: gold;
+        }
+      }
+    }
+
+    .genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+
+      .genre-tag {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+      }
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.2rem;
+        border: none;
+        border-radius: $border-radius;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+
+      .btn-primary {
+        background-color: $primary-color;
+        color: $text-color;
+
+        &:hover {
+          background-color: darken($primary-color, 10%);
+        }
+      }
+
+      .btn-secondary {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: $text-color;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
+  }
+}
+
+// Section styles
+section {
+  margin: 3rem 0;
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 50px;
+      height: 4px;
+      background-color: $primary-color;
+    }
+  }
+}
+
+// Grid layouts for various sections
+.cast-grid, .crew-grid, .videos-grid, .similar-grid, .recommendations-grid, .seasons-grid, .creators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+// Card styles
+.cast-card, .crew-card, .video-card, .similar-card, .recommendation-card, .season-card, .creator-card {
+  background-color: $card-background;
+  border-radius: $border-radius;
+  overflow: hidden;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+  }
+
+  .cast-info, .crew-info, .video-info, .similar-info, .recommendation-info, .season-info, .creator-info {
+    padding: 1rem;
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: $text-secondary;
+    }
+  }
+}
+
+// Video card specific styles
+.video-card {
+  cursor: pointer;
+
+  .video-thumbnail {
+    position: relative;
+
+    img {
+      aspect-ratio: 16/9;
+    }
+
+    .play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+    }
+
+    &:hover .play-icon {
+      opacity: 1;
+    }
+  }
+}
+
+// Additional info section
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+
+  .info-item {
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      color: $text-secondary;
+    }
+
+    p {
+      margin: 0;
+      font-size: 1rem;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .media-header {
+    .poster {
+      flex: 0 0 200px;
+    }
+
+    .media-info h1 {
+      font-size: 2rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .media-header {
+    flex-direction: column;
+
+    .poster {
+      flex: 0 0 auto;
+      max-width: 200px;
+      margin: 0 auto;
+    }
+
+    .media-info {
+      text-align: center;
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .meta-info, .genres, .actions {
+        justify-content: center;
+      }
+    }
+  }
+
+  section h2 {
+    font-size: 1.5rem;
+
+    &::after {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+}
