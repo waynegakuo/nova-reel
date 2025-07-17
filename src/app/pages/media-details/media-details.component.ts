@@ -1,10 +1,11 @@
-import {Component, OnInit, inject, signal, OnDestroy} from '@angular/core';
+import {Component, OnInit, inject, signal, OnDestroy, effect} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaService } from '../../services/media/media.service';
 import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew } from '../../models/media-details.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {Subject, takeUntil} from 'rxjs';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-media-details',
@@ -18,6 +19,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   router = inject(Router); // Made public for template access
   private mediaService = inject(MediaService);
   private sanitizer = inject(DomSanitizer);
+  private authService = inject(AuthService);
 
   // Signals
   mediaType = signal<'movie' | 'tvshow'>('movie');
@@ -31,10 +33,22 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   notification = signal<{message: string, type: 'success' | 'error'} | null>(null);
   isFavorited = signal<boolean>(false);
 
+  // Authentication signals
+  isAuthenticated = signal<boolean>(false);
+
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
 
+  constructor() {
+    // Create an effect to track authentication state changes
+    effect(() => {
+      // This will run whenever authService.isAuthenticated signal changes
+      this.isAuthenticated.set(this.authService.isAuthenticated());
+    });
+  }
+
   ngOnInit(): void {
+
     this.route.paramMap.subscribe(params => {
       const type = params.get('type');
       const id = params.get('id');
@@ -310,6 +324,15 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   toggleFavorite(mediaType: 'movie' | 'tvshow'): void {
     // Clear any existing notification
     this.notification.set(null);
+
+    // Check if user is authenticated
+    if (!this.isAuthenticated()) {
+      this.notification.set({
+        message: 'Please sign in to add items to your favorites',
+        type: 'error'
+      });
+      return;
+    }
 
     try {
       if (this.isFavorited()) {

@@ -1,11 +1,12 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map} from 'rxjs';
+import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
 import {HttpClient} from '@angular/common/http';
 import {FirebaseApp} from '@angular/fire/app';
 import {getFunctions, httpsCallable} from '@angular/fire/functions';
-import {Firestore, collection, doc, setDoc, getDoc, deleteDoc, getDocs, query, orderBy} from '@angular/fire/firestore';
+import {Firestore, collection, doc, setDoc, getDoc, deleteDoc, getDocs, query, orderBy, where} from '@angular/fire/firestore';
+import {AuthService} from '../auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class MediaService {
   http = inject(HttpClient);
   firebaseApp = inject(FirebaseApp);
   firestore = inject(Firestore);
+  private authService = inject(AuthService);
   private functions;
 
   constructor() {
@@ -317,15 +319,23 @@ export class MediaService {
   }
 
   /**
-   * Adds a movie or TV show to the favorites collection in Firestore
+   * Adds a movie or TV show to the user's favorites collection in Firestore
    * @param mediaItem - The movie or TV show details to add to favorites
    * @param mediaType - The type of media ('movie' or 'tvshow')
    * @returns Promise that resolves when the operation is complete
+   * @throws Error if the user is not authenticated
    */
   addFavorites(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tvshow'): Promise<void> {
     try {
-      // Create a reference to the favorites collection
-      const favoritesCollection = collection(this.firestore, 'favorites');
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        return Promise.reject(new Error('User must be authenticated to add favorites'));
+      }
+
+      // Create a reference to the user's favorites collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const favoritesCollection = collection(userDocRef, 'favorites');
 
       // Create a document with the media item data and type
       // We use the media item's ID as the document ID to prevent duplicates
@@ -347,14 +357,22 @@ export class MediaService {
   }
 
   /**
-   * Checks if a media item is in the favorites collection
+   * Checks if a media item is in the user's favorites collection
    * @param mediaId - The ID of the media item to check
    * @returns Observable that emits true if the item is favorited, false otherwise
    */
   checkFavoriteStatus(mediaId: number): Observable<boolean> {
     try {
-      // Create a reference to the document in the favorites collection
-      const favoritesCollection = collection(this.firestore, 'favorites');
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        // If not authenticated, the item cannot be favorited
+        return of(false);
+      }
+
+      // Create a reference to the document in the user's favorites collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const favoritesCollection = collection(userDocRef, 'favorites');
       const docRef = doc(favoritesCollection, mediaId.toString());
 
       // Check if the document exists
@@ -370,14 +388,22 @@ export class MediaService {
   }
 
   /**
-   * Removes a media item from the favorites collection
+   * Removes a media item from the user's favorites collection
    * @param mediaId - The ID of the media item to remove
    * @returns Promise that resolves when the operation is complete
+   * @throws Error if the user is not authenticated
    */
   removeFavorite(mediaId: number): Promise<void> {
     try {
-      // Create a reference to the document in the favorites collection
-      const favoritesCollection = collection(this.firestore, 'favorites');
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        return Promise.reject(new Error('User must be authenticated to remove favorites'));
+      }
+
+      // Create a reference to the document in the user's favorites collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const favoritesCollection = collection(userDocRef, 'favorites');
       const docRef = doc(favoritesCollection, mediaId.toString());
 
       // Delete the document from the collection
@@ -389,13 +415,21 @@ export class MediaService {
   }
 
   /**
-   * Fetches all favorites from Firestore
+   * Fetches all favorites from the user's favorites collection in Firestore
    * @returns Observable that emits an array of favorites (MovieDetails or TvShowDetails with additional fields)
    */
   getFavorites(): Observable<((MovieDetails | TvShowDetails) & Favorite)[]> {
     try {
-      // Create a reference to the favorites collection
-      const favoritesCollection = collection(this.firestore, 'favorites');
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        // If not authenticated, return an empty array
+        return of([]);
+      }
+
+      // Create a reference to the user's favorites collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const favoritesCollection = collection(userDocRef, 'favorites');
 
       // Create a query ordered by addedAt (most recent first)
       const favoritesQuery = query(favoritesCollection, orderBy('addedAt', 'desc'));

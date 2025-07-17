@@ -1,0 +1,243 @@
+.user-auth-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+// Error message
+.error-message {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #f44336;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    margin-left: 8px;
+    cursor: pointer;
+    padding: 0 4px;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+// Loading spinner
+.loading-spinner, .btn-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Sign in button
+.sign-in-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: white;
+  color: #757575;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  }
+
+  &:disabled {
+    background-color: #f1f1f1;
+    color: #bdbdbd;
+    border-color: #e0e0e0;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  svg {
+    margin-right: 8px;
+  }
+}
+
+// User profile
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// User dropdown
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 8px;
+  z-index: 1000;
+  width: 240px;
+  overflow: hidden;
+  color: #333;
+
+  .dropdown-header {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .dropdown-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .dropdown-user-info {
+      display: flex;
+      flex-direction: column;
+
+      .dropdown-name {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .dropdown-email {
+        font-size: 12px;
+        color: #666;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background-color: #eee;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+
+    &:disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    svg {
+      color: #666;
+    }
+  }
+}
+
+// Dark theme adjustments
+:host-context(.dark-theme) {
+  .sign-in-btn {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #555;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      background-color: #444;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    &:disabled {
+      background-color: #3a3a3a;
+      color: #777;
+      border-color: #444;
+    }
+  }
+
+  .user-dropdown {
+    background-color: #333;
+    color: #fff;
+
+    .dropdown-user-info {
+      .dropdown-email {
+        color: #ccc;
+      }
+    }
+
+    .dropdown-divider {
+      background-color: #444;
+    }
+
+    .dropdown-item {
+      &:hover {
+        background-color: #444;
+      }
+
+      svg {
+        color: #ccc;
+      }
+    }
+  }
+}
