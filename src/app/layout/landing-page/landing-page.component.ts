@@ -23,6 +23,11 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
 
+  // Pagination signals
+  currentMoviePage = signal<number>(1);
+  currentTVShowPage = signal<number>(1);
+  readonly MAX_PAGES = 5; // Maximum number of pages as per requirements
+
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
 
@@ -46,18 +51,31 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   }
 
   // Method to load movies from the API
-  loadMovies(list: string, forceRefresh: boolean = false): void {
+  loadMovies(list: string, forceRefresh: boolean = false, page?: number): void {
+    // If changing categories, reset to page 1
+    if (list !== this.activeMovieCategory()) {
+      this.currentMoviePage.set(1);
+    }
+
+    // Use provided page or current page from signal
+    const pageToLoad = page || this.currentMoviePage();
+
     this.isLoading.set(true);
     this.error.set(null);
     this.activeMovieCategory.set(list);
 
-    this.mediaService.getMovies(list, forceRefresh)
+    this.mediaService.getMovies(list, forceRefresh, pageToLoad)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           // Type assertion to ensure we're dealing with Movie[]
           this.movies.set(data as Movie[]);
           this.isLoading.set(false);
+
+          // If page was provided, update current page signal
+          if (page) {
+            this.currentMoviePage.set(page);
+          }
         },
         error: (err) => {
           console.error('Error loading movies:', err);
@@ -70,22 +88,58 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Method to refresh movies data
   refreshMovies(): void {
     const currentCategory = this.activeMovieCategory();
-    this.loadMovies(currentCategory, true);
+    this.loadMovies(currentCategory, true, this.currentMoviePage());
+  }
+
+  // Method to navigate to a specific movie page
+  goToMoviePage(page: number): void {
+    if (page < 1 || page > this.MAX_PAGES) return;
+    this.currentMoviePage.set(page);
+    this.loadMovies(this.activeMovieCategory(), false, page);
+  }
+
+  // Method to navigate to the next movie page
+  nextMoviePage(): void {
+    const nextPage = this.currentMoviePage() + 1;
+    if (nextPage <= this.MAX_PAGES) {
+      this.goToMoviePage(nextPage);
+    }
+  }
+
+  // Method to navigate to the previous movie page
+  prevMoviePage(): void {
+    const prevPage = this.currentMoviePage() - 1;
+    if (prevPage >= 1) {
+      this.goToMoviePage(prevPage);
+    }
   }
 
   // Method to load TV shows from the API
-  loadTVShows(list: string, forceRefresh: boolean = false): void {
+  loadTVShows(list: string, forceRefresh: boolean = false, page?: number): void {
+    // If changing categories, reset to page 1
+    if (list !== this.activeTVShowCategory()) {
+      this.currentTVShowPage.set(1);
+    }
+
+    // Use provided page or current page from signal
+    const pageToLoad = page || this.currentTVShowPage();
+
     this.isLoading.set(true);
     this.error.set(null);
     this.activeTVShowCategory.set(list);
 
-    this.mediaService.getTVShows(list, forceRefresh)
+    this.mediaService.getTVShows(list, forceRefresh, pageToLoad)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           // Type assertion to ensure we're dealing with TvShow[]
           this.tvShows.set(data as TvShow[]);
           this.isLoading.set(false);
+
+          // If page was provided, update current page signal
+          if (page) {
+            this.currentTVShowPage.set(page);
+          }
         },
         error: (err) => {
           console.error('Error loading TV shows:', err);
@@ -98,7 +152,30 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Method to refresh TV shows data
   refreshTVShows(): void {
     const currentCategory = this.activeTVShowCategory();
-    this.loadTVShows(currentCategory, true);
+    this.loadTVShows(currentCategory, true, this.currentTVShowPage());
+  }
+
+  // Method to navigate to a specific TV show page
+  goToTVShowPage(page: number): void {
+    if (page < 1 || page > this.MAX_PAGES) return;
+    this.currentTVShowPage.set(page);
+    this.loadTVShows(this.activeTVShowCategory(), false, page);
+  }
+
+  // Method to navigate to the next TV show page
+  nextTVShowPage(): void {
+    const nextPage = this.currentTVShowPage() + 1;
+    if (nextPage <= this.MAX_PAGES) {
+      this.goToTVShowPage(nextPage);
+    }
+  }
+
+  // Method to navigate to the previous TV show page
+  prevTVShowPage(): void {
+    const prevPage = this.currentTVShowPage() - 1;
+    if (prevPage >= 1) {
+      this.goToTVShowPage(prevPage);
+    }
   }
 
   // Method to handle sharing

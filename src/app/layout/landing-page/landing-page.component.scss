@@ -185,6 +185,59 @@
   }
 }
 
+// Pagination controls
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+
+  .pagination-btn {
+    background-color: transparent;
+    color: #1a1a2e;
+    border: 1px solid #e94560;
+    padding: 0.5rem 1rem;
+    margin: 0 0.3rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    min-width: 40px;
+
+    &:hover:not([disabled]) {
+      background-color: rgba(233, 69, 96, 0.1);
+    }
+
+    &:active:not([disabled]) {
+      background-color: #e94560;
+      color: white;
+    }
+
+    &.active {
+      background-color: #e94560;
+      color: white;
+    }
+
+    &.page-number {
+      font-weight: bold;
+
+      &.active {
+        background-color: #e94560;
+        color: white;
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #ccc;
+      color: #999;
+    }
+  }
+}
+
 // Animation for cards
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
@@ -229,5 +282,24 @@ app-media-card {
 
   .media-grid {
     gap: 1rem;
+  }
+
+  .pagination-controls {
+    margin: 1.5rem 0;
+
+    .pagination-btn {
+      padding: 0.4rem 0.8rem;
+      margin: 0.2rem;
+      font-size: 0.8rem;
+      min-width: 35px;
+
+      // Hide text on small screens for Previous/Next buttons
+      &:first-child, &:last-child {
+        @media (max-width: 480px) {
+          font-size: 0.7rem;
+          padding: 0.4rem 0.6rem;
+        }
+      }
+    }
   }
 }

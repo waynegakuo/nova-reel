@@ -67,10 +67,36 @@
             }
           }
         </div>
+
+        <!-- Pagination controls for Movies -->
+        <div class="pagination-controls">
+          <button
+            class="pagination-btn"
+            [disabled]="currentMoviePage() <= 1"
+            (click)="prevMoviePage()">
+            Previous
+          </button>
+
+          @for (page of [1, 2, 3, 4, 5]; track page) {
+            <button
+              class="pagination-btn page-number"
+              [class.active]="currentMoviePage() === page"
+              (click)="goToMoviePage(page)">
+              {{ page }}
+            </button>
+          }
+
+          <button
+            class="pagination-btn"
+            [disabled]="currentMoviePage() >= MAX_PAGES"
+            (click)="nextMoviePage()">
+            Next
+          </button>
+        </div>
       }
 
       <!-- TV Shows tab content -->
-      @else if (activeTab() === 'TV Shows' && !isLoading() && !error()) {
+      @if (activeTab() === 'TV Shows' && !isLoading() && !error()) {
         <div class="media-grid">
           @if (tvShows().length === 0 && !isLoading()) {
             <p>No TV shows found.</p>
@@ -84,10 +110,36 @@
             }
           }
         </div>
+
+        <!-- Pagination controls for TV Shows -->
+        <div class="pagination-controls">
+          <button
+            class="pagination-btn"
+            [disabled]="currentTVShowPage() <= 1"
+            (click)="prevTVShowPage()">
+            Previous
+          </button>
+
+          @for (page of [1, 2, 3, 4, 5]; track page) {
+            <button
+              class="pagination-btn page-number"
+              [class.active]="currentTVShowPage() === page"
+              (click)="goToTVShowPage(page)">
+              {{ page }}
+            </button>
+          }
+
+          <button
+            class="pagination-btn"
+            [disabled]="currentTVShowPage() >= MAX_PAGES"
+            (click)="nextTVShowPage()">
+            Next
+          </button>
+        </div>
       }
 
       <!-- Favorites tab content -->
-      @else if (activeTab() === 'Favorites' && !isLoading()) {
+      @if (activeTab() === 'Favorites' && !isLoading()) {
         <div class="favorites-placeholder">
           <p>Your favorites will appear here</p>
         </div>

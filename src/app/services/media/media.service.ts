@@ -30,13 +30,14 @@ export class MediaService {
    * Fetches data from TMDB API through Firebase Cloud Function
    * @param endpoint - The TMDB API endpoint ('movie' or 'tv')
    * @param list - Optional parameter specifying the list type (e.g. 'popular', 'top_rated')
+   * @param page - Optional parameter specifying the page number
    * @returns Promise containing the API response data
    * @throws Error if the API request fails
    */
-  async getTmdbData(endpoint: string, list?: string): Promise<unknown> {
+  async getTmdbData(endpoint: string, list?: string, page?: number): Promise<unknown> {
     const callableGetTmdbData = httpsCallable(this.functions, 'getTmdbData');
     try {
-      const result = await callableGetTmdbData({ endpoint: endpoint, list: list });
+      const result = await callableGetTmdbData({ endpoint: endpoint, list: list, page: page });
       return result.data; // The data returned from your Cloud Function
     } catch (error: any) {
       console.error('Error fetching movie details from Cloud Function:', error);
@@ -49,22 +50,26 @@ export class MediaService {
    * Fetches a list of movies from TMDB API with caching
    * @param list - The type of movie list to fetch (e.g. 'now_playing', 'popular', 'upcoming', 'top_rated')
    * @param forceRefresh - Whether to force a refresh of the cache
+   * @param page - The page number to fetch (default: 1)
    * @returns An Observable containing an array of Movie or TvShow objects
    */
-  getMovies(list: string, forceRefresh: boolean = false): Observable<(Movie | TvShow)[]> {
+  getMovies(list: string, forceRefresh: boolean = false, page: number = 1): Observable<(Movie | TvShow)[]> {
     // Force refresh if requested
     if (forceRefresh) {
-      this.refreshMoviesCache(list);
+      this.refreshMoviesCache(list, page);
     }
 
-    // Create the cache if it doesn't exist for this list
-    if (!this.movieCache[list]) {
-      this.movieCache[list] = this.refreshMoviesCache$.pipe(
+    // Create cache key that includes both list and page
+    const cacheKey = `${list}_page${page}`;
+
+    // Create the cache if it doesn't exist for this list and page
+    if (!this.movieCache[cacheKey]) {
+      this.movieCache[cacheKey] = this.refreshMoviesCache$.pipe(
         // Only proceed when refresh is triggered
         switchMap(() => {
           // Use the Firebase Function to get the data
           return new Observable<(Movie | TvShow)[]>(observer => {
-            this.getTmdbData('movie', list)
+            this.getTmdbData('movie', list, page)
               .then((response: any) => {
                 observer.next(response.results);
                 observer.complete();
@@ -82,17 +87,26 @@ export class MediaService {
       );
     }
 
-    return this.movieCache[list];
+    return this.movieCache[cacheKey];
   }
 
   /**
-   * Manually refreshes the movie cache for a specific list
+   * Manually refreshes the movie cache for a specific list and page
    * @param list - The type of movie list to refresh
+   * @param page - The page number to refresh (optional)
    */
-  refreshMoviesCache(list?: string): void {
-    // If a specific list is provided, clear only that cache
-    if (list) {
-      delete this.movieCache[list];
+  refreshMoviesCache(list?: string, page?: number): void {
+    // If a specific list and page are provided, clear only that cache
+    if (list && page) {
+      const cacheKey = `${list}_page${page}`;
+      delete this.movieCache[cacheKey];
+    } else if (list) {
+      // If only list is provided, clear all pages for that list
+      Object.keys(this.movieCache).forEach(key => {
+        if (key.startsWith(`${list}_page`)) {
+          delete this.movieCache[key];
+        }
+      });
     } else {
       // Otherwise clear all movie caches
       this.movieCache = {};
@@ -107,22 +121,26 @@ export class MediaService {
    * Fetches a list of TV shows from TMDB API with caching
    * @param list - The type of TV show list to fetch (e.g. 'airing_today', 'popular', 'top_rated', 'on_the_air')
    * @param forceRefresh - Whether to force a refresh of the cache
+   * @param page - The page number to fetch (default: 1)
    * @returns An Observable containing an array of Movie or TvShow objects
    */
-  getTVShows(list: string, forceRefresh: boolean = false): Observable<(Movie | TvShow)[]> {
+  getTVShows(list: string, forceRefresh: boolean = false, page: number = 1): Observable<(Movie | TvShow)[]> {
     // Force refresh if requested
     if (forceRefresh) {
-      this.refreshTVShowsCache(list);
+      this.refreshTVShowsCache(list, page);
     }
 
-    // Create the cache if it doesn't exist for this list
-    if (!this.tvShowCache[list]) {
-      this.tvShowCache[list] = this.refreshTVShowsCache$.pipe(
+    // Create cache key that includes both list and page
+    const cacheKey = `${list}_page${page}`;
+
+    // Create the cache if it doesn't exist for this list and page
+    if (!this.tvShowCache[cacheKey]) {
+      this.tvShowCache[cacheKey] = this.refreshTVShowsCache$.pipe(
         // Only proceed when refresh is triggered
         switchMap(() => {
           // Use the Firebase Function to get the data
           return new Observable<(Movie | TvShow)[]>(observer => {
-            this.getTmdbData('tv', list)
+            this.getTmdbData('tv', list, page)
               .then((response: any) => {
                 observer.next(response.results);
                 observer.complete();
@@ -140,17 +158,26 @@ export class MediaService {
       );
     }
 
-    return this.tvShowCache[list];
+    return this.tvShowCache[cacheKey];
   }
 
   /**
-   * Manually refreshes the TV shows cache for a specific list
+   * Manually refreshes the TV shows cache for a specific list and page
    * @param list - The type of TV show list to refresh
+   * @param page - The page number to refresh (optional)
    */
-  refreshTVShowsCache(list?: string): void {
-    // If a specific list is provided, clear only that cache
-    if (list) {
-      delete this.tvShowCache[list];
+  refreshTVShowsCache(list?: string, page?: number): void {
+    // If a specific list and page are provided, clear only that cache
+    if (list && page) {
+      const cacheKey = `${list}_page${page}`;
+      delete this.tvShowCache[cacheKey];
+    } else if (list) {
+      // If only list is provided, clear all pages for that list
+      Object.keys(this.tvShowCache).forEach(key => {
+        if (key.startsWith(`${list}_page`)) {
+          delete this.tvShowCache[key];
+        }
+      });
     } else {
       // Otherwise clear all TV show caches
       this.tvShowCache = {};
