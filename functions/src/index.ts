@@ -41,6 +41,84 @@ const ai = genkit({
 
 genkitLogger.setLogLevel('debug'); // Or 'info', 'warn', 'error'
 
+// Reusable function to construct TMDB API URL
+const constructTmdbUrl = (
+  endpoint: string,
+  options?: {
+    id?: number,
+    query?: string,
+    list?: string,
+    page?: number,
+    queryParams?: string,
+    language?: string
+  }
+) => {
+  const { id, query, list, page, queryParams, language = 'en-US' } = options || {};
+  const baseUrl = 'https://api.themoviedb.org/3';
+  let url = `${baseUrl}/${endpoint}`;
+
+  // Add list if provided (for category listings like popular, top_rated, etc.)
+  if (list) {
+    url += `/${list}`;
+  }
+
+  // Add ID if provided (for specific movie/tv show details)
+  if (id) {
+    url += `/${id}`;
+  }
+
+  // Start query parameters
+  const queryParts: string[] = [];
+
+  // Add language parameter
+  if (language) {
+    queryParts.push(`language=${language}`);
+  }
+
+  // Add page parameter if provided
+  if (page) {
+    queryParts.push(`page=${page}`);
+  }
+
+  // Add additional query parameters if provided
+  if (queryParams) {
+    queryParts.push(queryParams);
+  }
+
+  // Add search query if provided
+  if (query) {
+    queryParts.push(`query=${encodeURIComponent(query)}`);
+  }
+
+  // Append all query parameters to URL
+  if (queryParts.length > 0) {
+    url += `?${queryParts.join('&')}`;
+  }
+
+  return url;
+};
+
+// Reusable function to execute TMDB API requests
+const executeTmdbRequest = async (url: string, errorContext: string = 'TMDB API request') => {
+  try {
+    const bearerToken = TMDB_BEARER_TOKEN.value();
+    if (!bearerToken) {
+      throw new Error('TMDB API token not configured.');
+    }
+
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${bearerToken}`,
+        'Accept': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    logger.error(`Error in ${errorContext}:`, error.message, error.response?.data);
+    throw new Error(`Failed to fetch TMDB data: ${error.message}`);
+  }
+};
+
 // Define a Tool to interact with your existing TMDB Cloud Function
 export const getTmdbDataTool = ai.defineTool(
   {
@@ -54,32 +132,8 @@ export const getTmdbDataTool = ai.defineTool(
     outputSchema: z.any().describe('JSON data from TMDB API response'),
   },
   async ({ endpoint, id, query }) => {
-    const baseUrl = 'https://api.themoviedb.org/3';
-    let url = `${baseUrl}/${endpoint}`;
-
-    if (id) {
-      url += `/${id}`;
-    } else if (query) {
-      url += `?query=${encodeURIComponent(query)}`;
-    }
-
-    try {
-      const bearerToken = TMDB_BEARER_TOKEN.value();
-      if (!bearerToken) {
-        throw new Error('TMDB API token not configured.');
-      }
-
-      const response = await axios.get(url, {
-        headers: {
-          'Authorization': `Bearer ${bearerToken}`,
-          'Accept': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error: any) {
-      logger.error('Error in getTmdbDataTool:', error.message, error.response?.data);
-      throw new Error(`Failed to fetch TMDB data: ${error.message}`);
-    }
+    const url = constructTmdbUrl(endpoint, { id, query });
+    return await executeTmdbRequest(url, 'getTmdbDataTool');
   }
 );
 
@@ -190,6 +244,22 @@ export const getRecommendationsFlow = onCallGenkit( // EXPORT THIS as the Cloud 
   _getRecommendationsFlowLogic // Pass the defined Genkit flow logic here
 );
 
+// Reusable function to handle HTTP errors for Cloud Functions
+const handleHttpError = (error: any): never => {
+  logger.error('Error calling TMDB API:', error.message, error.response?.data);
+
+  if (axios.isAxiosError(error) && error.response) {
+    // Propagate TMDB API errors back to the client with appropriate HTTP status
+    throw new HttpsError(
+      'internal', // Or a more specific code like 'not-found' if 404
+      `TMDB API Error: ${error.response.status} - ${error.response.statusText || error.message}`,
+      error.response.data // Include error details from TMDB
+    );
+  } else {
+    throw new HttpsError('internal', 'An unexpected error occurred.', error.message);
+  }
+};
+
 // Define your HTTPS Callable Function
 // This is the type of function your Angular client will call directly.
 export const getTmdbData = onCall(
@@ -207,81 +277,27 @@ export const getTmdbData = onCall(
     // }
     // logger.info("User ID:", request.auth.uid);
 
-    // Get the parameters from the client (e.g., movie ID, search query, endpoint path - movie, tv, list - popular, upcoming)
-    const { id, query, endpoint, list, page } = request.data; // Example of data sent from client
+    // Get the parameters from the client
+    const { id, query, endpoint, list, page, queryParams } = request.data;
 
     if (!endpoint) {
       throw new HttpsError('invalid-argument', 'Endpoint parameter is required.');
     }
 
-    // Construct the TMDB API URL
-    const baseUrl = 'https://api.themoviedb.org/3';
-    let url = `${baseUrl}/${endpoint}`;
-
-    // Add list if provided (for category listings like popular, top_rated, etc.)
-    if (list) {
-      url += `/${list}`;
-    }
-
-    // Add ID if provided (for specific movie/tv show details)
-    if (id) {
-      url += `/${id}`;
-    }
-
-    // Add query parameters
-    url += `?language=en-US`;
-
-    // Add page parameter if provided
-    if (page) {
-      url += `&page=${page}`;
-    }
-
-    // Add additional query parameters if provided
-    if (request.data.queryParams) {
-      url += `&${request.data.queryParams}`;
-    }
-
-    // Add search query if provided
-    if (query) {
-      url += `&query=${encodeURIComponent(query)}`;
-    }
-
-    // You might want more sophisticated URL construction based on TMDB API.
-    // Example: For specific endpoints like /movie/{movie_id} or /search/movie?query=...
-
     try {
-      // Access the secret value using .value()
-      const bearerToken = TMDB_BEARER_TOKEN.value();
+      // Construct the TMDB API URL using the reusable function
+      const url = constructTmdbUrl(endpoint, { id, query, list, page, queryParams });
 
-      if (!bearerToken) {
-        throw new HttpsError('internal', 'TMDB API token not configured.');
-      }
+      // Execute the request using the reusable function
+      const data = await executeTmdbRequest(url, `getTmdbData(${endpoint})`);
 
-      // Make the secure call to the TMDB API
-      const response = await axios.get(url, {
-        headers: {
-          'Authorization': `Bearer ${bearerToken}`,
-          'Accept': 'application/json',
-        },
-      });
-
-      logger.info(`Successfully fetched data from TMDB for endpoint: ${endpoint}`, { data: response.data });
+      // Log success
+      logger.info(`Successfully fetched data from TMDB for endpoint: ${endpoint}`, { data });
 
       // Return the data back to the client
-      return response.data;
-
+      return data;
     } catch (error: any) {
-      logger.error('Error calling TMDB API:', error.message, error.response?.data);
-      if (axios.isAxiosError(error) && error.response) {
-        // Propagate TMDB API errors back to the client with appropriate HTTP status
-        throw new HttpsError(
-          'internal', // Or a more specific code like 'not-found' if 404
-          `TMDB API Error: ${error.response.status} - ${error.response.statusText || error.message}`,
-          error.response.data // Include error details from TMDB
-        );
-      } else {
-        throw new HttpsError('internal', 'An unexpected error occurred.', error.message);
-      }
+      return handleHttpError(error);
     }
   }
 );
