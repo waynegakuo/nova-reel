@@ -8,19 +8,203 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {HttpsError, onCall} from "firebase-functions/v2/https";
+import {HttpsError, onCall, onCallGenkit} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
+import { logger as genkitLogger } from 'genkit/logging'; // Import Genkit's logger
 import {defineSecret} from 'firebase-functions/params';
-import axios from 'axios'; // We'll use axios for HTTP requests, install it if you haven't
+import axios from 'axios';
+import {initializeApp} from 'firebase-admin/app';
+import {getFirestore} from 'firebase-admin/firestore'; // Import Firestore from Firebase Admin SDK
+import { genkit } from 'genkit'; // This is the core Genkit library itself
+import { enableFirebaseTelemetry } from '@genkit-ai/firebase'; // <-- NEW IMPORT
+import { z } from 'zod';
+import googleAI from '@genkit-ai/googleai';
 
+// Example for getTmdbData input schema
+// const GetTmdbDataInputSchema = z.object({
+//   id: z.number().optional(),
+//   query: z.string().optional(),
+//   endpoint: z.string(), // Assuming this is always required
+//   list: z.string().optional(),
+//   page: z.number().optional(),
+//   queryParams: z.string().optional(), // If you're using raw query string parts
+// });
+
+// Define your secret. This makes the secret available to your function.
+const TMDB_BEARER_TOKEN = defineSecret('TMDB_API_BEARER_TOKEN');
+const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY'); // *** NEW: Define Gemini API Key Secret ***
+
+// Initialize Firebase Admin SDK
+initializeApp();
+const db = getFirestore();
+
+enableFirebaseTelemetry();
+
+// Configure Genkit
+const ai = genkit({
+  plugins: [
+    // googleAI({apiKey: GEMINI_API_KEY_ENV.value()}),
+  ],
+  model: googleAI.model('gemini-2.0-flash'), // Specify your Gemini model
+});
+
+genkitLogger.setLogLevel('debug'); // Or 'info', 'warn', 'error'
+
+// Define a Tool to interact with your existing TMDB Cloud Function
+export const getTmdbDataTool = ai.defineTool(
+  {
+    name: 'getTmdbData',
+    description: 'Fetches movie or TV show data from TMDB using specific endpoint, ID, or query.',
+    inputSchema: z.object({
+      endpoint: z.string().describe('TMDB API endpoint (e.g., "movie", "tv", "search/movie")'),
+      id: z.number().optional().describe('ID for specific movie/TV show'),
+      query: z.string().optional().describe('Search query string'),
+    }),
+    outputSchema: z.any().describe('JSON data from TMDB API response'),
+  },
+  async ({ endpoint, id, query }) => {
+    const baseUrl = 'https://api.themoviedb.org/3';
+    let url = `${baseUrl}/${endpoint}`;
+
+    if (id) {
+      url += `/${id}`;
+    } else if (query) {
+      url += `?query=${encodeURIComponent(query)}`;
+    }
+
+    try {
+      const bearerToken = TMDB_BEARER_TOKEN.value();
+      if (!bearerToken) {
+        throw new Error('TMDB API token not configured.');
+      }
+
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${bearerToken}`,
+          'Accept': 'application/json',
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      logger.error('Error in getTmdbDataTool:', error.message, error.response?.data);
+      throw new Error(`Failed to fetch TMDB data: ${error.message}`);
+    }
+  }
+);
+
+// --- Schemas Definition for Flows ---
+
+const RecommendationInputSchema = z.object({
+  userId: z.string().describe('The ID of the user requesting recommendations.'),
+  count: z.number().int().min(1).max(10).default(5).describe('Number of recommendations to provide.'),
+});
+
+const RecommendationOutputSchema = z.object({
+  recommendations: z.array(
+    z.object({
+      title: z.string().describe('Title of the recommended movie/TV show.'),
+      type: z.enum(['movie', 'tv']).describe('Type of media: "movie" or "tv".'),
+      tmdbId: z.number().describe('TMDB ID of the recommended media.'),
+      overview: z.string().describe('Brief overview or synopsis.'),
+      posterPath: z.string().optional().describe('URL path to the poster image.'),
+    })
+  ).describe('List of personalized movie or TV show recommendations.'),
+  reasoning: z.string().optional().describe('Explanation for the recommendations.'),
+});
+
+// --- Genkit Flow Definition ---
+// Define your Genkit Flow for personalized recommendations
+export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defineFlow
+  {
+    name: 'getRecommendationsFlow',
+    inputSchema: RecommendationInputSchema,
+    outputSchema: RecommendationOutputSchema,
+  },
+  async (input) => {
+    const userId = input.userId;
+    const count = input.count;
+
+    // Fetch user's favorite movies/tv shows from Firestore
+    const userFavoritesRef = db.collection('users').doc(userId).collection('favorites');
+    const favoritesSnapshot = await userFavoritesRef.get();
+    const favoriteItems = favoritesSnapshot.docs.map(doc => doc.data());
+
+    if (favoriteItems.length === 0) {
+      return {
+        recommendations: [],
+        reasoning: 'No favorites found for this user. Cannot provide personalized recommendations yet.',
+      };
+    }
+
+    // Prepare context for the AI from user favorites
+    let favoritesContext = favoriteItems.map(item =>
+      `${item['type'] === 'movie' ? 'Movie' : 'TV Show'}: ${item['title']} (TMDB ID: ${item['tmdbId']})`
+    ).join('; ');
+
+    // Generate recommendations using the AI model
+    const { output } = await ai.generate({ // Use ai.generate
+      tools: [getTmdbDataTool], // Make the TMDB data tool available to the model
+      prompt: `
+        You are a highly intelligent movie and TV show recommendation assistant.
+        The user has a list of favorite movies and TV shows.
+        User's favorites: ${favoritesContext}
+
+        Based on these favorites, recommend ${count} additional movies or TV shows that the user might enjoy.
+        Consider their genres, actors, directors, themes, and overall vibe.
+        Prioritize items with high TMDB ratings.
+        Avoid recommending any of the items already in the user's favorites list (use the provided TMDB IDs to check).
+
+        For each recommendation, provide the title, whether it's a "movie" or "tv" show, its TMDB ID, a brief overview, and its poster path (if available from a TMDB search).
+        You MUST use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details if you need more information about a potential recommendation or to confirm a recommendation.
+
+        Example of a good recommendation format:
+        [
+          {
+            "title": "Inception",
+            "type": "movie",
+            "tmdbId": 27205,
+            "overview": "A thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+            "posterPath": "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg"
+          },
+          // ... more recommendations
+        ]
+
+        Explain your reasoning briefly after the recommendations.
+        `,
+      config: {
+        output: {
+          format: 'json', // Ensures Gemini tries to output JSON
+          schema: RecommendationOutputSchema, // Helps Gemini adhere to the expected structure
+        },
+        temperature: 0.7, // Adjust for creativity vs. consistency
+      }
+    });
+
+    const recommendations = output(); // Genkit handles parsing if format is 'json'
+
+    return recommendations;
+  }
+);
+
+// --- Firebase Cloud Function Deployment of the Genkit Flow ---
+// FIX: Wrap the Genkit flow logic in onCallGenkit to add deployment options
+export const getRecommendationsFlow = onCallGenkit( // EXPORT THIS as the Cloud Function
+  {
+    // Deployment options for the Cloud Function that wraps the Genkit flow
+    secrets: [TMDB_BEARER_TOKEN, GEMINI_API_KEY], // Access to secrets for the underlying tool calls
+    region: 'africa-south1', // Set your desired region
+    cors: true, // Allow all origins for local development (or restrict for prod)
+    // Add memory/timeout if needed for this function
+    // memory: '512MiB',
+    // timeoutSeconds: 60,
+  },
+  _getRecommendationsFlowLogic // Pass the defined Genkit flow logic here
+);
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
-// 1. Define your secret. This makes the secret available to your function.
-const TMDB_BEARER_TOKEN = defineSecret('TMDB_API_BEARER_TOKEN');
-
-// 2. Define your HTTPS Callable Function
+// Define your HTTPS Callable Function
 // This is the type of function your Angular client will call directly.
 export const getTmdbData = onCall(
   {

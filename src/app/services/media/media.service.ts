@@ -2,6 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
+import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
 import {HttpClient} from '@angular/common/http';
 import {FirebaseApp} from '@angular/fire/app';
 import {getFunctions, httpsCallable} from '@angular/fire/functions';
@@ -28,12 +29,14 @@ export class MediaService {
   private tvShowCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
   private movieDetailsCache: Record<number, Observable<MovieDetails>> = {};
   private tvShowDetailsCache: Record<number, Observable<TvShowDetails>> = {};
+  private aiRecommendationsCache: Observable<AiRecommendationResponse> | null = null;
 
   // Refresh triggers for cache invalidation
   private refreshMoviesCache$ = new BehaviorSubject<boolean>(true);
   private refreshTVShowsCache$ = new BehaviorSubject<boolean>(true);
   private refreshMovieDetailsCache$ = new BehaviorSubject<boolean>(true);
   private refreshTVShowDetailsCache$ = new BehaviorSubject<boolean>(true);
+  private refreshAiRecommendationsCache$ = new BehaviorSubject<boolean>(true);
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
@@ -452,5 +455,85 @@ export class MediaService {
       console.error('Error fetching favorites:', error);
       return of([]);
     }
+  }
+
+  /**
+   * Calls the AI recommendation Firebase Function
+   * This function uses the Genkit AI-powered recommendation system to generate personalized
+   * movie and TV show recommendations based on the user's favorites.
+   *
+   * @param count - Number of recommendations to request (default: 5)
+   * @returns Promise containing the AI recommendation response
+   * @throws Error if the user is not authenticated or if the API request fails
+   */
+  async getAiRecommendationsData(count: number = 5): Promise<AiRecommendationResponse> {
+    // Check if user is authenticated
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      throw new Error('User must be authenticated to get AI recommendations');
+    }
+
+    const callableGetRecommendations = httpsCallable(this.functions, 'getRecommendationsFlow');
+    try {
+      const result = await callableGetRecommendations({
+        userId: userId,
+        count: count
+      });
+      return result.data as AiRecommendationResponse;
+    } catch (error: any) {
+      console.error('Error fetching AI recommendations from Cloud Function:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches AI-powered recommendations with caching
+   * @param forceRefresh - Whether to force a refresh of the cache
+   * @param count - Number of recommendations to request (default: 5)
+   * @returns Observable containing the AI recommendation response
+   */
+  getAiRecommendations(forceRefresh: boolean = false, count: number = 5): Observable<AiRecommendationResponse> {
+    // Force refresh if requested
+    if (forceRefresh) {
+      this.refreshAiRecommendationsCache();
+    }
+
+    // Create the cache if it doesn't exist
+    if (!this.aiRecommendationsCache) {
+      this.aiRecommendationsCache = this.refreshAiRecommendationsCache$.pipe(
+        // Only proceed when refresh is triggered
+        switchMap(() => {
+          // Use the Firebase Function to get the data
+          return new Observable<AiRecommendationResponse>(observer => {
+            this.getAiRecommendationsData(count)
+              .then((response) => {
+                observer.next(response);
+                observer.complete();
+              })
+              .catch(error => {
+                console.error('Error fetching AI recommendations:', error);
+                observer.error(error);
+              });
+          }).pipe(
+            // Cache the result for 30 minutes (1800000ms) and share it with all subscribers
+            // Buffer size of 1 means we only keep the latest value
+            shareReplay({ bufferSize: 1, refCount: false, windowTime: 1800000 })
+          );
+        })
+      );
+    }
+
+    return this.aiRecommendationsCache;
+  }
+
+  /**
+   * Manually refreshes the AI recommendations cache
+   */
+  refreshAiRecommendationsCache(): void {
+    // Clear the cache
+    this.aiRecommendationsCache = null;
+
+    // Trigger a refresh
+    this.refreshAiRecommendationsCache$.next(true);
   }
 }

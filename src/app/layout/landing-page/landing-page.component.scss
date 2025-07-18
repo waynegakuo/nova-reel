@@ -55,8 +55,10 @@
   gap: 1.5rem;
 }
 
-.favorites-placeholder {
+.favorites-placeholder,
+.recommendations-placeholder {
   @include variables.flex-center;
+  flex-direction: column;
   height: 300px;
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: variables.$border-radius-md;
@@ -64,6 +66,51 @@
   p {
     color: variables.$text-secondary-light;
     font-size: 1.2rem;
+    margin: 0.5rem 0;
+  }
+}
+
+.recommendations-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.recommendation-reasoning {
+  background-color: rgba(variables.$primary-color, 0.1);
+  padding: 1.5rem;
+  border-radius: variables.$border-radius-md;
+  margin-bottom: 1rem;
+
+  h3 {
+    color: variables.$primary-color;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  p {
+    color: variables.$text-color-light;
+    line-height: 1.5;
+  }
+}
+
+.refresh-recommendations {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+
+  button {
+    padding: 0.75rem 1.5rem;
+    background-color: variables.$secondary-color;
+    color: white;
+    border: none;
+    border-radius: variables.$border-radius-sm;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: darken(variables.$secondary-color, 10%);
+    }
   }
 }
 
