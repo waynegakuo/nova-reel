@@ -73,35 +73,94 @@ The heart of Nova Reel is its AI recommendation engine, which uses Genkit to ana
    cd ..
    ```
 
-3. 🔐 Enable the "Secret Manager API" in the Google Cloud Console for your Firebase project
+### 🔥 Firebase Project Setup & TMDB API Key
 
-4. 🔑 Set up your API keys:
+#### 🏗️ Create a Firebase Project:
+
+1. Go to [Firebase Console](https://console.firebase.google.com/).
+2. Click "Add project" and follow the prompts to create your project.
+3. ⚠️ **Important:** Upgrade your project to the Blaze (pay-as-you-go) plan. Cloud Functions and Vertex AI (which Genkit uses) require a billing-enabled project. Don't worry, free tiers are generous for testing.
+
+#### 🛠️ Install Firebase CLI:
+
+1. Open your terminal/command prompt.
+2. Install the Firebase CLI globally:
+   ```
+   npm install -g firebase-tools
+   ```
+3. Log in to Firebase:
+   ```
+   firebase login
+   ```
+
+#### 🚀 Initialize Firebase in Your Project:
+
+1. Navigate to your project's root directory (you should already be there after cloning the repository).
+2. Initialize Firebase:
+   ```
+   firebase init
+   ```
+3. Select "Functions" and "Firestore" when prompted.
+4. Choose your existing Firebase project to link to.
+5. Select TypeScript for functions (highly recommended).
+6. For Firestore, accept the default rules file (you can change it later).
+7. Do NOT overwrite existing files if prompted.
+
+#### 🎬 Get TMDB API Key:
+
+1. Go to [TMDB](https://www.themoviedb.org/).
+2. Sign up or log in.
+3. Go to your user profile (click your avatar) -> Settings -> API.
+4. Request a new API key (Developer/v3).
+5. Note down your API Read Access Token (Bearer Token). It starts with "eyJ...".
+
+#### 🔐 Set TMDB API Key as Firebase Secret:
+
+1. Navigate to your functions directory:
+   ```
+   cd functions
+   ```
+2. Set the TMDB API key as a Firebase secret:
+   ```
+   firebase functions:secrets:set TMDB_API_BEARER_TOKEN
+   ```
+3. Paste your TMDB Bearer Token when prompted.
+4. Return to the project root:
+   ```
+   cd ..
+   ```
+
+### 🔑 API Keys and Deployment
+
+1. 🔐 Enable the "Secret Manager API" in the Google Cloud Console for your Firebase project
+
+2. 🔑 Set up your API keys:
    
    a. Create a `.env` file in the `functions` directory with your Gemini API key (for local development):
    ```
-   GEMINI_API_KEY=your_gemini_api_key
+   cd functions
+   echo "GEMINI_API_KEY=your_gemini_api_key" > .env
+   cd ..
    ```
    
-   b. Set up Firebase secrets using the Firebase CLI (for production deployment):
+   b. Set up the Gemini API key as a Firebase secret (for production deployment):
    ```
-   firebase functions:secrets:set TMDB_API_BEARER_TOKEN
    firebase functions:secrets:set GEMINI_API_KEY
    ```
    
-   > **Note:** When running these commands, you'll be prompted to enter the actual secret values. The GEMINI_API_KEY is needed both as an environment variable (for local development) and as a Firebase secret (for production deployment).
+   > **Note:** When running this command, you'll be prompted to enter the actual secret value. The GEMINI_API_KEY is needed both as an environment variable (for local development) and as a Firebase secret (for production deployment).
 
-5. 🔥 Configure Firebase:
+3. 🔥 Configure Firebase:
    ```
-   firebase login
    firebase use your-project-id
    ```
 
-6. 🚀 Deploy Firebase Functions:
+4. 🚀 Deploy Firebase Functions:
    ```
    firebase deploy --only functions
    ```
 
-7. 🏃‍♂️ Run the application locally:
+5. 🏃‍♂️ Run the application locally:
    ```
    ng serve
    ```
