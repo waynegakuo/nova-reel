@@ -1,4 +1,6 @@
 /* eslint-disable */
+// eslint-disable-next-line
+// eslint-disable
 /**
  * Import function triggers from their respective submodules:
  *
@@ -20,19 +22,8 @@ import { enableFirebaseTelemetry } from '@genkit-ai/firebase'; // <-- NEW IMPORT
 import { z } from 'zod';
 import googleAI from '@genkit-ai/googleai';
 
-// Example for getTmdbData input schema
-// const GetTmdbDataInputSchema = z.object({
-//   id: z.number().optional(),
-//   query: z.string().optional(),
-//   endpoint: z.string(), // Assuming this is always required
-//   list: z.string().optional(),
-//   page: z.number().optional(),
-//   queryParams: z.string().optional(), // If you're using raw query string parts
-// });
-
 // Define your secret. This makes the secret available to your function.
 const TMDB_BEARER_TOKEN = defineSecret('TMDB_API_BEARER_TOKEN');
-const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY'); // *** NEW: Define Gemini API Key Secret ***
 
 // Initialize Firebase Admin SDK
 initializeApp();
@@ -43,7 +34,7 @@ enableFirebaseTelemetry();
 // Configure Genkit
 const ai = genkit({
   plugins: [
-    // googleAI({apiKey: GEMINI_API_KEY_ENV.value()}),
+    googleAI({apiKey: process.env.GEMINI_API_KEY }),
   ],
   model: googleAI.model('gemini-2.0-flash'), // Specify your Gemini model
 });
@@ -171,16 +162,14 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
 
         Explain your reasoning briefly after the recommendations.
         `,
-      config: {
-        output: {
-          format: 'json', // Ensures Gemini tries to output JSON
-          schema: RecommendationOutputSchema, // Helps Gemini adhere to the expected structure
-        },
-        temperature: 0.7, // Adjust for creativity vs. consistency
-      }
+      output: {
+        format: 'json', // Ensures Gemini tries to output JSON
+        schema: RecommendationOutputSchema, // Helps Gemini adhere to the expected structure
+      },
     });
 
-    const recommendations = output(); // Genkit handles parsing if format is 'json'
+    // Ensure we never return null - if output is null, return an empty recommendations array
+    const recommendations = output || { recommendations: [], reasoning: 'Unable to generate recommendations.' };
 
     return recommendations;
   }
@@ -191,7 +180,7 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
 export const getRecommendationsFlow = onCallGenkit( // EXPORT THIS as the Cloud Function
   {
     // Deployment options for the Cloud Function that wraps the Genkit flow
-    secrets: [TMDB_BEARER_TOKEN, GEMINI_API_KEY], // Access to secrets for the underlying tool calls
+    secrets: [TMDB_BEARER_TOKEN], // Access to secrets for the underlying tool calls
     region: 'africa-south1', // Set your desired region
     cors: true, // Allow all origins for local development (or restrict for prod)
     // Add memory/timeout if needed for this function
@@ -200,9 +189,6 @@ export const getRecommendationsFlow = onCallGenkit( // EXPORT THIS as the Cloud 
   },
   _getRecommendationsFlowLogic // Pass the defined Genkit flow logic here
 );
-
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
 
 // Define your HTTPS Callable Function
 // This is the type of function your Angular client will call directly.
@@ -299,8 +285,3 @@ export const getTmdbData = onCall(
     }
   }
 );
-
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });

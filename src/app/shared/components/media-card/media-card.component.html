@@ -2,10 +2,12 @@
   <div class="media-card-image">
     <img [src]="getImageUrl(item.poster_path)" [alt]="getTitle()">
     <div class="media-badge">{{ isMovie() ? 'Movie' : 'TV Show' }}</div>
-    <div class="media-rating">
-      <span class="star">★</span>
-      <span>{{ item.vote_average.toFixed(1) }}</span>
-    </div>
+    @if(item.vote_average > 0) {
+      <div class="media-rating">
+        <span class="star">★</span>
+        <span>{{ item.vote_average.toFixed(1) }}</span>
+      </div>
+    }
   </div>
 
   <div class="media-card-content">
