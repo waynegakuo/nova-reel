@@ -48,7 +48,27 @@ The heart of Nova Reel is its AI recommendation engine, which uses Genkit to ana
 
 ## 🛠️ Setup and Installation
 
-### 📋 Prerequisites
+### Try it out in Firebase Studio 🧪
+
+Click this button to launch the project in Firebase Studio and follow the steps below to get started.
+
+<a href="https://studio.firebase.google.com/import?url=https%3A%2F%2Fgithub.com%2Fwaynegakuo%2Fnova-reel">
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="https://cdn.firebasestudio.dev/btn/try_dark_32.svg">
+    <source
+      media="(prefers-color-scheme: light)"
+      srcset="https://cdn.firebasestudio.dev/btn/try_light_32.svg">
+    <img
+      height="32"
+      alt="Try in Firebase Studio"
+      src="https://cdn.firebasestudio.dev/btn/try_blue_32.svg">
+  </picture>
+</a>
+
+
+### 📋 Setting up Locally: Prerequisites
 
 - 📦 Node.js (v18 or later)
 - 🅰️ Angular CLI (v19 or later)
