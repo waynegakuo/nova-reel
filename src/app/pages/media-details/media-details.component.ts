@@ -146,8 +146,8 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
       return type === 'profile'
         ? 'assets/images/no-profile.jpg'
         : type === 'backdrop'
-          ? 'assets/images/no-backdrop.jpg'
-          : 'assets/images/no-poster.jpg';
+          ? 'assets/images/no-poster.png'
+          : 'assets/images/no-poster.png';
     }
 
     // Check if the path already includes the base URL

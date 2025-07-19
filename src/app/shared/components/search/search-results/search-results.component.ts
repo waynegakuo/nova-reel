@@ -68,7 +68,7 @@ export class SearchResultsComponent {
    */
   getMediaImageUrl(posterPath: string): string {
     if (!posterPath) {
-      return 'assets/images/no-poster.jpg'; // Fallback image
+      return 'assets/images/no-poster.png'; // Fallback image
     }
 
     // Check if the path already includes the base URL
