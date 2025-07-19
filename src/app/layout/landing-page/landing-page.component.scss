@@ -57,6 +57,34 @@
   gap: 1.5rem;
 }
 
+// Search loading container
+.search-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  margin: 1rem 0;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: variables.$border-radius-md;
+  min-height: 200px;
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(variables.$primary-color, 0.3);
+    border-top: 3px solid variables.$primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: variables.$text-secondary-light;
+    font-size: 1rem;
+  }
+}
+
 // App search results will be displayed here
 
 .favorites-placeholder,

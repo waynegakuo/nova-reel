@@ -105,6 +105,10 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Set isSearching to true before making the API call
+    this.isSearching.set(true);
+    this.showSearchResults.set(true);
+
     console.log(`Fetching search results from API for: ${cacheKey}`);
 
     // If not in cache, fetch from API

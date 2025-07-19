@@ -13,15 +13,22 @@
 
     <!-- Search Results -->
     @if (showSearchResults()) {
-      <app-search-results
-        [results]="searchResults()"
-        [query]="searchQuery()"
-        [type]="searchType()"
-        [currentPage]="currentSearchPage()"
-        [maxPages]="MAX_PAGES"
-        (pageChange)="goToSearchPage($event)"
-        (resultClick)="navigateToDetails($event.item, $event.type)"
-      ></app-search-results>
+      @if (isSearching() && searchResults().length === 0) {
+        <div class="search-loading-container">
+          <div class="loading-spinner"></div>
+          <p>Searching...</p>
+        </div>
+      } @else {
+        <app-search-results
+          [results]="searchResults()"
+          [query]="searchQuery()"
+          [type]="searchType()"
+          [currentPage]="currentSearchPage()"
+          [maxPages]="MAX_PAGES"
+          (pageChange)="goToSearchPage($event)"
+          (resultClick)="navigateToDetails($event.item, $event.type)"
+        ></app-search-results>
+      }
     }
   </div>
 
