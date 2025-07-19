@@ -44,6 +44,9 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   searchType = signal<'movie' | 'tv'>('movie');
   showSearchResults = signal<boolean>(false);
 
+  // Cache for search results
+  private searchResultsCache: { [key: string]: (Movie | TvShow)[] } = {};
+
   // Pagination signals
   currentMoviePage = signal<number>(1);
   currentTVShowPage = signal<number>(1);
@@ -85,10 +88,32 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     const type = this.activeTab() === 'TV Shows' ? 'tv' : 'movie';
     this.searchType.set(type);
 
-    this.mediaService.searchMedia(query, type, this.currentSearchPage())
+    // Clear cache if search query or type changes
+    if (query !== this.searchQuery() || type !== this.searchType()) {
+      this.searchResultsCache = {};
+    }
+
+    const page = this.currentSearchPage();
+    const cacheKey = `${type}_${query}_page${page}`;
+
+    // Check if results are in cache
+    if (this.searchResultsCache[cacheKey]) {
+      console.log(`Using cached search results for: ${cacheKey}`);
+      this.searchResults.set(this.searchResultsCache[cacheKey]);
+      this.showSearchResults.set(true);
+      this.isSearching.set(false);
+      return;
+    }
+
+    console.log(`Fetching search results from API for: ${cacheKey}`);
+
+    // If not in cache, fetch from API
+    this.mediaService.searchMedia(query, type, page)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (results) => {
+          // Store results in cache
+          this.searchResultsCache[cacheKey] = results;
           this.searchResults.set(results);
           this.showSearchResults.set(true);
           this.isSearching.set(false);
@@ -108,6 +133,8 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.searchQuery.set('');
     this.searchResults.set([]);
     this.showSearchResults.set(false);
+    // Clear the search results cache
+    this.searchResultsCache = {};
   }
 
   /**
