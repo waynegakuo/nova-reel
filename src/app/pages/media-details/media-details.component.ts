@@ -144,7 +144,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     if (!path) {
       // Return fallback image based on type
       return type === 'profile'
-        ? 'assets/images/no-profile.jpg'
+        ? 'assets/images/no-profile.png'
         : type === 'backdrop'
           ? 'assets/images/no-poster.png'
           : 'assets/images/no-poster.png';
