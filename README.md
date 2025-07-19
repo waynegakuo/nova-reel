@@ -126,6 +126,43 @@ Click this button to launch the project in Firebase Studio and follow the steps 
 6. For Firestore, accept the default rules file (you can change it later).
 7. Do NOT overwrite existing files if prompted.
 
+#### 🔥 Add Firebase Configuration to Your Project:
+
+1. Go to your Firebase project in the [Firebase Console](https://console.firebase.google.com/).
+2. Click on the gear icon (⚙️) next to "Project Overview" and select "Project settings".
+3. Scroll down to the "Your apps" section and select your web app (or create one if you haven't already).
+4. Under the "SDK setup and configuration" section, select "Config" to view your Firebase configuration object.
+5. Copy the configuration object that looks like this:
+   ```javascript
+   {
+     apiKey: "YOUR_API_KEY",
+     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+     projectId: "YOUR_PROJECT_ID",
+     storageBucket: "YOUR_PROJECT_ID.appspot.com",
+     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+     appId: "YOUR_APP_ID",
+     measurementId: "YOUR_MEASUREMENT_ID"
+   }
+   ```
+6. Open the environment files in your project:
+   - For production: `src/environments/environment.ts`
+   - For development: `src/environments/environment.development.ts`
+7. Replace the existing `firebaseConfig` object with your own Firebase configuration:
+   ```typescript
+   export const environment = {
+     production: true, // or false for environment.development.ts
+     firebaseConfig: {
+       apiKey: "YOUR_API_KEY",
+       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+       projectId: "YOUR_PROJECT_ID",
+       storageBucket: "YOUR_PROJECT_ID.appspot.com",
+       messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+       appId: "YOUR_APP_ID",
+       measurementId: "YOUR_MEASUREMENT_ID"
+     }
+   };
+   ```
+
 #### 🎬 Get TMDB API Key:
 
 1. Go to [TMDB](https://www.themoviedb.org/).
