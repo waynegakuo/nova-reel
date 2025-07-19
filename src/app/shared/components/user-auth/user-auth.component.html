@@ -14,7 +14,7 @@
     </div>
   } @else {
     <!-- Not authenticated state -->
-    @if (!isAuthenticated()) {
+    @if (!isAuthenticated() && !isAuthLoading()) {
       <button
         class="sign-in-btn"
         (click)="signInWithGoogle()"
@@ -32,7 +32,7 @@
           Sign in with Google
         }
       </button>
-    } @else {
+    } @else if (isAuthenticated()) {
       <!-- Authenticated state -->
       <div class="user-profile" (click)="toggleDropdown()">
         <img
