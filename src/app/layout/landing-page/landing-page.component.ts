@@ -3,13 +3,21 @@ import { CommonModule } from '@angular/common';
 import { MediaCardComponent } from '../../shared/components/media-card/media-card.component';
 import { Movie, TvShow } from '../../models/media.model';
 import {MediaService} from '../../services/media/media.service';
-import {Subject, takeUntil} from 'rxjs';
+import {Subject, takeUntil, of} from 'rxjs';
 import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
+import {Router} from '@angular/router';
+import { SearchBarComponent } from '../../shared/components/search/search-bar/search-bar.component';
+import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
 
 @Component({
   selector: 'app-landing-page',
-  imports: [CommonModule, MediaCardComponent],
+  imports: [
+    CommonModule,
+    MediaCardComponent,
+    SearchBarComponent,
+    SearchResultsComponent
+  ],
   templateUrl: './landing-page.component.html',
   standalone: true,
   styleUrl: './landing-page.component.scss'
@@ -29,15 +37,24 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
 
+  // Search related signals
+  searchQuery = signal<string>('');
+  searchResults = signal<(Movie | TvShow)[]>([]);
+  isSearching = signal<boolean>(false);
+  searchType = signal<'movie' | 'tv'>('movie');
+  showSearchResults = signal<boolean>(false);
+
   // Pagination signals
   currentMoviePage = signal<number>(1);
   currentTVShowPage = signal<number>(1);
+  currentSearchPage = signal<number>(1);
   readonly MAX_PAGES = 5; // Maximum number of pages as per requirements
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
 
   mediaService = inject(MediaService);
+  private router = inject(Router);
 
 
   ngOnInit(): void {
@@ -49,6 +66,67 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     // Complete the subject to unsubscribe from all subscriptions
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Handles search events from the search bar component
+   * @param query - The search query
+   */
+  onSearch(query: string): void {
+    this.searchQuery.set(query);
+
+    if (!query.trim()) {
+      this.showSearchResults.set(false);
+      this.searchResults.set([]);
+      return;
+    }
+
+    // Set search type based on active tab
+    const type = this.activeTab() === 'TV Shows' ? 'tv' : 'movie';
+    this.searchType.set(type);
+
+    this.mediaService.searchMedia(query, type, this.currentSearchPage())
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (results) => {
+          this.searchResults.set(results);
+          this.showSearchResults.set(true);
+          this.isSearching.set(false);
+        },
+        error: (err) => {
+          console.error('Error searching media:', err);
+          this.error.set('Failed to search. Please try again later.');
+          this.isSearching.set(false);
+        }
+      });
+  }
+
+  /**
+   * Clears the search query and results
+   */
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+    this.showSearchResults.set(false);
+  }
+
+  /**
+   * Navigates to a specific search results page
+   * @param page - The page number to navigate to
+   */
+  goToSearchPage(page: number): void {
+    if (page < 1 || page > this.MAX_PAGES) return;
+    this.currentSearchPage.set(page);
+    this.onSearch(this.searchQuery());
+  }
+
+  /**
+   * Navigates to the details page for a media item
+   * @param media - The media item
+   * @param type - The type of media ('movie' or 'tv')
+   */
+  navigateToDetails(media: Movie | TvShow, type: 'movie' | 'tv'): void {
+    this.router.navigate(['/details', type, media.id]);
   }
 
   // Method to handle tab changes

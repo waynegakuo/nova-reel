@@ -2,6 +2,27 @@
   <div class="header">
     <h1>Welcome to {{ title() }}</h1>
     <p class="subtitle">Discover the best movies and TV shows</p>
+
+    <!-- Search bar -->
+    <app-search-bar
+      placeholder="Search for movies or TV shows..."
+      [debounceTime]="500"
+      (search)="onSearch($event)"
+      (clear)="clearSearch()"
+    ></app-search-bar>
+
+    <!-- Search Results -->
+    @if (showSearchResults()) {
+      <app-search-results
+        [results]="searchResults()"
+        [query]="searchQuery()"
+        [type]="searchType()"
+        [currentPage]="currentSearchPage()"
+        [maxPages]="MAX_PAGES"
+        (pageChange)="goToSearchPage($event)"
+        (resultClick)="navigateToDetails($event.item, $event.type)"
+      ></app-search-results>
+    }
   </div>
 
   <div class="tabs">

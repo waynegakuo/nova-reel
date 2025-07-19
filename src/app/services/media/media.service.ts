@@ -30,6 +30,7 @@ export class MediaService {
   private movieDetailsCache: Record<number, Observable<MovieDetails>> = {};
   private tvShowDetailsCache: Record<number, Observable<TvShowDetails>> = {};
   private aiRecommendationsCache: Observable<AiRecommendationResponse> | null = null;
+  private searchCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
 
   // Refresh triggers for cache invalidation
   private refreshMoviesCache$ = new BehaviorSubject<boolean>(true);
@@ -37,6 +38,7 @@ export class MediaService {
   private refreshMovieDetailsCache$ = new BehaviorSubject<boolean>(true);
   private refreshTVShowDetailsCache$ = new BehaviorSubject<boolean>(true);
   private refreshAiRecommendationsCache$ = new BehaviorSubject<boolean>(true);
+  private refreshSearchCache$ = new BehaviorSubject<boolean>(true);
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
@@ -535,5 +537,89 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshAiRecommendationsCache$.next(true);
+  }
+
+  /**
+   * Searches for movies or TV shows based on a query string
+   * @param query - The search query
+   * @param type - The type of media to search for ('movie' or 'tv')
+   * @param page - The page number to fetch (default: 1)
+   * @param forceRefresh - Whether to force a refresh of the cache
+   * @returns An Observable containing an array of Movie or TvShow objects
+   */
+  searchMedia(query: string, type: 'movie' | 'tv', page: number = 1, forceRefresh: boolean = false): Observable<(Movie | TvShow)[]> {
+    // If query is empty, return empty array
+    if (!query.trim()) {
+      return of([]);
+    }
+
+    // Force refresh if requested
+    if (forceRefresh) {
+      this.refreshSearchCache(query, type, page);
+    }
+
+    // Create cache key that includes query, type and page
+    const cacheKey = `${type}_${query}_page${page}`;
+
+    // Create the cache if it doesn't exist for this query, type and page
+    if (!this.searchCache[cacheKey]) {
+      this.searchCache[cacheKey] = this.refreshSearchCache$.pipe(
+        // Only proceed when refresh is triggered
+        switchMap(() => {
+          // Use the Firebase Function to get the data
+          return new Observable<(Movie | TvShow)[]>(observer => {
+            this.getTmdbData('search/' + type, undefined, page, 'query=' + encodeURIComponent(query))
+              .then((response: any) => {
+                observer.next(response.results);
+                observer.complete();
+              })
+              .catch(error => {
+                console.error(`Error searching for ${type}:`, error);
+                observer.error(error);
+              });
+          }).pipe(
+            // Cache the result for 5 minutes (300000ms) and share it with all subscribers
+            // Buffer size of 1 means we only keep the latest value
+            shareReplay({ bufferSize: 1, refCount: false, windowTime: 300000 })
+          );
+        })
+      );
+    }
+
+    return this.searchCache[cacheKey];
+  }
+
+  /**
+   * Manually refreshes the search cache for a specific query, type and page
+   * @param query - The search query
+   * @param type - The type of media ('movie' or 'tv')
+   * @param page - The page number (optional)
+   */
+  refreshSearchCache(query?: string, type?: 'movie' | 'tv', page?: number): void {
+    if (query && type && page) {
+      // If specific query, type and page are provided, clear only that cache
+      const cacheKey = `${type}_${query}_page${page}`;
+      delete this.searchCache[cacheKey];
+    } else if (query && type) {
+      // If only query and type are provided, clear all pages for that query and type
+      Object.keys(this.searchCache).forEach(key => {
+        if (key.startsWith(`${type}_${query}_page`)) {
+          delete this.searchCache[key];
+        }
+      });
+    } else if (type) {
+      // If only type is provided, clear all queries for that type
+      Object.keys(this.searchCache).forEach(key => {
+        if (key.startsWith(`${type}_`)) {
+          delete this.searchCache[key];
+        }
+      });
+    } else {
+      // Otherwise clear all search caches
+      this.searchCache = {};
+    }
+
+    // Trigger a refresh
+    this.refreshSearchCache$.next(true);
   }
 }

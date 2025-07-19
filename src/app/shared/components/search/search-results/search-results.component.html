@@ -1,0 +1,57 @@
+@if (searchResults().length > 0) {
+  <div class="search-results">
+    <h3>Search Results for "{{ searchQuery() }}"</h3>
+    <div class="media-grid">
+      @for (result of searchResults(); track result.id) {
+        <div class="media-card" (click)="navigateToDetails(result, searchType())">
+          <div class="poster">
+            <img
+              [src]="getMediaImageUrl(result.poster_path)"
+              [alt]="getMediaTitle(result)"
+              onerror="this.src='assets/images/no-poster.jpg'"
+            >
+          </div>
+          <div class="media-info">
+            <h4>{{ getMediaTitle(result) }}</h4>
+            <div class="meta">
+              <span class="rating">★ {{ result.vote_average.toFixed(1) || 'N/A' }}</span>
+              <span class="year">{{ getMediaReleaseDate(result) ? (getMediaReleaseDate(result) | date:'yyyy') : 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination for search results -->
+    @if (searchResults().length >= 20) {
+      <div class="pagination-controls">
+        <button
+          class="btn-pagination"
+          [disabled]="currentSearchPage() <= 1"
+          (click)="prevPage()">
+          Previous
+        </button>
+
+        @for (page of [1, 2, 3, 4, 5]; track page) {
+          <button
+            class="btn-pagination page-number"
+            [class.active]="currentSearchPage() === page"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        }
+
+        <button
+          class="btn-pagination"
+          [disabled]="currentSearchPage() >= maxPages"
+          (click)="nextPage()">
+          Next
+        </button>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="no-results">
+    <p>No results found for "{{ searchQuery() }}"</p>
+  </div>
+}

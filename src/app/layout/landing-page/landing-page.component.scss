@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as variables;
+@use 'sass:color';
 
 // Landing page specific styles
 .landing-container {
@@ -21,6 +22,7 @@
   .subtitle {
     color: variables.$text-secondary-light;
     font-size: 1.2rem;
+    margin-bottom: 1rem;
   }
 }
 
@@ -54,6 +56,8 @@
   justify-content: center;
   gap: 1.5rem;
 }
+
+// App search results will be displayed here
 
 .favorites-placeholder,
 .recommendations-placeholder {
@@ -109,7 +113,7 @@
     transition: background-color 0.3s ease;
 
     &:hover {
-      background-color: darken(variables.$secondary-color, 10%);
+      background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
     }
   }
 }
@@ -184,3 +188,5 @@ app-media-card {
     }
   }
 }
+
+// Animation keyframes moved to search components

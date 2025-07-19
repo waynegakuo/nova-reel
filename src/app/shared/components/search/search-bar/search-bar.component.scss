@@ -1,0 +1,71 @@
+@use '../../../../../styles/variables' as variables;
+
+// Search container styles
+.search-container {
+  max-width: 600px;
+  margin: 0 auto;
+
+  .search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid rgba(variables.$primary-color, 0.3);
+      border-radius: variables.$border-radius-sm;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: variables.$primary-color;
+        box-shadow: 0 0 0 2px rgba(variables.$primary-color, 0.2);
+      }
+
+      &::placeholder {
+        color: variables.$text-secondary-light;
+      }
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: variables.$text-secondary-light;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        color: variables.$primary-color;
+      }
+    }
+  }
+
+  .search-indicator {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+
+    .search-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(variables.$primary-color, 0.3);
+      border-top: 2px solid variables.$primary-color;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// Keyframes for animations
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

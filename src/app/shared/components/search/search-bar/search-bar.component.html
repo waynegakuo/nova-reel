@@ -1,0 +1,19 @@
+<div class="search-container">
+  <div class="search-input-wrapper">
+    <input
+      type="text"
+      class="search-input"
+      [placeholder]="placeholder"
+      [value]="searchQuery()"
+      (input)="onSearchQueryChange(($any($event.target).value))"
+    >
+    @if (searchQuery()) {
+      <button class="clear-search" (click)="clearSearch()">×</button>
+    }
+  </div>
+  @if (isSearching()) {
+    <div class="search-indicator">
+      <div class="search-spinner"></div>
+    </div>
+  }
+</div>
