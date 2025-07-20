@@ -7,6 +7,8 @@ export interface AiRecommendation {
   tmdbId: number;
   overview: string;
   posterPath: string;
+  vote_average: number;
+  release_date: string;
 }
 
 /**

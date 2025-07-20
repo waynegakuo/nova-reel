@@ -219,14 +219,14 @@
                     overview: recommendation.overview,
                     poster_path: recommendation.posterPath.startsWith('/') ? recommendation.posterPath : '/' + recommendation.posterPath,
                     backdrop_path: '',
-                    vote_average: 0,
+                    vote_average: recommendation.vote_average,
                     popularity: 0,
                     vote_count: 0,
                     genre_ids: [],
                     adult: false,
                     original_language: '',
-                    release_date: '',
-                    first_air_date: '',
+                    release_date: recommendation.release_date,
+                    first_air_date: recommendation.release_date,
                     origin_country: [],
                     original_name: recommendation.title
                   }"
