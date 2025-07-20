@@ -6,7 +6,7 @@ export interface AiRecommendation {
   type: 'movie' | 'tv';
   tmdbId: number;
   overview: string;
-  posterPath: string;
+  poster_path: string;
   vote_average: number;
   release_date: string;
 }
