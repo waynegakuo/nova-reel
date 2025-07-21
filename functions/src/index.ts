@@ -150,8 +150,10 @@ const RecommendationOutputSchema = z.object({
       title: z.string().describe('Title of the recommended movie/TV show.'),
       type: z.enum(['movie', 'tv']).describe('Type of media: "movie" or "tv".'),
       tmdbId: z.number().describe('TMDB ID of the recommended media.'),
+      vote_average: z.number().optional().describe('Rating of the recommended media. Only provided if available.'),
       overview: z.string().describe('Brief overview or synopsis.'),
-      posterPath: z.string().optional().describe('URL path to the poster image.'),
+      poster_path: z.string().optional().describe('URL path to the poster image'),
+      release_date: z.string().describe('Release date for movies or first air date for TV shows.'),
     })
   ).describe('List of personalized movie or TV show recommendations.'),
   reasoning: z.string().optional().describe('Explanation for the recommendations.'),
@@ -199,8 +201,16 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
         Prioritize items with high TMDB ratings.
         Avoid recommending any of the items already in the user's favorites list (use the provided TMDB IDs to check).
 
-        For each recommendation, provide the title, whether it's a "movie" or "tv" show, its TMDB ID, a brief overview, and its poster path (if available from a TMDB search).
-        You MUST use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details if you need more information about a potential recommendation or to confirm a recommendation.
+        For each recommendation, provide the title, whether it's a "movie" or "tv" show, its TMDB ID, a brief overview, and its poster path.
+        You MUST use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details for each recommendation.
+
+        IMPORTANT INSTRUCTIONS FOR POSTER PATHS:
+        1. When using the getTmdbData tool, make sure to get the poster_path from the API response
+        2. To get the poster_path, use the movie's or TV show's id to query the TMDB API for it's correct poster_path (e.g., "https://api.themoviedb.org/3/movie/27205?language=en-US")
+        2. The poster_path returned by TMDB API is a relative path (e.g., "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg")
+        3. You must verify that the poster_path exists in the API response and is not null or empty
+        4. Only include recommendations where a valid poster_path is available
+        5. Include the complete poster_path with the leading slash as returned by the API
 
         Example of a good recommendation format:
         [
@@ -208,8 +218,10 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
             "title": "Inception",
             "type": "movie",
             "tmdbId": 27205,
+            "vote_average": 8.7,
             "overview": "A thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-            "posterPath": "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg"
+            "poster_path": "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg",
+            "release_date": "2010-07-16"
           },
           // ... more recommendations
         ]
