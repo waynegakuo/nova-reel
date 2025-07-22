@@ -20,6 +20,11 @@ export class MediaCardComponent {
 
   // Helper method to determine if the item is a movie
   isMovie(): boolean {
+    // For recommendations, use the type property as determinant
+    if (this.type === 'movie' || this.type === 'tvshow') {
+      return this.type === 'movie';
+    }
+    // For other media items, use the title property as determinant
     return 'title' in this.item;
   }
 
