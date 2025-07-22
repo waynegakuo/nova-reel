@@ -16,7 +16,7 @@
       @if (isSearching() && searchResults().length === 0) {
         <div class="search-loading-container">
           <div class="loading-spinner"></div>
-          <p>Searching...</p>
+          <p>{{ loadingMessagesService.getSearchingMessage() }}</p>
         </div>
       } @else {
         <app-search-results
@@ -67,7 +67,7 @@
       @if (isLoading()) {
         <div class="loading-container">
           <div class="loading-spinner"></div>
-          <p>Loading content...</p>
+          <p>{{ loadingMessagesService.getLoadingMessage() }}</p>
         </div>
       }
 

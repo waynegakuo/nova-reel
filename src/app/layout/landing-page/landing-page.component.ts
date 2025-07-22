@@ -9,6 +9,7 @@ import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recomm
 import {Router} from '@angular/router';
 import { SearchBarComponent } from '../../shared/components/search/search-bar/search-bar.component';
 import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
+import { LoadingMessagesService } from '../../services/loading-messages/loading-messages.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -58,6 +59,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
   mediaService = inject(MediaService);
   private router = inject(Router);
+  loadingMessagesService = inject(LoadingMessagesService);
 
 
   ngOnInit(): void {
@@ -107,6 +109,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
     // Set isSearching to true before making the API call
     this.isSearching.set(true);
+    this.loadingMessagesService.startSearchingMessages();
     this.showSearchResults.set(true);
 
     console.log(`Fetching search results from API for: ${cacheKey}`);
@@ -121,11 +124,13 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           this.searchResults.set(results);
           this.showSearchResults.set(true);
           this.isSearching.set(false);
+          this.loadingMessagesService.stopSearchingMessages();
         },
         error: (err) => {
           console.error('Error searching media:', err);
           this.error.set('Failed to search. Please try again later.');
           this.isSearching.set(false);
+          this.loadingMessagesService.stopSearchingMessages();
         }
       });
   }
@@ -182,6 +187,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    */
   loadAiRecommendations(forceRefresh: boolean = false): void {
     this.isLoading.set(true);
+    this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
 
     this.mediaService.getAiRecommendations(forceRefresh)
@@ -191,6 +197,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           this.aiRecommendations.set(data.recommendations);
           this.aiRecommendationReasoning.set(data.reasoning);
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
         },
         error: (err) => {
           console.error('Error loading AI recommendations:', err);
@@ -200,6 +207,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
             this.error.set('Failed to load recommendations. Please try again later.');
           }
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
         }
       });
   }
@@ -207,6 +215,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Method to load favorites from Firestore
   loadFavorites(): void {
     this.isLoading.set(true);
+    this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
 
     this.mediaService.getFavorites()
@@ -215,11 +224,13 @@ export class LandingPageComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.favorites.set(data);
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
         },
         error: (err) => {
           console.error('Error loading favorites:', err);
           this.error.set('Failed to load favorites. Please try again later.');
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
         }
       });
   }
@@ -235,6 +246,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     const pageToLoad = page || this.currentMoviePage();
 
     this.isLoading.set(true);
+    this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
     this.activeMovieCategory.set(list);
 
@@ -245,6 +257,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           // Type assertion to ensure we're dealing with Movie[]
           this.movies.set(data as Movie[]);
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
 
           // If page was provided, update current page signal
           if (page) {
@@ -255,6 +268,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           console.error('Error loading movies:', err);
           this.error.set('Failed to load movies. Please try again later.');
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
         }
       });
   }
@@ -299,6 +313,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     const pageToLoad = page || this.currentTVShowPage();
 
     this.isLoading.set(true);
+    this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
     this.activeTVShowCategory.set(list);
 
@@ -309,6 +324,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           // Type assertion to ensure we're dealing with TvShow[]
           this.tvShows.set(data as TvShow[]);
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
 
           // If page was provided, update current page signal
           if (page) {
@@ -319,6 +335,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           console.error('Error loading TV shows:', err);
           this.error.set('Failed to load TV shows. Please try again later.');
           this.isLoading.set(false);
+          this.loadingMessagesService.stopLoadingMessages();
         }
       });
   }
