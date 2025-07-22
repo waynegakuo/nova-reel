@@ -36,7 +36,7 @@ const ai = genkit({
   plugins: [
     googleAI({apiKey: process.env.GEMINI_API_KEY }),
   ],
-  model: googleAI.model('gemini-2.0-flash'), // Specify your Gemini model
+  model: googleAI.model('gemini-2.5-pro'), // Specify your Gemini model
 });
 
 genkitLogger.setLogLevel('debug'); // Or 'info', 'warn', 'error'
@@ -201,16 +201,8 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
         Prioritize items with high TMDB ratings.
         Avoid recommending any of the items already in the user's favorites list (use the provided TMDB IDs to check).
 
-        For each recommendation, provide the title, whether it's a "movie" or "tv" show, its TMDB ID, a brief overview, and its poster path.
-        You MUST use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details for each recommendation.
-
-        IMPORTANT INSTRUCTIONS FOR POSTER PATHS:
-        1. When using the getTmdbData tool, make sure to get the poster_path from the API response
-        2. To get the poster_path, use the movie's or TV show's id to query the TMDB API for it's correct poster_path (e.g., "https://api.themoviedb.org/3/movie/27205?language=en-US")
-        2. The poster_path returned by TMDB API is a relative path (e.g., "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg")
-        3. You must verify that the poster_path exists in the API response and is not null or empty
-        4. Only include recommendations where a valid poster_path is available
-        5. Include the complete poster_path with the leading slash as returned by the API
+        For each recommendation, provide the title, whether it's a "movie" or "tv" show, its TMDB ID, a brief overview, and its poster path (if available from a TMDB search).
+        You MUST use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details if you need more information about a potential recommendation or to confirm a recommendation.
 
         Example of a good recommendation format:
         [
