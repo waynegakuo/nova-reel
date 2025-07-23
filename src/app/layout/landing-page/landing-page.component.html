@@ -38,6 +38,9 @@
         class="btn-tab"
         [class.active]="activeTab() === tab"
         (click)="setActiveTab(tab)">
+        @if (tab === 'For You') {
+          <span class="material-icons ai-icon">auto_awesome</span>
+        }
         {{ tab }}
       </button>
     }
