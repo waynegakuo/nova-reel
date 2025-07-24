@@ -67,6 +67,8 @@ Click this button to launch the project in Firebase Studio and follow the steps 
   </picture>
 </a>
 
+> **Note for Firebase Studio users:** After running the app in Firebase Studio, skip to [Environment Setup section #2](#install-dependencies) and follow the instructions from there.
+
 
 ### 📋 Setting up Locally: Prerequisites
 
@@ -102,6 +104,8 @@ Click this button to launch the project in Firebase Studio and follow the steps 
 3. ⚠️ **Important:** Upgrade your project to the Blaze (pay-as-you-go) plan. Cloud Functions and Vertex AI (which Genkit uses) require a billing-enabled project. Don't worry, free tiers are generous for testing.
 
 #### 🛠️ Install Firebase CLI:
+
+> **Note for Firebase Studio users:** Skip step 2 (npm install command) and go directly to step 3 (firebase login).
 
 1. Open your terminal/command prompt.
 2. Install the Firebase CLI globally:
