@@ -31,7 +31,7 @@ Nova Reel is built with a modern tech stack that combines frontend and backend t
 
 - **⚡ Firebase Functions**: Serverless backend functions that handle API requests and AI processing
 - **🧠 Genkit**: Google's AI platform for building generative AI applications
-- **💫 Gemini 2.0 Flash**: The underlying AI model used for generating recommendations
+- **💫 Gemini 2.5 Pro**: The underlying AI model used for generating recommendations
 - **🎞️ TMDB API**: External API for fetching movie and TV show data
 
 ### 🤖 AI Recommendation Engine
@@ -42,7 +42,7 @@ The heart of Nova Reel is its AI recommendation engine, which uses Genkit to ana
 2. **🧠 AI Processing**: When a user requests recommendations, the app calls a Firebase Function that uses Genkit to:
    - 📥 Fetch the user's favorites from Firestore
    - 🔄 Create a context from these favorites to inform the AI
-   - 💫 Use the Gemini 2.0 Flash model to generate personalized recommendations
+   - 💫 Use the Gemini 2.5 Pro model to generate personalized recommendations
    - 💡 Provide reasoning for the recommendations
 3. **📱 Recommendation Display**: The frontend displays these recommendations in the "For You" tab, along with the AI's reasoning
 
@@ -268,7 +268,7 @@ const ai = genkit({
   plugins: [
     googleAI({apiKey: process.env.GEMINI_API_KEY }),
   ],
-  model: googleAI.model('gemini-2.0-flash'), // Specify your Gemini model
+  model: googleAI.model('gemini-2.5-pro'), // Specify your Gemini model
 });
 ```
 
