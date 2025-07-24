@@ -218,7 +218,10 @@ Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you create
 
 ### 🔑 API Keys and Deployment
 
-1. 🔐 Enable the "Secret Manager API" in the Google Cloud Console for your Firebase project
+1. 🔐 Enable the "Secret Manager API" in the [Google Cloud Console](https://console.cloud.google.com/) for your Firebase project:
+   - Navigate to the dashboard of the Firebase Project you created
+   - Search for "Secret Manager API" in the search bar at the top of the page
+   - Select it and then enable it
 
 2. 🔑 Set up your API keys:
    
