@@ -126,6 +126,31 @@ Click this button to launch the project in Firebase Studio and follow the steps 
 6. For Firestore, accept the default rules file (you can change it later).
 7. Do NOT overwrite existing files if prompted.
 
+#### 🔄 Update the .firebaserc File:
+
+You can update the .firebaserc file in two ways:
+
+**Option 1: Using Firebase CLI (Recommended)**
+
+Run the following command to set your Firebase project ID:
+```
+firebase use YOUR_PROJECT_ID
+```
+Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you created. This command will automatically update your .firebaserc file.
+
+**Option 2: Manual Editing**
+
+1. Open the `.firebaserc` file in your project root directory.
+2. Replace the default project name with your Firebase project ID:
+   ```json
+   {
+     "projects": {
+       "default": "YOUR_PROJECT_ID"
+     }
+   }
+   ```
+   Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you created.
+
 #### 🔥 Add Firebase Configuration to Your Project:
 
 1. Go to your Firebase project in the [Firebase Console](https://console.firebase.google.com/).
