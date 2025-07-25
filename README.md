@@ -420,10 +420,10 @@ ng test
 
 ## 📚 Additional Resources
 
-- 📖 [Genkit Documentation](https://genkit.dev/docs)
+- 📖 [Genkit Documentation](https://genkit.dev/)
 - 🔥 [Firebase Documentation](https://firebase.google.com/docs)
-- 🅰️ [Angular Documentation](https://angular.io/docs)
-- 🎬 [TMDB API Documentation](https://developer.themoviedb.org/docs)
+- 🅰️ [Angular Documentation](https://angular.dev/overview)
+- 🎬 [TMDB API Documentation](https://developer.themoviedb.org/docs/getting-started)
 
 ## 📄 License
 
