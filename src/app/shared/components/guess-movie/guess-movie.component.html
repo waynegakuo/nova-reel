@@ -6,7 +6,7 @@
 
   <!-- Error message display -->
   @if (error()) {
-    <div class="error-message">
+    <div class="error-container">
       <span class="material-icons">error</span>
       <p>{{ error() }}</p>
     </div>
@@ -46,7 +46,7 @@
 
       @if (selectedFile() && !isLoading() && !guessResult()) {
         <button
-          class="btn btn-submit"
+          class="btn btn-primary"
           (click)="submitImage()"
           [disabled]="isLoading()">
           <span class="material-icons">search</span>
@@ -61,7 +61,7 @@
     <div class="loading-container">
       <div class="loading-spinner"></div>
       <p>{{ loadingMessagesService.getLoadingMessage() }}</p>
-      <p class="loading-hint">Analyzing your screenshot...</p>
+      <p class="font-secondary">Analyzing your screenshot...</p>
     </div>
   }
 
