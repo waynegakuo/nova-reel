@@ -1,0 +1,137 @@
+<div class="guess-movie-container">
+  <div class="header">
+    <h2>Guess the Movie</h2>
+    <p class="subtitle">Upload a screenshot from a movie or TV show and let AI identify it</p>
+  </div>
+
+  <!-- Error message display -->
+  @if (error()) {
+    <div class="error-message">
+      <span class="material-icons">error</span>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  <!-- Upload section -->
+  <div class="upload-section" [class.has-image]="imagePreview()">
+    <!-- Image preview -->
+    @if (imagePreview()) {
+      <div class="image-preview">
+        <img [src]="imagePreview()" alt="Selected screenshot" />
+        <button class="btn-remove" (click)="resetState()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    } @else {
+      <div class="upload-placeholder">
+        <span class="material-icons">movie</span>
+        <p>Upload a screenshot from a movie or TV show</p>
+        <p class="upload-hint">Supported formats: JPEG, PNG, WebP (max 5MB)</p>
+      </div>
+    }
+
+    <!-- File input -->
+    <div class="file-input-container">
+      <input
+        type="file"
+        id="movie-screenshot"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="onFileSelected($event)"
+        [disabled]="isLoading()"
+      />
+      <label for="movie-screenshot" class="btn btn-primary">
+        <span class="material-icons">upload</span>
+        Select Image
+      </label>
+
+      @if (selectedFile() && !isLoading() && !guessResult()) {
+        <button
+          class="btn btn-submit"
+          (click)="submitImage()"
+          [disabled]="isLoading()">
+          <span class="material-icons">search</span>
+          Identify Movie/Show
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>{{ loadingMessagesService.getLoadingMessage() }}</p>
+      <p class="loading-hint">Analyzing your screenshot...</p>
+    </div>
+  }
+
+  <!-- Results section -->
+  @if (guessResult() && !isLoading()) {
+    <div class="results-container">
+      <h3>We think this is:</h3>
+
+      <div class="result-card">
+        <div class="result-header">
+          <h4>{{ guessResult().title }}</h4>
+          <span class="result-type">{{ guessResult().type === 'movie' ? 'Movie' : 'TV Show' }}</span>
+          @if (guessResult().year) {
+            <span class="result-year">({{ guessResult().year }})</span>
+          }
+          @if (guessResult().confidence) {
+            <div class="confidence-meter">
+              <span class="confidence-label">Confidence:</span>
+              <div class="confidence-bar">
+                <div class="confidence-fill" [style.width.%]="guessResult().confidence * 100"></div>
+              </div>
+              <span class="confidence-value">{{ (guessResult().confidence * 100).toFixed(0) }}%</span>
+            </div>
+          }
+        </div>
+
+        <div class="result-body">
+          @if (guessResult().poster_path) {
+            <div class="result-poster">
+              <img
+                [src]="'https://image.tmdb.org/t/p/w200' + guessResult().poster_path"
+                alt="{{ guessResult().title }} poster"
+                onerror="this.src='assets/images/poster-placeholder.jpg'"
+              />
+            </div>
+          }
+
+          <div class="result-details">
+            @if (guessResult().overview) {
+              <p class="result-overview">{{ guessResult().overview }}</p>
+            }
+
+            @if (guessResult().alternatives && guessResult().alternatives.length > 0) {
+              <div class="alternatives">
+                <h5>Other possibilities:</h5>
+                <ul>
+                  @for (alt of guessResult().alternatives; track alt.title) {
+                    <li>
+                      {{ alt.title }}
+                      @if (alt.year) {
+                        ({{ alt.year }})
+                      }
+                      @if (alt.confidence) {
+                        - {{ (alt.confidence * 100).toFixed(0) }}%
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="resetState()">
+          <span class="material-icons">refresh</span>
+          Try Another Image
+        </button>
+      </div>
+    </div>
+  }
+</div>

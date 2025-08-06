@@ -33,13 +33,16 @@
   </div>
 
   <div class="tabs">
-    @for (tab of ['Movies', 'TV Shows', 'Favorites', 'For You']; track $index) {
+    @for (tab of ['Movies', 'TV Shows', 'Favorites', 'For You', 'Guess the Movie']; track $index) {
       <button
         class="btn-tab"
         [class.active]="activeTab() === tab"
         (click)="setActiveTab(tab)">
         @if (tab === 'For You') {
           <span class="material-icons ai-icon">auto_awesome</span>
+        }
+        @if (tab === 'Guess the Movie') {
+          <span class="material-icons ai-icon">movie_filter</span>
         }
         {{ tab }}
       </button>
@@ -266,6 +269,11 @@
             </div>
           }
         </div>
+      }
+
+      <!-- Guess the Movie tab content -->
+      @if (activeTab() === 'Guess the Movie' && !isLoading() && !error()) {
+        <app-guess-movie></app-guess-movie>
       }
     </div>
   </div>
