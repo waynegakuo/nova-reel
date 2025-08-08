@@ -2,6 +2,10 @@
   <div class="header">
     <h2>Guess the Movie</h2>
     <p class="subtitle">Upload a screenshot from a movie or TV show and let AI identify it</p>
+    <div class="disclaimer">
+      <span class="material-icons">info</span>
+      <p class="disclaimer-text">This is an AI guesstimate, not a definitive answer. Please verify the results yourself.</p>
+    </div>
   </div>
 
   <!-- Error message display -->
@@ -68,7 +72,15 @@
   <!-- Results section -->
   @if (guessResult() && !isLoading()) {
     <div class="results-container">
-      <h3>We think this is:</h3>
+      <div class="result-disclaimer">
+        @if (guessResult().confidence) {
+          <h3>AI's Guess ({{ (guessResult().confidence * 100).toFixed(0) }}% confidence):</h3>
+          <p class="verification-note">Please verify this result for yourself - this is our best estimate based on the screenshot.</p>
+        } @else {
+          <h3>AI's Best Guess:</h3>
+          <p class="verification-note">Please verify this result for yourself - confidence level not available.</p>
+        }
+      </div>
 
       <div class="result-card">
         <div class="result-header">

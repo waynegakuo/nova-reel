@@ -648,44 +648,26 @@ export class MediaService {
   }
 
   /**
-   * Fetches movie/TV show identification from a screenshot with caching
+   * Fetches movie/TV show identification from a screenshot without caching
+   * Each image analysis should be unique and not cached since different images
+   * should produce different results
    * @param file - The base64-encoded image data
    * @param contentType - The content type of the image
-   * @param forceRefresh - Whether to force a refresh of the cache
    * @returns Observable containing the identification result
    */
-  getGuessMovieResult(file: string, contentType: string, forceRefresh: boolean = false): Observable<any> {
-    // Force refresh if requested
-    if (forceRefresh) {
-      this.refreshGuessMovieCache();
-    }
-
-    // Create the cache if it doesn't exist
-    if (!this.guessMovieCache) {
-      this.guessMovieCache = this.refreshGuessMovieCache$.pipe(
-        // Only proceed when refresh is triggered
-        switchMap(() => {
-          // Use the Firebase Function to get the data
-          return new Observable<any>(observer => {
-            this.guessMovieFromScreenshot(file, contentType)
-              .then((response) => {
-                observer.next(response);
-                observer.complete();
-              })
-              .catch(error => {
-                console.error('Error analyzing image:', error);
-                observer.error(error);
-              });
-          }).pipe(
-            // Cache the result for 5 minutes (300000ms) and share it with all subscribers
-            // Buffer size of 1 means we only keep the latest value
-            shareReplay({ bufferSize: 1, refCount: false, windowTime: 300000 })
-          );
+  getGuessMovieResult(file: string, contentType: string): Observable<any> {
+    // Always create a fresh observable for each image analysis
+    return new Observable<any>(observer => {
+      this.guessMovieFromScreenshot(file, contentType)
+        .then((response) => {
+          observer.next(response);
+          observer.complete();
         })
-      );
-    }
-
-    return this.guessMovieCache;
+        .catch(error => {
+          console.error('Error analyzing image:', error);
+          observer.error(error);
+        });
+    });
   }
 
   /**
