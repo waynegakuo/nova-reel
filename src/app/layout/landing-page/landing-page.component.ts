@@ -10,6 +10,7 @@ import {Router} from '@angular/router';
 import { SearchBarComponent } from '../../shared/components/search/search-bar/search-bar.component';
 import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
 import { LoadingMessagesService } from '../../services/loading-messages/loading-messages.service';
+import { GuessMovieComponent } from '../../shared/components/guess-movie/guess-movie.component';
 
 @Component({
   selector: 'app-landing-page',
@@ -17,7 +18,8 @@ import { LoadingMessagesService } from '../../services/loading-messages/loading-
     CommonModule,
     MediaCardComponent,
     SearchBarComponent,
-    SearchResultsComponent
+    SearchResultsComponent,
+    GuessMovieComponent
   ],
   templateUrl: './landing-page.component.html',
   standalone: true,

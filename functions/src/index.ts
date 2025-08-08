@@ -21,13 +21,16 @@ import { genkit } from 'genkit'; // This is the core Genkit library itself
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase'; // <-- NEW IMPORT
 import { z } from 'zod';
 import googleAI from '@genkit-ai/googleai';
+import { getStorage } from 'firebase-admin/storage';
 
 // Define your secret. This makes the secret available to your function.
 const TMDB_BEARER_TOKEN = defineSecret('TMDB_API_BEARER_TOKEN');
+const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY'); // *** NEW: Define Gemini API Key Secret ***
 
 // Initialize Firebase Admin SDK
 initializeApp();
 const db = getFirestore();
+const storage = getStorage();
 
 enableFirebaseTelemetry();
 
@@ -248,6 +251,23 @@ export const getRecommendationsFlow = onCallGenkit( // EXPORT THIS as the Cloud 
   _getRecommendationsFlowLogic // Pass the defined Genkit flow logic here
 );
 
+// Helper function to calculate title similarity for confidence scoring
+const calculateTitleSimilarity = (guess: string, actual: string): number => {
+  const normalize = (str: string) => str.toLowerCase().replace(/[^\w\s]/g, '').trim();
+  const guessNorm = normalize(guess);
+  const actualNorm = normalize(actual);
+
+  if (guessNorm === actualNorm) return 1.0;
+  if (actualNorm.includes(guessNorm) || guessNorm.includes(actualNorm)) return 0.85;
+
+  // Simple word overlap calculation
+  const guessWords = guessNorm.split(/\s+/);
+  const actualWords = actualNorm.split(/\s+/);
+  const commonWords = guessWords.filter(word => actualWords.includes(word));
+
+  return commonWords.length / Math.max(guessWords.length, actualWords.length);
+};
+
 // Reusable function to handle HTTP errors for Cloud Functions
 const handleHttpError = (error: any): never => {
   logger.error('Error calling TMDB API:', error.message, error.response?.data);
@@ -264,8 +284,187 @@ const handleHttpError = (error: any): never => {
   }
 };
 
-// Define your HTTPS Callable Function
-// This is the type of function your Angular client will call directly.
+const ImageAnalysisInputSchema = z.object({
+  imageUrl: z.string().url().describe('URL of the movie or TV show scene screenshot.'),
+});
+
+// Schema for the movie identification output that matches UI expectations
+const MovieIdentificationOutputSchema = z.object({
+  title: z.string().describe('Title of the identified movie or TV show'),
+  type: z.enum(['movie', 'tv']).describe('Type of media: "movie" or "tv"'),
+  tmdbId: z.number().optional().describe('TMDB ID of the identified media if found'),
+  confidence: z.number().min(0).max(1).optional().describe('Confidence score between 0 and 1'),
+  overview: z.string().optional().describe('Brief overview or synopsis'),
+  year: z.string().optional().describe('Release year'),
+  poster_path: z.string().optional().describe('URL path to the poster image'),
+  reasoning: z.string().optional().describe('The AI\'s reasoning behind its guess.'),
+  alternatives: z.array(
+    z.object({
+      title: z.string().describe('Title of the alternative movie or TV show'),
+      type: z.enum(['movie', 'tv']).optional().describe('Type of media: "movie" or "tv"'),
+      confidence: z.number().min(0).max(1).optional().describe('Confidence score between 0 and 1'),
+      year: z.string().optional().describe('Release year'),
+    })
+  ).optional().describe('Alternative possibilities if the AI is uncertain'),
+});
+
+// Define the Genkit flow for movie identification from screenshots
+export const _identifyMovieFromScreenshotLogic = ai.defineFlow(
+  {
+    name: 'identifyMovieFromScreenshot',
+    inputSchema: ImageAnalysisInputSchema,
+    outputSchema: MovieIdentificationOutputSchema,
+  },
+  async (input) => {
+    const { imageUrl } = input;
+
+    // STAGE 1: Pure Gemini multimodal identification
+    const { output } = await ai.generate({
+      prompt: [
+        {
+          media: {
+            url: imageUrl,
+          },
+        },
+        {
+          text: `Analyze this image and identify the movie or TV show it's from.
+          Provide the title and type (movie or tv) of the content.
+          Format your answer as a JSON object with 'title' and 'type' keys.`,
+        },
+      ],
+      output: {
+        schema: z.object({
+          title: z.string(),
+          type: z.enum(['movie', 'tv']),
+        }),
+      },
+    });
+
+    const aiGuess = output;
+
+    if (!aiGuess || !aiGuess.title) {
+      throw new HttpsError('internal', 'AI was unable to make a guess.');
+    }
+
+    // STEP 2: Use the AI's guess to search TMDB for real, verifiable data.
+    const searchResults = await getTmdbDataTool({
+      endpoint: `search/${aiGuess.type}`,
+      query: aiGuess.title,
+    });
+
+    const topResult = searchResults.results?.[0];
+
+    if (!topResult) {
+      throw new HttpsError('not-found', 'Could not find a match on TMDB for the guessed movie/TV show.');
+    }
+
+    // STEP 3: Return the final, structured data from TMDB with confidence and year.
+    const releaseYear = aiGuess.type === 'movie'
+      ? topResult.release_date?.substring(0, 4)
+      : topResult.first_air_date?.substring(0, 4);
+
+    // Calculate confidence based on title similarity (basic implementation)
+    const titleSimilarity = calculateTitleSimilarity(aiGuess.title, topResult.title || topResult.name);
+    const confidence = Math.min(0.9, Math.max(0.6, titleSimilarity)); // Keep between 0.6-0.9
+
+    return {
+      title: topResult.title || topResult.name,
+      type: aiGuess.type,
+      tmdbId: topResult.id,
+      confidence: confidence,
+      overview: topResult.overview,
+      year: releaseYear,
+      poster_path: topResult.poster_path,
+      reasoning: `AI guessed '${aiGuess.title}' and this was the top result from TMDB.`,
+    };
+  }
+);
+
+// Firebase Cloud Function for movie identification
+export const identifyMovieFromScreenshot = onCallGenkit(
+  {
+    secrets: [TMDB_BEARER_TOKEN],
+    region: 'africa-south1',
+    cors: true,
+    memory: '1GiB', // Increase memory for image processing
+    timeoutSeconds: 120, // Longer timeout for complex image analysis
+  },
+  _identifyMovieFromScreenshotLogic
+);
+
+// Function to handle file uploads and movie identification
+export const guessMovieFromScreenshot = onCall(
+  {
+    secrets: [TMDB_BEARER_TOKEN, GEMINI_API_KEY],
+    region: 'africa-south1',
+    cors: true,
+    memory: '1GiB',
+    timeoutSeconds: 120,
+  },
+  async (request) => {
+    try {
+      // Check if file data is provided
+      if (!request.data || !request.data.file) {
+        throw new HttpsError('invalid-argument', 'No file data provided.');
+      }
+
+      const fileData = request.data.file;
+      const contentType = request.data.contentType || 'image/jpeg';
+      const fileName = `movie-screenshots/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.jpg`;
+
+      // Create a reference to the file in Firebase Storage
+      const fileRef = storage.bucket().file(fileName);
+
+      // Save the file to Firebase Storage
+      await fileRef.save(Buffer.from(fileData, 'base64'), {
+        metadata: {
+          contentType: contentType,
+        },
+      });
+
+      // Get a signed URL for the file
+      const [url] = await fileRef.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 15 * 60 * 1000, // URL expires in 15 minutes
+      });
+
+      // Call the movie identification flow with the image URL
+      const result = await _identifyMovieFromScreenshotLogic({ imageUrl: url });
+
+      // If we have a TMDB ID, fetch additional details
+      if (result.tmdbId && result.type) {
+        try {
+          const endpoint = result.type === 'movie' ? 'movie' : 'tv';
+          const url = constructTmdbUrl(endpoint, { id: result.tmdbId });
+          const additionalData = await executeTmdbRequest(url, `Additional data for ${result.title}`);
+
+          // Enhance the result with additional data
+          if (additionalData) {
+            result.overview = additionalData.overview || result.overview;
+            result.poster_path = additionalData.poster_path || result.poster_path;
+            result.year = result.type === 'movie'
+              ? (additionalData.release_date ? additionalData.release_date.substring(0, 4) : result.year)
+              : (additionalData.first_air_date ? additionalData.first_air_date.substring(0, 4) : result.year);
+          }
+        } catch (error) {
+          logger.warn('Error fetching additional movie data:', error);
+          // Continue with the basic result if additional data fetch fails
+        }
+      }
+
+      // Clean up the file after processing (optional)
+      await fileRef.delete().catch(err => {
+        logger.warn('Error deleting temporary file:', err);
+      });
+
+      return result;
+    } catch (error: any) {
+      logger.error('Error in guessMovieFromScreenshot:', error);
+      return handleHttpError(error);
+    }
+  }
+);
+
 export const getTmdbData = onCall(
   {
     // Make sure your function has access to the secret

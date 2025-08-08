@@ -31,6 +31,7 @@ export class MediaService {
   private tvShowDetailsCache: Record<number, Observable<TvShowDetails>> = {};
   private aiRecommendationsCache: Observable<AiRecommendationResponse> | null = null;
   private searchCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
+  private guessMovieCache: Observable<any> | null = null;
 
   // Refresh triggers for cache invalidation
   private refreshMoviesCache$ = new BehaviorSubject<boolean>(true);
@@ -39,6 +40,7 @@ export class MediaService {
   private refreshTVShowDetailsCache$ = new BehaviorSubject<boolean>(true);
   private refreshAiRecommendationsCache$ = new BehaviorSubject<boolean>(true);
   private refreshSearchCache$ = new BehaviorSubject<boolean>(true);
+  private refreshGuessMovieCache$ = new BehaviorSubject<boolean>(true);
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
@@ -621,5 +623,61 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshSearchCache$.next(true);
+  }
+
+  /**
+   * Calls the guessMovieFromScreenshot Firebase Function to identify a movie or TV show from a screenshot
+   * @param file - The base64-encoded image data
+   * @param contentType - The content type of the image (e.g., 'image/jpeg')
+   * @returns Promise containing the identification result
+   * @throws Error if the API request fails
+   */
+  async guessMovieFromScreenshot(file: string, contentType: string): Promise<any> {
+    const guessMovieFunction = httpsCallable(this.functions, 'guessMovieFromScreenshot');
+
+    try {
+      const result = await guessMovieFunction({
+        file: file,
+        contentType: contentType
+      });
+      return result.data;
+    } catch (error: any) {
+      console.error('Error analyzing image:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches movie/TV show identification from a screenshot without caching
+   * Each image analysis should be unique and not cached since different images
+   * should produce different results
+   * @param file - The base64-encoded image data
+   * @param contentType - The content type of the image
+   * @returns Observable containing the identification result
+   */
+  getGuessMovieResult(file: string, contentType: string): Observable<any> {
+    // Always create a fresh observable for each image analysis
+    return new Observable<any>(observer => {
+      this.guessMovieFromScreenshot(file, contentType)
+        .then((response) => {
+          observer.next(response);
+          observer.complete();
+        })
+        .catch(error => {
+          console.error('Error analyzing image:', error);
+          observer.error(error);
+        });
+    });
+  }
+
+  /**
+   * Manually refreshes the guess movie cache
+   */
+  refreshGuessMovieCache(): void {
+    // Clear the cache
+    this.guessMovieCache = null;
+
+    // Trigger a refresh
+    this.refreshGuessMovieCache$.next(true);
   }
 }

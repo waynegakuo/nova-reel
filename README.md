@@ -14,6 +14,7 @@ Nova Reel helps film and TV enthusiasts discover new content to watch through a 
 - ℹ️ View detailed information about movies and TV shows
 - ⭐ Save favorites for quick access
 - 🤖 Get AI-powered personalized recommendations based on your favorites
+- 🎬 Identify movies and TV shows from screenshots with AI
 - 📱 Responsive design for all devices
 
 ## 🏗️ Architecture
@@ -34,9 +35,13 @@ Nova Reel is built with a modern tech stack that combines frontend and backend t
 - **💫 Gemini 2.5 Pro**: The underlying AI model used for generating recommendations
 - **🎞️ TMDB API**: External API for fetching movie and TV show data
 
-### 🤖 AI Recommendation Engine
+### 🤖 AI Features
 
-The heart of Nova Reel is its AI recommendation engine, which uses Genkit to analyze user favorites and generate personalized recommendations:
+Nova Reel leverages Google's Genkit AI platform to provide intelligent features:
+
+#### 🎯 AI Recommendation Engine
+
+The recommendation engine uses Genkit to analyze user favorites and generate personalized recommendations:
 
 1. **📊 Data Collection**: The app stores user favorites in Firebase Firestore
 2. **🧠 AI Processing**: When a user requests recommendations, the app calls a Firebase Function that uses Genkit to:
@@ -45,6 +50,17 @@ The heart of Nova Reel is its AI recommendation engine, which uses Genkit to ana
    - 💫 Use the Gemini 2.5 Pro model to generate personalized recommendations
    - 💡 Provide reasoning for the recommendations
 3. **📱 Recommendation Display**: The frontend displays these recommendations in the "For You" tab, along with the AI's reasoning
+
+#### 🎬 Movie & TV Show Identification
+
+The "Guess the Movie" feature uses Genkit's image analysis capabilities to identify movies and TV shows from screenshots:
+
+1. **📸 Image Upload**: Users upload a screenshot from a movie or TV show
+2. **🧠 AI Analysis**: The app calls a Firebase Function that uses Genkit to:
+   - 🔍 Analyze the image for distinctive elements like characters, settings, and visual style
+   - 🎯 Identify the most likely movie or TV show
+   - 🔄 Use the TMDB API to confirm the identification and retrieve additional details
+3. **📱 Result Display**: The frontend displays the identified movie or TV show, along with confidence score, overview, and poster
 
 ## 🛠️ Setup and Installation
 
