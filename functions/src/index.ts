@@ -251,6 +251,23 @@ export const getRecommendationsFlow = onCallGenkit( // EXPORT THIS as the Cloud 
   _getRecommendationsFlowLogic // Pass the defined Genkit flow logic here
 );
 
+// Helper function to calculate title similarity for confidence scoring
+const calculateTitleSimilarity = (guess: string, actual: string): number => {
+  const normalize = (str: string) => str.toLowerCase().replace(/[^\w\s]/g, '').trim();
+  const guessNorm = normalize(guess);
+  const actualNorm = normalize(actual);
+
+  if (guessNorm === actualNorm) return 1.0;
+  if (actualNorm.includes(guessNorm) || guessNorm.includes(actualNorm)) return 0.85;
+
+  // Simple word overlap calculation
+  const guessWords = guessNorm.split(/\s+/);
+  const actualWords = actualNorm.split(/\s+/);
+  const commonWords = guessWords.filter(word => actualWords.includes(word));
+
+  return commonWords.length / Math.max(guessWords.length, actualWords.length);
+};
+
 // Reusable function to handle HTTP errors for Cloud Functions
 const handleHttpError = (error: any): never => {
   logger.error('Error calling TMDB API:', error.message, error.response?.data);
@@ -267,17 +284,20 @@ const handleHttpError = (error: any): never => {
   }
 };
 
-// Define your HTTPS Callable Function
-// This is the type of function your Angular client will call directly.
-// Schema for the movie identification output
+const ImageAnalysisInputSchema = z.object({
+  imageUrl: z.string().url().describe('URL of the movie or TV show scene screenshot.'),
+});
+
+// Schema for the movie identification output that matches UI expectations
 const MovieIdentificationOutputSchema = z.object({
   title: z.string().describe('Title of the identified movie or TV show'),
   type: z.enum(['movie', 'tv']).describe('Type of media: "movie" or "tv"'),
   tmdbId: z.number().optional().describe('TMDB ID of the identified media if found'),
-  confidence: z.number().min(0).max(1).describe('Confidence score between 0 and 1'),
+  confidence: z.number().min(0).max(1).optional().describe('Confidence score between 0 and 1'),
   overview: z.string().optional().describe('Brief overview or synopsis'),
   year: z.string().optional().describe('Release year'),
   poster_path: z.string().optional().describe('URL path to the poster image'),
+  reasoning: z.string().optional().describe('The AI\'s reasoning behind its guess.'),
   alternatives: z.array(
     z.object({
       title: z.string().describe('Title of the alternative movie or TV show'),
@@ -292,114 +312,71 @@ const MovieIdentificationOutputSchema = z.object({
 export const _identifyMovieFromScreenshotLogic = ai.defineFlow(
   {
     name: 'identifyMovieFromScreenshot',
-    inputSchema: z.object({
-      imageUrl: z.string().describe('URL of the movie screenshot image'),
-    }),
+    inputSchema: ImageAnalysisInputSchema,
     outputSchema: MovieIdentificationOutputSchema,
   },
   async (input) => {
     const { imageUrl } = input;
 
-    // STAGE 1: Pure AI identification without TMDB tool access
+    // STAGE 1: Pure Gemini multimodal identification
     const { output } = await ai.generate({
-      // Removed TMDB tool access to get pure AI identification
-      prompt: `
-        You are a highly intelligent movie and TV show identification assistant.
-        You're looking at a screenshot from a movie or TV show.
-
-        The screenshot image URL is: ${imageUrl}
-
-        Analyze the image carefully using ONLY your visual analysis capabilities and identify which movie or TV show it's from.
-        Look for distinctive elements like:
-        - Characters and actors you recognize
-        - Settings and locations
-        - Visual style and cinematography
-        - Costumes and props
-        - Text or logos visible in the frame
-        - Any other visual cues
-
-        DO NOT search external databases. Use only your knowledge and visual analysis.
-
-        Provide the title, whether it's a "movie" or "tv" show, and a confidence score (between 0 and 1).
-        Be honest about your confidence level - only give high confidence if you're very certain.
-
-        If you recognize the content, also provide what you know about the release year and a brief overview from your knowledge.
-        If you're uncertain, provide alternative possibilities with their confidence scores.
-
-        Return your response in this exact JSON format:
+      prompt: [
         {
-          "title": "Movie/Show Title",
-          "type": "movie" or "tv",
-          "confidence": 0.0-1.0,
-          "overview": "Brief description if you know it",
-          "year": "Release year if you know it",
-          "alternatives": [
-            {
-              "title": "Alternative Title",
-              "type": "movie" or "tv",
-              "confidence": 0.0-1.0,
-              "year": "Year if known"
-            }
-          ]
-        }
-      `,
+          media: {
+            url: imageUrl,
+          },
+        },
+        {
+          text: `Analyze this image and identify the movie or TV show it's from.
+          Provide the title and type (movie or tv) of the content.
+          Format your answer as a JSON object with 'title' and 'type' keys.`,
+        },
+      ],
       output: {
-        format: 'json',
-        schema: MovieIdentificationOutputSchema,
+        schema: z.object({
+          title: z.string(),
+          type: z.enum(['movie', 'tv']),
+        }),
       },
     });
 
-    // Ensure we never return null
-    if (!output) {
-      return {
-        title: "Unknown",
-        type: "movie" as const,
-        confidence: 0,
-        overview: "Unable to identify the movie or TV show from this screenshot.",
-      };
+    const aiGuess = output;
+
+    if (!aiGuess || !aiGuess.title) {
+      throw new HttpsError('internal', 'AI was unable to make a guess.');
     }
 
-    // STAGE 2: If confidence is high enough, enhance with TMDB data
-    const CONFIDENCE_THRESHOLD = 0.7;
-    if (output.confidence >= CONFIDENCE_THRESHOLD && output.title && output.title !== "Unknown") {
-      try {
-        // Search TMDB for the identified title
-        const searchEndpoint = output.type === 'tv' ? 'search/tv' : 'search/movie';
-        const searchUrl = constructTmdbUrl(searchEndpoint, { query: output.title });
-        const searchResults = await executeTmdbRequest(searchUrl, `TMDB search for ${output.title}`);
+    // STEP 2: Use the AI's guess to search TMDB for real, verifiable data.
+    const searchResults = await getTmdbDataTool({
+      endpoint: `search/${aiGuess.type}`,
+      query: aiGuess.title,
+    });
 
-        if (searchResults.results && searchResults.results.length > 0) {
-          // Find the best match based on title similarity and year if available
-          let bestMatch = searchResults.results[0];
+    const topResult = searchResults.results?.[0];
 
-          if (output.year) {
-            // Try to find a match with the same year
-            const yearMatch = searchResults.results.find((result: any) => {
-              const resultYear = output.type === 'movie'
-                ? result.release_date?.substring(0, 4)
-                : result.first_air_date?.substring(0, 4);
-              return resultYear === output.year;
-            });
-            if (yearMatch) {
-              bestMatch = yearMatch;
-            }
-          }
-
-          // Enhance the output with TMDB data
-          output.tmdbId = bestMatch.id;
-          output.overview = bestMatch.overview || output.overview;
-          output.poster_path = bestMatch.poster_path || output.poster_path;
-          output.year = output.type === 'movie'
-            ? (bestMatch.release_date ? bestMatch.release_date.substring(0, 4) : output.year)
-            : (bestMatch.first_air_date ? bestMatch.first_air_date.substring(0, 4) : output.year);
-        }
-      } catch (error) {
-        logger.warn('Error enhancing with TMDB data:', error);
-        // Continue with the AI-only result if TMDB enhancement fails
-      }
+    if (!topResult) {
+      throw new HttpsError('not-found', 'Could not find a match on TMDB for the guessed movie/TV show.');
     }
 
-    return output;
+    // STEP 3: Return the final, structured data from TMDB with confidence and year.
+    const releaseYear = aiGuess.type === 'movie'
+      ? topResult.release_date?.substring(0, 4)
+      : topResult.first_air_date?.substring(0, 4);
+
+    // Calculate confidence based on title similarity (basic implementation)
+    const titleSimilarity = calculateTitleSimilarity(aiGuess.title, topResult.title || topResult.name);
+    const confidence = Math.min(0.9, Math.max(0.6, titleSimilarity)); // Keep between 0.6-0.9
+
+    return {
+      title: topResult.title || topResult.name,
+      type: aiGuess.type,
+      tmdbId: topResult.id,
+      confidence: confidence,
+      overview: topResult.overview,
+      year: releaseYear,
+      poster_path: topResult.poster_path,
+      reasoning: `AI guessed '${aiGuess.title}' and this was the top result from TMDB.`,
+    };
   }
 );
 
