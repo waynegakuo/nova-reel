@@ -300,46 +300,45 @@ export const _identifyMovieFromScreenshotLogic = ai.defineFlow(
   async (input) => {
     const { imageUrl } = input;
 
-    // Generate movie identification using the AI model
+    // STAGE 1: Pure AI identification without TMDB tool access
     const { output } = await ai.generate({
-      tools: [getTmdbDataTool], // Make the TMDB data tool available to the model
+      // Removed TMDB tool access to get pure AI identification
       prompt: `
         You are a highly intelligent movie and TV show identification assistant.
         You're looking at a screenshot from a movie or TV show.
 
         The screenshot image URL is: ${imageUrl}
 
-        Analyze the image carefully and identify which movie or TV show it's from.
+        Analyze the image carefully using ONLY your visual analysis capabilities and identify which movie or TV show it's from.
         Look for distinctive elements like:
-        - Characters and actors
+        - Characters and actors you recognize
         - Settings and locations
         - Visual style and cinematography
         - Costumes and props
         - Text or logos visible in the frame
+        - Any other visual cues
 
-        Use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details
-        to confirm your identification or to get more information.
+        DO NOT search external databases. Use only your knowledge and visual analysis.
 
-        Provide the title, whether it's a "movie" or "tv" show, a confidence score (between 0 and 1),
-        and if possible, its TMDB ID, a brief overview, release year, and poster path.
+        Provide the title, whether it's a "movie" or "tv" show, and a confidence score (between 0 and 1).
+        Be honest about your confidence level - only give high confidence if you're very certain.
 
+        If you recognize the content, also provide what you know about the release year and a brief overview from your knowledge.
         If you're uncertain, provide alternative possibilities with their confidence scores.
 
-        Example of a good identification format:
+        Return your response in this exact JSON format:
         {
-          "title": "Inception",
-          "type": "movie",
-          "tmdbId": 27205,
-          "confidence": 0.95,
-          "overview": "A thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-          "year": "2010",
-          "poster_path": "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg",
+          "title": "Movie/Show Title",
+          "type": "movie" or "tv",
+          "confidence": 0.0-1.0,
+          "overview": "Brief description if you know it",
+          "year": "Release year if you know it",
           "alternatives": [
             {
-              "title": "The Matrix",
-              "type": "movie",
-              "confidence": 0.15,
-              "year": "1999"
+              "title": "Alternative Title",
+              "type": "movie" or "tv",
+              "confidence": 0.0-1.0,
+              "year": "Year if known"
             }
           ]
         }
@@ -358,6 +357,46 @@ export const _identifyMovieFromScreenshotLogic = ai.defineFlow(
         confidence: 0,
         overview: "Unable to identify the movie or TV show from this screenshot.",
       };
+    }
+
+    // STAGE 2: If confidence is high enough, enhance with TMDB data
+    const CONFIDENCE_THRESHOLD = 0.7;
+    if (output.confidence >= CONFIDENCE_THRESHOLD && output.title && output.title !== "Unknown") {
+      try {
+        // Search TMDB for the identified title
+        const searchEndpoint = output.type === 'tv' ? 'search/tv' : 'search/movie';
+        const searchUrl = constructTmdbUrl(searchEndpoint, { query: output.title });
+        const searchResults = await executeTmdbRequest(searchUrl, `TMDB search for ${output.title}`);
+
+        if (searchResults.results && searchResults.results.length > 0) {
+          // Find the best match based on title similarity and year if available
+          let bestMatch = searchResults.results[0];
+
+          if (output.year) {
+            // Try to find a match with the same year
+            const yearMatch = searchResults.results.find((result: any) => {
+              const resultYear = output.type === 'movie'
+                ? result.release_date?.substring(0, 4)
+                : result.first_air_date?.substring(0, 4);
+              return resultYear === output.year;
+            });
+            if (yearMatch) {
+              bestMatch = yearMatch;
+            }
+          }
+
+          // Enhance the output with TMDB data
+          output.tmdbId = bestMatch.id;
+          output.overview = bestMatch.overview || output.overview;
+          output.poster_path = bestMatch.poster_path || output.poster_path;
+          output.year = output.type === 'movie'
+            ? (bestMatch.release_date ? bestMatch.release_date.substring(0, 4) : output.year)
+            : (bestMatch.first_air_date ? bestMatch.first_air_date.substring(0, 4) : output.year);
+        }
+      } catch (error) {
+        logger.warn('Error enhancing with TMDB data:', error);
+        // Continue with the AI-only result if TMDB enhancement fails
+      }
     }
 
     return output;
