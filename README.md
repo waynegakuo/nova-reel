@@ -127,6 +127,7 @@ Your Firebase project uses Google Cloud behind the scenes. For secure secret man
 
 - Go to the Google Cloud Console for your Firebase project.
 - In the navigation menu, go to APIs & Services > Enabled APIs & Services.
+- Click on +Enable APIs and services.
 - Search for and enable the Secret Manager API.
 
 #### 🛠️ Install Firebase CLI:
