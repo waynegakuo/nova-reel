@@ -25,4 +25,5 @@ export interface AiRecommendationResponse {
 export interface AiRecommendationRequest {
   userId: string;
   count?: number;
+  naturalLanguageQuery?: string;
 }

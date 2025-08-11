@@ -33,13 +33,16 @@
   </div>
 
   <div class="tabs">
-    @for (tab of ['Movies', 'TV Shows', 'Favorites', 'For You', 'Guess the Movie']; track $index) {
+    @for (tab of ['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie']; track $index) {
       <button
         class="btn-tab"
         [class.active]="activeTab() === tab"
         (click)="setActiveTab(tab)">
         @if (tab === 'For You') {
           <span class="material-icons ai-icon">auto_awesome</span>
+        }
+        @if (tab === 'Smart Recommendations') {
+          <span class="material-icons ai-icon">psychology</span>
         }
         @if (tab === 'Guess the Movie') {
           <span class="material-icons ai-icon">movie_filter</span>
@@ -193,19 +196,131 @@
       }
 
       <!--
+        Smart Recommendations tab content
+        This section provides natural language query input for AI-powered recommendations
+        without requiring favorites to be loaded first, improving performance.
+      -->
+      @if (activeTab() === 'Smart Recommendations' && !isLoading() && !error()) {
+        <div class="recommendations-container">
+          <!-- Natural Language Query Input -->
+          <div class="natural-language-input">
+            <h3>Tell us what you're in the mood for</h3>
+            <p class="input-description">
+              Describe what you want to watch in natural language, like "I want a thrilling, suspenseful movie"
+              or "My niece likes cartoons that have sci-fi in them. Recommend me some."
+            </p>
+            <div class="query-input-container">
+              <textarea
+                class="query-input"
+                placeholder="E.g., I want something thrilling and suspenseful, or cartoons with sci-fi for my niece..."
+                rows="3"
+                [value]="naturalLanguageQuery()"
+                (input)="naturalLanguageQuery.set($any($event.target).value)"
+              ></textarea>
+              <div class="query-buttons">
+                <button
+                  class="btn btn-primary"
+                  (click)="onNaturalLanguageQuery(naturalLanguageQuery())"
+                  [disabled]="!naturalLanguageQuery().trim()"
+                >
+                  Get Smart Recommendations
+                </button>
+                @if (naturalLanguageQuery()) {
+                  <button
+                    class="btn btn-secondary"
+                    (click)="clearNaturalLanguageQuery()"
+                  >
+                    Clear Query
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (aiRecommendations().length === 0) {
+            <div class="recommendations-placeholder">
+              <p>No recommendations available yet.</p>
+              @if (!naturalLanguageQuery()) {
+                <p>Try describing what you want to watch above!</p>
+              } @else {
+                <p>Try adjusting your query for better results.</p>
+              }
+            </div>
+          } @else {
+            @if (aiRecommendationReasoning()) {
+              <div class="recommendation-reasoning">
+                <h3>Why we think you'll like these:</h3>
+                <p>{{ aiRecommendationReasoning() }}</p>
+              </div>
+            }
+
+            <div class="media-grid">
+              @for (recommendation of aiRecommendations(); track recommendation.tmdbId) {
+                <app-media-card
+                  [item]="{
+                    id: recommendation.tmdbId,
+                    title: recommendation.title,
+                    name: recommendation.title,
+                    overview: recommendation.overview,
+                    poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
+                    backdrop_path: '',
+                    vote_average: recommendation.vote_average,
+                    popularity: 0,
+                    vote_count: 0,
+                    genre_ids: [],
+                    adult: false,
+                    original_language: '',
+                    release_date: recommendation.release_date,
+                    first_air_date: recommendation.release_date,
+                    origin_country: [],
+                    original_name: recommendation.title
+                  }"
+                  [type]="recommendation.type === 'movie' ? 'movie' : 'tvshow'"
+                  (share)="onShareMedia({
+                    item: {
+                      id: recommendation.tmdbId,
+                      title: recommendation.title,
+                      name: recommendation.title,
+                      overview: recommendation.overview,
+                      poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
+                      backdrop_path: '',
+                      vote_average: 0,
+                      popularity: 0,
+                      vote_count: 0,
+                      genre_ids: [],
+                      adult: false,
+                      original_language: '',
+                      release_date: '',
+                      first_air_date: '',
+                      origin_country: [],
+                      original_name: recommendation.title
+                    },
+                    type: recommendation.type
+                  })">
+                </app-media-card>
+              }
+            </div>
+
+            <div class="refresh-recommendations">
+              <button class="btn btn-primary" (click)="loadAiRecommendations(true)">
+                Refresh Recommendations
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!--
         AI Recommendations tab content - "For You" section
         This section displays personalized movie and TV show recommendations generated by
-        the Genkit AI system based on the user's favorites. It includes:
-        1. The reasoning behind the recommendations (if available)
-        2. A grid of recommended media items
-        3. A button to refresh recommendations
+        the Genkit AI system based on the user's favorites only.
       -->
       @if (activeTab() === 'For You' && !isLoading() && !error()) {
         <div class="recommendations-container">
           @if (aiRecommendations().length === 0) {
             <div class="recommendations-placeholder">
               <p>No personalized recommendations available yet.</p>
-              <p>Add some favorites to get started!</p>
+              <p>Add some favorites to get recommendations based on your viewing history!</p>
             </div>
           } @else {
             @if (aiRecommendationReasoning()) {

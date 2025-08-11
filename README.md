@@ -10,12 +10,16 @@ Nova Reel helps film and TV enthusiasts discover new content to watch through a 
 
 - 🔥 Browse trending movies and TV shows
 - 🔍 Filter content by categories (Popular, Top Rated, Now Playing, etc.)
-- 🔎 Search for specific titles
+- 🔎 Search for specific titles with real-time results and pagination
 - ℹ️ View detailed information about movies and TV shows
-- ⭐ Save favorites for quick access
-- 🤖 Get AI-powered personalized recommendations based on your favorites
-- 🎬 Identify movies and TV shows from screenshots with AI
-- 📱 Responsive design for all devices
+- ⭐ Save favorites for quick access and personalized experience
+- 🤖 **Smart Recommendations**: Get AI-powered recommendations using natural language queries
+- 🎯 **For You**: Personalized recommendations based on your viewing history and favorites
+- 🎬 **Guess the Movie**: Interactive game to identify movies and TV shows from screenshots using AI
+- 🧠 Advanced AI features powered by Google's Genkit and Gemini 2.5 Pro
+- 📱 Fully responsive design optimized for all devices
+- 🎨 Modern UI with intuitive tab-based navigation
+- ⚡ Real-time loading states and smooth animations
 
 ## 🏗️ Architecture
 
@@ -41,7 +45,23 @@ Nova Reel leverages Google's Genkit AI platform to provide intelligent features:
 
 #### 🎯 AI Recommendation Engine
 
-The recommendation engine uses Genkit to analyze user favorites and generate personalized recommendations:
+Nova Reel features two powerful AI-driven recommendation systems:
+
+##### 🤖 Smart Recommendations (Natural Language Queries)
+
+The Smart Recommendations feature allows users to describe what they want to watch in natural language:
+
+1. **🗣️ Natural Language Input**: Users can type queries like "I want a thrilling, suspenseful movie" or "My niece likes cartoons that have sci-fi in them"
+2. **🧠 AI Processing**: The system uses Genkit to:
+   - 🔍 Analyze the natural language query for mood, genre, target audience, and themes
+   - 📊 Consider user's viewing history as additional context (if available)
+   - 💫 Use Gemini 2.5 Pro to generate highly targeted recommendations
+   - 🎯 Provide detailed reasoning explaining why each recommendation matches the request
+3. **📱 Smart Display**: Results are shown in the dedicated "Smart Recommendations" tab with explanations
+
+##### 🎯 For You (Favorites-Based Recommendations)
+
+The traditional recommendation engine analyzes user favorites for personalized suggestions:
 
 1. **📊 Data Collection**: The app stores user favorites in Firebase Firestore
 2. **🧠 AI Processing**: When a user requests recommendations, the app calls a Firebase Function that uses Genkit to:
@@ -414,11 +434,47 @@ The recommendations are displayed in the "For You" tab of the landing page, alon
 
 ## 📝 Usage
 
-1. **🔍 Browse Content**: Use the "Movies" and "TV Shows" tabs to browse trending content
-2. **ℹ️ View Details**: Click on any movie or TV show to view detailed information
-3. **⭐ Add to Favorites**: Click the "Add to Favorites" button on any movie or TV show detail page
-4. **🤖 Get Recommendations**: Navigate to the "For You" tab to see personalized recommendations based on your favorites
-5. **🔄 Refresh Recommendations**: Click the "Refresh Recommendations" button to get new recommendations
+### 🎬 Main Navigation Tabs
+
+Nova Reel features an intuitive tab-based interface with the following sections:
+
+1. **🎥 Movies**: Browse trending, popular, top-rated, now playing, and upcoming movies
+2. **📺 TV Shows**: Explore popular, top-rated, on-the-air, and airing today TV shows
+3. **⭐ Favorites**: Quick access to your saved movies and TV shows
+4. **🎯 For You**: Personalized recommendations based on your viewing history and favorites
+5. **🤖 Smart Recommendations**: AI-powered recommendations using natural language queries
+6. **🎬 Guess the Movie**: Interactive game to identify movies/TV shows from screenshots
+
+### 🔧 How to Use Each Feature
+
+#### 🔍 Browsing Content
+- Use the "Movies" and "TV Shows" tabs to browse trending content
+- Filter by categories using the category buttons (Popular, Top Rated, etc.)
+- Use the search bar to find specific titles with real-time results
+- Navigate through pages using the pagination controls
+
+#### ⭐ Managing Favorites
+- Click on any movie or TV show to view detailed information
+- Click the "Add to Favorites" button on any detail page
+- Access all your favorites in the dedicated "Favorites" tab
+
+#### 🤖 Smart Recommendations
+- Navigate to the "Smart Recommendations" tab
+- Describe what you want to watch in natural language (e.g., "I want something thrilling and suspenseful")
+- Click "Get Smart Recommendations" to receive AI-powered suggestions
+- View the reasoning behind each recommendation
+
+#### 🎯 For You Recommendations
+- Navigate to the "For You" tab to see personalized recommendations
+- Recommendations are automatically generated based on your favorites
+- Click "Refresh Recommendations" to get new suggestions
+- View detailed explanations for why each item was recommended
+
+#### 🎬 Guess the Movie Game
+- Navigate to the "Guess the Movie" tab for an interactive experience
+- Upload a screenshot from any movie or TV show
+- Let the AI analyze and identify the content
+- View confidence scores and detailed information about identified content
 
 ## 💻 Development
 

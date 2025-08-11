@@ -145,6 +145,7 @@ export const getTmdbDataTool = ai.defineTool(
 const RecommendationInputSchema = z.object({
   userId: z.string().describe('The ID of the user requesting recommendations.'),
   count: z.number().int().min(1).max(10).default(5).describe('Number of recommendations to provide.'),
+  naturalLanguageQuery: z.string().optional().describe('Natural language query describing what the user wants to watch.'),
 });
 
 const RecommendationOutputSchema = z.object({
@@ -173,28 +174,73 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
   async (input) => {
     const userId = input.userId;
     const count = input.count;
+    const naturalLanguageQuery = input.naturalLanguageQuery;
 
-    // Fetch user's favorite movies/tv shows from Firestore
+    // Fetch user's favorite movies/tv shows from Firestore for context (even with natural language queries)
     const userFavoritesRef = db.collection('users').doc(userId).collection('favorites');
     const favoritesSnapshot = await userFavoritesRef.get();
     const favoriteItems = favoritesSnapshot.docs.map(doc => doc.data());
 
-    if (favoriteItems.length === 0) {
-      return {
-        recommendations: [],
-        reasoning: 'No favorites found for this user. Cannot provide personalized recommendations yet.',
-      };
+    // Prepare context for the AI from user favorites (if any)
+    let favoritesContext = '';
+    if (favoriteItems.length > 0) {
+      favoritesContext = favoriteItems.map(item =>
+        `${item['type'] === 'movie' ? 'Movie' : 'TV Show'}: ${item['title']} (TMDB ID: ${item['tmdbId']})`
+      ).join('; ');
     }
 
-    // Prepare context for the AI from user favorites
-    let favoritesContext = favoriteItems.map(item =>
-      `${item['type'] === 'movie' ? 'Movie' : 'TV Show'}: ${item['title']} (TMDB ID: ${item['tmdbId']})`
-    ).join('; ');
+    // Create different prompts based on whether we have a natural language query
+    let prompt = '';
 
-    // Generate recommendations using the AI model
-    const { output } = await ai.generate({ // Use ai.generate
-      tools: [getTmdbDataTool], // Make the TMDB data tool available to the model
-      prompt: `
+    if (naturalLanguageQuery) {
+      // Natural language query mode
+      prompt = `
+        You are a highly intelligent movie and TV show recommendation assistant.
+        The user has made the following request: "${naturalLanguageQuery}"
+
+        ${favoritesContext ? `For additional context, here are the user's favorites: ${favoritesContext}` : ''}
+
+        Based on the user's natural language request${favoritesContext ? ' and their viewing preferences' : ''}, recommend ${count} movies or TV shows that match their criteria.
+
+        Analyze the request for:
+        - Mood/tone (thrilling, suspenseful, funny, heartwarming, etc.)
+        - Genre preferences (action, comedy, sci-fi, cartoon/animation, drama, etc.)
+        - Target audience (for kids, family-friendly, for specific people like "niece", etc.)
+        - Specific themes or elements they mentioned
+        - Any other criteria they specified
+
+        Prioritize items with high TMDB ratings that closely match their request.
+        ${favoritesContext ? 'Avoid recommending any items already in their favorites list (use the provided TMDB IDs to check).' : ''}
+
+        For each recommendation, provide the title, whether it's a "movie" or "tv" show, its TMDB ID, a brief overview, and its poster path.
+        You MUST use the 'getTmdbData' tool to search for movies/TV shows and retrieve their details if you need more information about a potential recommendation or to confirm a recommendation.
+
+        Example of a good recommendation format:
+        [
+          {
+            "title": "Inception",
+            "type": "movie",
+            "tmdbId": 27205,
+            "vote_average": 8.7,
+            "overview": "A thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+            "poster_path": "/8IB7TMYdK7C2z8PqY3kK5c5D8D.jpg",
+            "release_date": "2010-07-16"
+          },
+          // ... more recommendations
+        ]
+
+        Explain your reasoning briefly, referencing how your recommendations match the user's specific request.
+      `;
+    } else {
+      // Favorites-based mode (original logic)
+      if (favoriteItems.length === 0) {
+        return {
+          recommendations: [],
+          reasoning: 'No favorites found for this user. Cannot provide personalized recommendations yet. Try using the natural language query feature to describe what you want to watch!',
+        };
+      }
+
+      prompt = `
         You are a highly intelligent movie and TV show recommendation assistant.
         The user has a list of favorite movies and TV shows.
         User's favorites: ${favoritesContext}
@@ -222,7 +268,13 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
         ]
 
         Explain your reasoning briefly after the recommendations.
-        `,
+      `;
+    }
+
+    // Generate recommendations using the AI model
+    const { output } = await ai.generate({
+      tools: [getTmdbDataTool], // Make the TMDB data tool available to the model
+      prompt: prompt,
       output: {
         format: 'json', // Ensures Gemini tries to output JSON
         schema: RecommendationOutputSchema, // Helps Gemini adhere to the expected structure

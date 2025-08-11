@@ -153,6 +153,104 @@
   }
 }
 
+// Natural Language Input Styles
+.natural-language-input {
+  background-color: rgba(variables.$primary-color, 0.05);
+  padding: 1.5rem;
+  border-radius: variables.$border-radius-md;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(variables.$primary-color, 0.2);
+
+  h3 {
+    color: variables.$primary-color;
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .input-description {
+    color: variables.$text-secondary-light;
+    text-align: center;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+
+  .query-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .query-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid rgba(variables.$primary-color, 0.3);
+    border-radius: variables.$border-radius-sm;
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.4;
+    resize: vertical;
+    min-height: 80px;
+    background-color: white;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: variables.$primary-color;
+      box-shadow: 0 0 0 3px rgba(variables.$primary-color, 0.1);
+    }
+
+    &::placeholder {
+      color: variables.$text-secondary-light;
+    }
+  }
+
+  .query-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: variables.$border-radius-sm;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+
+      &.btn-primary {
+        background-color: variables.$primary-color;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: color.adjust(variables.$primary-color, $lightness: -10%);
+          transform: translateY(-1px);
+        }
+
+        &:disabled {
+          background-color: rgba(variables.$primary-color, 0.5);
+          cursor: not-allowed;
+          transform: none;
+        }
+      }
+
+      &.btn-secondary {
+        background-color: variables.$secondary-color;
+        color: white;
+
+        &:hover {
+          background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+}
+
 // Pagination controls
 .pagination-controls {
   display: flex;

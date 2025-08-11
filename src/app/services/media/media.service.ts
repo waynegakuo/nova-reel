@@ -464,13 +464,14 @@ export class MediaService {
   /**
    * Calls the AI recommendation Firebase Function
    * This function uses the Genkit AI-powered recommendation system to generate personalized
-   * movie and TV show recommendations based on the user's favorites.
+   * movie and TV show recommendations based on the user's favorites or natural language queries.
    *
    * @param count - Number of recommendations to request (default: 5)
+   * @param naturalLanguageQuery - Optional natural language query for smart recommendations
    * @returns Promise containing the AI recommendation response
    * @throws Error if the user is not authenticated or if the API request fails
    */
-  async getAiRecommendationsData(count: number = 5): Promise<AiRecommendationResponse> {
+  async getAiRecommendationsData(count: number = 5, naturalLanguageQuery?: string): Promise<AiRecommendationResponse> {
     // Check if user is authenticated
     const userId = this.authService.getUserId();
     if (!userId) {
@@ -479,10 +480,16 @@ export class MediaService {
 
     const callableGetRecommendations = httpsCallable(this.functions, 'getRecommendationsFlow');
     try {
-      const result = await callableGetRecommendations({
+      const requestData: any = {
         userId: userId,
         count: count
-      });
+      };
+
+      if (naturalLanguageQuery) {
+        requestData.naturalLanguageQuery = naturalLanguageQuery;
+      }
+
+      const result = await callableGetRecommendations(requestData);
       return result.data as AiRecommendationResponse;
     } catch (error: any) {
       console.error('Error fetching AI recommendations from Cloud Function:', error);
@@ -494,15 +501,35 @@ export class MediaService {
    * Fetches AI-powered recommendations with caching
    * @param forceRefresh - Whether to force a refresh of the cache
    * @param count - Number of recommendations to request (default: 5)
+   * @param naturalLanguageQuery - Optional natural language query for smart recommendations
    * @returns Observable containing the AI recommendation response
    */
-  getAiRecommendations(forceRefresh: boolean = false, count: number = 5): Observable<AiRecommendationResponse> {
+  getAiRecommendations(forceRefresh: boolean = false, count: number = 5, naturalLanguageQuery?: string): Observable<AiRecommendationResponse> {
+    // Create a cache key that includes the natural language query to differentiate cache entries
+    const cacheKey = naturalLanguageQuery ? `nl_${naturalLanguageQuery}_${count}` : `favorites_${count}`;
+
     // Force refresh if requested
     if (forceRefresh) {
       this.refreshAiRecommendationsCache();
     }
 
-    // Create the cache if it doesn't exist
+    // For natural language queries, we'll use a simpler approach without persistent caching
+    // since queries are likely to be unique
+    if (naturalLanguageQuery) {
+      return new Observable<AiRecommendationResponse>(observer => {
+        this.getAiRecommendationsData(count, naturalLanguageQuery)
+          .then((response) => {
+            observer.next(response);
+            observer.complete();
+          })
+          .catch(error => {
+            console.error('Error fetching natural language AI recommendations:', error);
+            observer.error(error);
+          });
+      });
+    }
+
+    // Create the cache if it doesn't exist (for favorites-based recommendations)
     if (!this.aiRecommendationsCache) {
       this.aiRecommendationsCache = this.refreshAiRecommendationsCache$.pipe(
         // Only proceed when refresh is triggered
