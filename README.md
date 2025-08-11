@@ -119,6 +119,16 @@ Click this button to launch the project in Firebase Studio and follow the steps 
 2. Click "Add project" and follow the prompts to create your project.
 3. ⚠️ **Important:** Upgrade your project to the Blaze (pay-as-you-go) plan. Cloud Functions and Vertex AI (which Genkit uses) require a billing-enabled project. Don't worry, free tiers are generous for testing.
 
+#### ☁️ Enable Essential Google Cloud APIs:
+
+Enable Essential Google Cloud APIs
+
+Your Firebase project uses Google Cloud behind the scenes. For secure secret management, the Secret Manager API must be enabled. Other necessary APIs (like Cloud Functions, Cloud Build, Cloud Run, Vertex AI) are usually enabled automatically by Firebase when you deploy functions or use AI features.
+
+- Go to the Google Cloud Console for your Firebase project.
+- In the navigation menu, go to APIs & Services > Enabled APIs & Services.
+- Search for and enable the Secret Manager API.
+
 #### 🛠️ Install Firebase CLI:
 
 > **Note for Firebase Studio users:** Skip step 2 (npm install command) and go directly to step 3 (firebase login).
@@ -234,12 +244,7 @@ Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you create
 
 ### 🔑 API Keys and Deployment
 
-1. 🔐 Enable the "Secret Manager API" in the [Google Cloud Console](https://console.cloud.google.com/) for your Firebase project:
-   - Navigate to the dashboard of the Firebase Project you created
-   - Search for "Secret Manager API" in the search bar at the top of the page
-   - Select it and then enable it
-
-2. 🔑 Set up your API keys:
+1. 🔑 Set up your API keys:
    
    a. Create a `.env` file in the `functions` directory with your Gemini API key (for local development):
    ```
