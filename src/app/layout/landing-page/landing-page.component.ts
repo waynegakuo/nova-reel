@@ -57,6 +57,8 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   currentSearchPage = signal<number>(1);
   readonly MAX_PAGES = 5; // Maximum number of pages as per requirements
 
+  novaTabs = ['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie'];
+
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
 
