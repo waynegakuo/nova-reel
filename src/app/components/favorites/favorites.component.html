@@ -1,0 +1,30 @@
+<!-- Loading indicator -->
+@if (isLoading) {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading...</p>
+  </div>
+}
+
+<!-- Error message -->
+@if (error) {
+  <div class="error-container">
+    <p>{{ error }}</p>
+  </div>
+}
+
+<!-- Favorites tab content -->
+@if (!isLoading && !error) {
+  @if (favorites.length === 0) {
+    <div class="favorites-placeholder">
+      <p>You haven't added any favorites yet</p>
+    </div>
+  } @else {
+    <app-media-grid
+      [items]="favorites"
+      [type]="'movie'"
+      emptyMessage="You haven't added any favorites yet"
+      (share)="onShareMedia($event)">
+    </app-media-grid>
+  }
+}

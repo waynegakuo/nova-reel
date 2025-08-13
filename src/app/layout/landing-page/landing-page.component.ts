@@ -10,28 +10,28 @@ import {Router} from '@angular/router';
 import { SearchBarComponent } from '../../shared/components/search/search-bar/search-bar.component';
 import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
 import { LoadingMessagesService } from '../../services/loading-messages/loading-messages.service';
-import { GuessMovieComponent } from '../../shared/components/guess-movie/guess-movie.component';
 import { RecommendationHistoryService } from '../../services/recommendation-history/recommendation-history.service';
 import { RecommendationHistoryEntry } from '../../models/recommendation-history.model';
 import { TabNavigationComponent, TabItem } from '../../shared/components/tab-navigation/tab-navigation.component';
 import { CategorySelectorComponent, CategoryItem } from '../../shared/components/category-selector/category-selector.component';
-import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls.component';
-import { MediaGridComponent } from '../../shared/components/media-grid/media-grid.component';
-import { TruncatedTextComponent } from '../../shared/components/truncated-text/truncated-text.component';
+import { MoviesAndTvShowsComponent } from '../../components/movies-and-tv-shows/movies-and-tv-shows.component';
+import { FavoritesComponent } from '../../components/favorites/favorites.component';
+import { ForYouComponent } from '../../components/for-you/for-you.component';
+import { SmartRecommendationsComponent } from '../../components/smart-recommendations/smart-recommendations.component';
+import { GuessTheMovieComponent } from '../../components/guess-the-movie/guess-the-movie.component';
 
 @Component({
   selector: 'app-landing-page',
   imports: [
     CommonModule,
-    MediaCardComponent,
     SearchBarComponent,
     SearchResultsComponent,
-    GuessMovieComponent,
     TabNavigationComponent,
-    CategorySelectorComponent,
-    PaginationControlsComponent,
-    MediaGridComponent,
-    TruncatedTextComponent
+    MoviesAndTvShowsComponent,
+    FavoritesComponent,
+    ForYouComponent,
+    SmartRecommendationsComponent,
+    GuessTheMovieComponent
   ],
   templateUrl: './landing-page.component.html',
   standalone: true,
@@ -45,7 +45,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   tvShows = signal<TvShow[]>([]);
   favorites = signal<((MovieDetails | TvShowDetails) & Favorite)[]>([]);
   aiRecommendations = signal<AiRecommendation[]>([]);
-  aiRecommendationReasoning = signal<string | undefined>(undefined);
+  aiRecommendationReasoning = signal<string | null>(null);
   naturalLanguageQuery = signal<string>('');
   activeTab = signal<string>('Movies');
   activeMovieCategory = signal<string>('popular');
@@ -245,7 +245,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       // Just ensure we have a clean state if switching from another tab
       if (!this.naturalLanguageQuery().trim()) {
         this.aiRecommendations.set([]);
-        this.aiRecommendationReasoning.set(undefined);
+        this.aiRecommendationReasoning.set(null);
       }
     }
   }
@@ -274,7 +274,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.aiRecommendations.set(data.recommendations);
-          this.aiRecommendationReasoning.set(data.reasoning);
+          this.aiRecommendationReasoning.set(data.reasoning ?? null);
           this.isLoading.set(false);
           this.loadingMessagesService.stopLoadingMessages();
 

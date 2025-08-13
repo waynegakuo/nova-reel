@@ -1,0 +1,19 @@
+<!-- Loading indicator -->
+@if (isLoading) {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading...</p>
+  </div>
+}
+
+<!-- Error message -->
+@if (error) {
+  <div class="error-container">
+    <p>{{ error }}</p>
+  </div>
+}
+
+<!-- Guess the Movie tab content -->
+@if (!isLoading && !error) {
+  <app-guess-movie></app-guess-movie>
+}
