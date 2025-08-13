@@ -64,33 +64,7 @@
   gap: 1.5rem;
 }
 
-// Search loading container
-.search-loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  margin: 1rem 0;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: variables.$border-radius-md;
-  min-height: 200px;
-
-  .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(variables.$primary-color, 0.3);
-    border-top: 3px solid variables.$primary-color;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: variables.$text-secondary-light;
-    font-size: 1rem;
-  }
-}
+// Use global .loading-container class instead
 
 // App search results will be displayed here
 
@@ -137,20 +111,7 @@
   display: flex;
   justify-content: center;
   margin-top: 1.5rem;
-
-  button {
-    padding: 0.75rem 1.5rem;
-    background-color: variables.$secondary-color;
-    color: white;
-    border: none;
-    border-radius: variables.$border-radius-sm;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
-    }
-  }
+  // Use global .btn .btn-primary classes
 }
 
 // Natural Language Input Styles
@@ -212,53 +173,11 @@
     gap: 0.75rem;
     justify-content: center;
     flex-wrap: wrap;
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: variables.$border-radius-sm;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.95rem;
-
-      &.btn-primary {
-        background-color: variables.$primary-color;
-        color: white;
-
-        &:hover:not(:disabled) {
-          background-color: color.adjust(variables.$primary-color, $lightness: -10%);
-          transform: translateY(-1px);
-        }
-
-        &:disabled {
-          background-color: rgba(variables.$primary-color, 0.5);
-          cursor: not-allowed;
-          transform: none;
-        }
-      }
-
-      &.btn-secondary {
-        background-color: variables.$secondary-color;
-        color: white;
-
-        &:hover {
-          background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
-          transform: translateY(-1px);
-        }
-      }
-    }
+    // Use global .btn, .btn-primary, .btn-secondary classes
   }
 }
 
-// Pagination controls
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 2rem 0;
-  flex-wrap: wrap;
-}
+// Use global .pagination-controls class
 
 // Animation for cards - using global animation
 app-media-card {
@@ -338,7 +257,7 @@ app-media-card {
     .history-toggle-header {
       background-color: transparent;
       border-bottom: none;
-      padding: 0;
+      padding: 0 1rem;
     }
   }
 }
@@ -350,25 +269,7 @@ app-media-card {
 }
 
 .history-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background-color: variables.$secondary-color;
-  color: white;
-  border: none;
-  border-radius: variables.$border-radius-sm;
-  cursor: pointer;
-  transition: all 0.3s ease, width 0.3s ease, min-width 0.3s ease;
-  font-size: 0.95rem;
-  font-weight: 500;
-  min-width: fit-content;
-
-  &:hover {
-    background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
-    transform: translateY(-1px);
-  }
-
+  // Use global .btn .btn-secondary classes + custom spacing for icons
   .material-icons {
     font-size: 1.2rem;
     transition: all 0.3s ease;
@@ -395,48 +296,7 @@ app-media-card {
   transition: all 0.4s ease-out;
 }
 
-// Animation keyframes for view transitions
-@keyframes fadeInSlide {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-// Animation keyframes for smooth transitions
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  to {
-    opacity: 1;
-    max-height: 1000px;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    max-height: 1000px;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-  to {
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
+// Animation keyframes now available in global styles
 
 .history-placeholder {
   @include variables.flex-center;
@@ -468,20 +328,7 @@ app-media-card {
     font-size: 1rem;
   }
 
-  .clear-history-btn {
-    padding: 0.5rem 1rem;
-    background-color: variables.$secondary-color;
-    color: white;
-    border: none;
-    border-radius: variables.$border-radius-sm;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 0.9rem;
-
-    &:hover {
-      background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
-    }
-  }
+  // Use global .btn .btn-secondary classes
 }
 
 .history-list {
