@@ -17,6 +17,7 @@ import { TabNavigationComponent, TabItem } from '../../shared/components/tab-nav
 import { CategorySelectorComponent, CategoryItem } from '../../shared/components/category-selector/category-selector.component';
 import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls.component';
 import { MediaGridComponent } from '../../shared/components/media-grid/media-grid.component';
+import { TruncatedTextComponent } from '../../shared/components/truncated-text/truncated-text.component';
 
 @Component({
   selector: 'app-landing-page',
@@ -29,7 +30,8 @@ import { MediaGridComponent } from '../../shared/components/media-grid/media-gri
     TabNavigationComponent,
     CategorySelectorComponent,
     PaginationControlsComponent,
-    MediaGridComponent
+    MediaGridComponent,
+    TruncatedTextComponent
   ],
   templateUrl: './landing-page.component.html',
   standalone: true,

@@ -169,7 +169,10 @@
                     @if (selectedHistoryEntry()?.reasoning) {
                       <div class="recommendation-reasoning">
                         <h3>Why we recommended these:</h3>
-                        <p>{{ selectedHistoryEntry()?.reasoning }}</p>
+                        <app-truncated-text
+                          [text]="selectedHistoryEntry()?.reasoning || ''"
+                          [maxLines]="6">
+                        </app-truncated-text>
                       </div>
                     }
 
@@ -316,7 +319,10 @@
             @if (aiRecommendationReasoning()) {
               <div class="recommendation-reasoning">
                 <h3>Why we think you'll like these:</h3>
-                <p>{{ aiRecommendationReasoning() }}</p>
+                <app-truncated-text
+                  [text]="aiRecommendationReasoning() || ''"
+                  [maxLines]="6">
+                </app-truncated-text>
               </div>
             }
 
@@ -392,7 +398,10 @@
             @if (aiRecommendationReasoning()) {
               <div class="recommendation-reasoning">
                 <h3>Why we think you'll like these:</h3>
-                <p>{{ aiRecommendationReasoning() }}</p>
+                <app-truncated-text
+                  [text]="aiRecommendationReasoning() || ''"
+                  [maxLines]="6">
+                </app-truncated-text>
               </div>
             }
 
