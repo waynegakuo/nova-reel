@@ -241,3 +241,16 @@
     }
   }
 }
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .user-profile {
+    .user-name {
+      display: none; // Hide user name on mobile to save space
+    }
+  }
+
+  .user-dropdown {
+    width: 200px; // Reduce dropdown width on mobile
+  }
+}
