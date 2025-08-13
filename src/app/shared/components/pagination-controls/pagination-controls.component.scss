@@ -1,0 +1,9 @@
+@use '../../../../styles/variables' as variables;
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}

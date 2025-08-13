@@ -1,0 +1,14 @@
+@use '../../../../styles/variables' as variables;
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+
+  .ai-icon {
+    font-size: 1rem;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+    color: inherit;
+  }
+}

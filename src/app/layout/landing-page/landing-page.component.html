@@ -32,42 +32,26 @@
     }
   </div>
 
-  <div class="tabs">
-    @for (tab of novaTabs(); track $index) {
-      <button
-        class="btn-tab"
-        [class.active]="activeTab() === tab"
-        (click)="setActiveTab(tab)">
-        @if (tab === 'For You') {
-          <span class="material-icons ai-icon">auto_awesome</span>
-        }
-        @if (tab === 'Smart Recommendations') {
-          <span class="material-icons ai-icon">psychology</span>
-        }
-        @if (tab === 'Guess the Movie') {
-          <span class="material-icons ai-icon">movie_filter</span>
-        }
-        {{ tab }}
-      </button>
-    }
-  </div>
+  <app-tab-navigation
+    [tabs]="tabsConfig"
+    [activeTab]="activeTab()"
+    (tabChange)="setActiveTab($event)">
+  </app-tab-navigation>
 
   <div class="content">
     <!-- Category selectors - always visible based on active tab -->
     @if (activeTab() === 'Movies') {
-      <div class="category-selector">
-        <button (click)="loadMovies('popular')" class="btn-category" [class.active]="activeMovieCategory() === 'popular'">Popular</button>
-        <button (click)="loadMovies('top_rated')" class="btn-category" [class.active]="activeMovieCategory() === 'top_rated'">Top Rated</button>
-        <button (click)="loadMovies('now_playing')" class="btn-category" [class.active]="activeMovieCategory() === 'now_playing'">Now Playing</button>
-        <button (click)="loadMovies('upcoming')" class="btn-category" [class.active]="activeMovieCategory() === 'upcoming'">Upcoming</button>
-      </div>
+      <app-category-selector
+        [categories]="movieCategories"
+        [activeCategory]="activeMovieCategory()"
+        (categoryChange)="loadMovies($event)">
+      </app-category-selector>
     } @else if (activeTab() === 'TV Shows') {
-      <div class="category-selector">
-        <button (click)="loadTVShows('popular')" class="btn-category" [class.active]="activeTVShowCategory() === 'popular'">Popular</button>
-        <button (click)="loadTVShows('top_rated')" class="btn-category" [class.active]="activeTVShowCategory() === 'top_rated'">Top Rated</button>
-        <button (click)="loadTVShows('on_the_air')" class="btn-category" [class.active]="activeTVShowCategory() === 'on_the_air'">On The Air</button>
-        <button (click)="loadTVShows('airing_today')" class="btn-category" [class.active]="activeTVShowCategory() === 'airing_today'">Airing Today</button>
-      </div>
+      <app-category-selector
+        [categories]="tvShowCategories"
+        [activeCategory]="activeTVShowCategory()"
+        (categoryChange)="loadTVShows($event)">
+      </app-category-selector>
     }
 
     <!-- Dynamic content area that refreshes -->
@@ -92,107 +76,52 @@
 
       <!-- Movies tab content -->
       @if (activeTab() === 'Movies' && !isLoading() && !error()) {
-        <div class="media-grid">
-          @if (movies().length === 0 && !isLoading()) {
-            <p>No movies found.</p>
-          } @else {
-            @for (movie of movies(); track movie.id) {
-              <app-media-card
-                [item]="movie"
-                type="movie"
-                (share)="onShareMedia($event)">
-              </app-media-card>
-            }
-          }
-        </div>
+        <app-media-grid
+          [items]="movies()"
+          type="movie"
+          emptyMessage="No movies found."
+          (share)="onShareMedia($event)">
+        </app-media-grid>
 
-        <!-- Pagination controls for Movies -->
-        <div class="pagination-controls">
-          <button
-            class="btn-pagination"
-            [disabled]="currentMoviePage() <= 1"
-            (click)="prevMoviePage()">
-            Previous
-          </button>
-
-          @for (page of [1, 2, 3, 4, 5]; track page) {
-            <button
-              class="btn-pagination page-number"
-              [class.active]="currentMoviePage() === page"
-              (click)="goToMoviePage(page)">
-              {{ page }}
-            </button>
-          }
-
-          <button
-            class="btn-pagination"
-            [disabled]="currentMoviePage() >= MAX_PAGES"
-            (click)="nextMoviePage()">
-            Next
-          </button>
-        </div>
+        <app-pagination-controls
+          [currentPage]="currentMoviePage()"
+          [maxPages]="MAX_PAGES"
+          [totalPages]="MAX_PAGES"
+          (pageChange)="goToMoviePage($event)">
+        </app-pagination-controls>
       }
 
       <!-- TV Shows tab content -->
       @if (activeTab() === 'TV Shows' && !isLoading() && !error()) {
-        <div class="media-grid">
-          @if (tvShows().length === 0 && !isLoading()) {
-            <p>No TV shows found.</p>
-          } @else {
-            @for (tvShow of tvShows(); track tvShow.id) {
-              <app-media-card
-                [item]="tvShow"
-                type="tvshow"
-                (share)="onShareMedia($event)">
-              </app-media-card>
-            }
-          }
-        </div>
+        <app-media-grid
+          [items]="tvShows()"
+          type="tvshow"
+          emptyMessage="No TV shows found."
+          (share)="onShareMedia($event)">
+        </app-media-grid>
 
-        <!-- Pagination controls for TV Shows -->
-        <div class="pagination-controls">
-          <button
-            class="btn-pagination"
-            [disabled]="currentTVShowPage() <= 1"
-            (click)="prevTVShowPage()">
-            Previous
-          </button>
-
-          @for (page of [1, 2, 3, 4, 5]; track page) {
-            <button
-              class="btn-pagination page-number"
-              [class.active]="currentTVShowPage() === page"
-              (click)="goToTVShowPage(page)">
-              {{ page }}
-            </button>
-          }
-
-          <button
-            class="btn-pagination"
-            [disabled]="currentTVShowPage() >= MAX_PAGES"
-            (click)="nextTVShowPage()">
-            Next
-          </button>
-        </div>
+        <app-pagination-controls
+          [currentPage]="currentTVShowPage()"
+          [maxPages]="MAX_PAGES"
+          [totalPages]="MAX_PAGES"
+          (pageChange)="goToTVShowPage($event)">
+        </app-pagination-controls>
       }
 
       <!-- Favorites tab content -->
       @if (activeTab() === 'Favorites' && !isLoading() && !error()) {
-        <div class="media-grid">
-          @if (favorites().length === 0) {
-            <div class="favorites-placeholder">
-              <p>You haven't added any favorites yet</p>
-            </div>
-          } @else {
-            @for (favorite of favorites(); track favorite.id) {
-              <app-media-card
-                [item]="favorite"
-                [type]="favorite.mediaType"
-                (share)="onShareMedia($event)">
-              </app-media-card>
-            }
-          }
-        </div>
+        @if (favorites().length === 0) {
+          <div class="favorites-placeholder">
+            <p>You haven't added any favorites yet</p>
+          </div>
+        } @else {
+          <app-media-grid
+            [items]="favorites()"
+            [type]="'movie'"
+            emptyMessage="You haven't added any favorites yet"
+            (share)="onShareMedia($event)">
+          </app-media-grid>
+        }
       }
 
 

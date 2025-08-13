@@ -1,0 +1,8 @@
+@use '../../../../styles/variables' as variables;
+
+.category-selector {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}

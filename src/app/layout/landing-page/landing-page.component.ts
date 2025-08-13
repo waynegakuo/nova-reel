@@ -13,6 +13,10 @@ import { LoadingMessagesService } from '../../services/loading-messages/loading-
 import { GuessMovieComponent } from '../../shared/components/guess-movie/guess-movie.component';
 import { RecommendationHistoryService } from '../../services/recommendation-history/recommendation-history.service';
 import { RecommendationHistoryEntry } from '../../models/recommendation-history.model';
+import { TabNavigationComponent, TabItem } from '../../shared/components/tab-navigation/tab-navigation.component';
+import { CategorySelectorComponent, CategoryItem } from '../../shared/components/category-selector/category-selector.component';
+import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls.component';
+import { MediaGridComponent } from '../../shared/components/media-grid/media-grid.component';
 
 @Component({
   selector: 'app-landing-page',
@@ -21,7 +25,11 @@ import { RecommendationHistoryEntry } from '../../models/recommendation-history.
     MediaCardComponent,
     SearchBarComponent,
     SearchResultsComponent,
-    GuessMovieComponent
+    GuessMovieComponent,
+    TabNavigationComponent,
+    CategorySelectorComponent,
+    PaginationControlsComponent,
+    MediaGridComponent
   ],
   templateUrl: './landing-page.component.html',
   standalone: true,
@@ -67,6 +75,37 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
   // Static tabs array (Recent History is now integrated within Smart Recommendations)
   novaTabs = signal<string[]>(['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie']);
+
+  // Tab configuration for new TabNavigationComponent
+  get tabsConfig(): TabItem[] {
+    return [
+      { label: 'Movies', value: 'Movies' },
+      { label: 'TV Shows', value: 'TV Shows' },
+      { label: 'Favorites', value: 'Favorites' },
+      { label: 'For You', value: 'For You', icon: 'auto_awesome' },
+      { label: 'Smart Recommendations', value: 'Smart Recommendations', icon: 'psychology' },
+      { label: 'Guess the Movie', value: 'Guess the Movie', icon: 'movie_filter' }
+    ];
+  }
+
+  // Category configurations
+  get movieCategories(): CategoryItem[] {
+    return [
+      { label: 'Popular', value: 'popular' },
+      { label: 'Top Rated', value: 'top_rated' },
+      { label: 'Now Playing', value: 'now_playing' },
+      { label: 'Upcoming', value: 'upcoming' }
+    ];
+  }
+
+  get tvShowCategories(): CategoryItem[] {
+    return [
+      { label: 'Popular', value: 'popular' },
+      { label: 'Top Rated', value: 'top_rated' },
+      { label: 'On The Air', value: 'on_the_air' },
+      { label: 'Airing Today', value: 'airing_today' }
+    ];
+  }
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();

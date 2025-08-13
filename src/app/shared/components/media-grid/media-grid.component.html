@@ -1,0 +1,13 @@
+<div class="media-grid">
+  @if (items.length === 0) {
+    <p class="empty-message">{{ emptyMessage }}</p>
+  } @else {
+    @for (item of items; track item.id) {
+      <app-media-card
+        [item]="item"
+        [type]="type"
+        (share)="onShare($event)">
+      </app-media-card>
+    }
+  }
+</div>
