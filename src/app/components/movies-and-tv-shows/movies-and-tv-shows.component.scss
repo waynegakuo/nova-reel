@@ -1,0 +1,57 @@
+@use '../../../styles/variables' as variables;
+
+// Category selector styles
+.category-selector {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+// Media grid styles
+.media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+// Loading and error containers use global styles
+
+// Animation for cards
+app-media-card {
+  animation: fadeIn 0.5s ease forwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Mobile responsive styles
+@include variables.responsive-tablet {
+  .media-grid {
+    gap: 1rem;
+  }
+
+  .pagination-controls {
+    margin: 1.5rem 0;
+
+    .pagination-btn {
+      padding: 0.4rem 0.8rem;
+      margin: 0.2rem;
+      font-size: 0.8rem;
+      min-width: 35px;
+    }
+  }
+}
+
+@include variables.responsive-mobile {
+  .pagination-btn {
+    &:first-child, &:last-child {
+      font-size: 0.7rem;
+      padding: 0.4rem 0.6rem;
+    }
+  }
+}

@@ -10,16 +10,28 @@ import {Router} from '@angular/router';
 import { SearchBarComponent } from '../../shared/components/search/search-bar/search-bar.component';
 import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
 import { LoadingMessagesService } from '../../services/loading-messages/loading-messages.service';
-import { GuessMovieComponent } from '../../shared/components/guess-movie/guess-movie.component';
+import { RecommendationHistoryService } from '../../services/recommendation-history/recommendation-history.service';
+import { RecommendationHistoryEntry } from '../../models/recommendation-history.model';
+import { TabNavigationComponent, TabItem } from '../../shared/components/tab-navigation/tab-navigation.component';
+import { CategorySelectorComponent, CategoryItem } from '../../shared/components/category-selector/category-selector.component';
+import { MoviesAndTvShowsComponent } from '../../components/movies-and-tv-shows/movies-and-tv-shows.component';
+import { FavoritesComponent } from '../../components/favorites/favorites.component';
+import { ForYouComponent } from '../../components/for-you/for-you.component';
+import { SmartRecommendationsComponent } from '../../components/smart-recommendations/smart-recommendations.component';
+import { GuessTheMovieComponent } from '../../components/guess-the-movie/guess-the-movie.component';
 
 @Component({
   selector: 'app-landing-page',
   imports: [
     CommonModule,
-    MediaCardComponent,
     SearchBarComponent,
     SearchResultsComponent,
-    GuessMovieComponent
+    TabNavigationComponent,
+    MoviesAndTvShowsComponent,
+    FavoritesComponent,
+    ForYouComponent,
+    SmartRecommendationsComponent,
+    GuessTheMovieComponent
   ],
   templateUrl: './landing-page.component.html',
   standalone: true,
@@ -33,12 +45,19 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   tvShows = signal<TvShow[]>([]);
   favorites = signal<((MovieDetails | TvShowDetails) & Favorite)[]>([]);
   aiRecommendations = signal<AiRecommendation[]>([]);
-  aiRecommendationReasoning = signal<string | undefined>(undefined);
+  aiRecommendationReasoning = signal<string | null>(null);
+  naturalLanguageQuery = signal<string>('');
   activeTab = signal<string>('Movies');
   activeMovieCategory = signal<string>('popular');
   activeTVShowCategory = signal<string>('popular');
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
+
+  // Recommendation history signals
+  recommendationHistory = signal<RecommendationHistoryEntry[]>([]);
+  hasRecentHistory = signal<boolean>(false);
+  selectedHistoryEntry = signal<RecommendationHistoryEntry | null>(null);
+  showHistory = signal<boolean>(false);
 
   // Search related signals
   searchQuery = signal<string>('');
@@ -56,17 +75,60 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   currentSearchPage = signal<number>(1);
   readonly MAX_PAGES = 5; // Maximum number of pages as per requirements
 
+  // Static tabs array (Recent History is now integrated within Smart Recommendations)
+  novaTabs = signal<string[]>(['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie']);
+
+  // Tab configuration for new TabNavigationComponent
+  get tabsConfig(): TabItem[] {
+    return [
+      { label: 'Movies', value: 'Movies' },
+      { label: 'TV Shows', value: 'TV Shows' },
+      { label: 'Favorites', value: 'Favorites' },
+      { label: 'For You', value: 'For You', icon: 'auto_awesome' },
+      { label: 'Smart Recommendations', value: 'Smart Recommendations', icon: 'psychology' },
+      { label: 'Guess the Movie', value: 'Guess the Movie', icon: 'movie_filter' }
+    ];
+  }
+
+  // Category configurations
+  get movieCategories(): CategoryItem[] {
+    return [
+      { label: 'Popular', value: 'popular' },
+      { label: 'Top Rated', value: 'top_rated' },
+      { label: 'Now Playing', value: 'now_playing' },
+      { label: 'Upcoming', value: 'upcoming' }
+    ];
+  }
+
+  get tvShowCategories(): CategoryItem[] {
+    return [
+      { label: 'Popular', value: 'popular' },
+      { label: 'Top Rated', value: 'top_rated' },
+      { label: 'On The Air', value: 'on_the_air' },
+      { label: 'Airing Today', value: 'airing_today' }
+    ];
+  }
+
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
 
   mediaService = inject(MediaService);
   private router = inject(Router);
   loadingMessagesService = inject(LoadingMessagesService);
+  historyService = inject(RecommendationHistoryService);
 
 
   ngOnInit(): void {
     this.loadMovies('popular');
     this.loadTVShows('popular');
+
+    // Subscribe to recommendation history changes
+    this.historyService.history$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(history => {
+        this.recommendationHistory.set(history);
+        this.hasRecentHistory.set(history.length > 0);
+      });
   }
 
   ngOnDestroy(): void {
@@ -175,31 +237,51 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     if (tab === 'Favorites') {
       this.loadFavorites();
     } else if (tab === 'For You') {
+      // Clear natural language query for favorites-based recommendations
+      this.naturalLanguageQuery.set('');
       this.loadAiRecommendations();
+    } else if (tab === 'Smart Recommendations') {
+      // Smart Recommendations tab doesn't auto-load - it's user-driven
+      // Just ensure we have a clean state if switching from another tab
+      if (!this.naturalLanguageQuery().trim()) {
+        this.aiRecommendations.set([]);
+        this.aiRecommendationReasoning.set(null);
+      }
     }
   }
 
   /**
    * Loads AI-powered personalized recommendations for the current user
    * This method fetches recommendations generated by the Genkit AI system
-   * based on the user's favorite movies and TV shows. The recommendations
-   * include a mix of movies and TV shows that the user might enjoy.
+   * based on the user's favorite movies and TV shows, or natural language queries.
+   * The recommendations include a mix of movies and TV shows that the user might enjoy.
    *
    * @param forceRefresh - Whether to force a refresh of the cache (default: false)
+   * @param useNaturalLanguage - Whether to use natural language query (default: true for Smart Recommendations tab)
    */
-  loadAiRecommendations(forceRefresh: boolean = false): void {
+  loadAiRecommendations(forceRefresh: boolean = false, useNaturalLanguage: boolean = true): void {
     this.isLoading.set(true);
     this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
 
-    this.mediaService.getAiRecommendations(forceRefresh)
+    // Only use natural language query if explicitly allowed and we're not in "For You" tab
+    const naturalLanguageQuery = (useNaturalLanguage && this.activeTab() !== 'For You')
+      ? this.naturalLanguageQuery().trim() || undefined
+      : undefined;
+
+    this.mediaService.getAiRecommendations(forceRefresh, 5, naturalLanguageQuery)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           this.aiRecommendations.set(data.recommendations);
-          this.aiRecommendationReasoning.set(data.reasoning);
+          this.aiRecommendationReasoning.set(data.reasoning ?? null);
           this.isLoading.set(false);
           this.loadingMessagesService.stopLoadingMessages();
+
+          // Save to history if this was a natural language query with results
+          if (naturalLanguageQuery && data.recommendations.length > 0) {
+            this.historyService.saveToHistory(naturalLanguageQuery, data.recommendations, data.reasoning);
+          }
         },
         error: (err) => {
           console.error('Error loading AI recommendations:', err);
@@ -212,6 +294,52 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           this.loadingMessagesService.stopLoadingMessages();
         }
       });
+  }
+
+  /**
+   * Handles natural language query input for AI recommendations
+   * @param query - The natural language query from the user
+   */
+  onNaturalLanguageQuery(query: string): void {
+    this.naturalLanguageQuery.set(query);
+    this.loadAiRecommendations(true); // Force refresh with new query
+  }
+
+  /**
+   * Clears the natural language query and reloads favorites-based recommendations
+   */
+  clearNaturalLanguageQuery(): void {
+    this.naturalLanguageQuery.set('');
+    this.loadAiRecommendations(true); // Force refresh to get favorites-based recommendations
+  }
+
+  /**
+   * Toggles the visibility of the history section within Smart Recommendations
+   */
+  toggleHistoryView(): void {
+    this.showHistory.set(!this.showHistory());
+    // Clear selected history entry when toggling history view
+    if (!this.showHistory()) {
+      this.clearSelectedHistoryEntry();
+    }
+  }
+
+  /**
+   * Loads a specific history entry and displays its recommendations
+   * @param entry - The history entry to load
+   */
+  loadHistoryEntry(entry: RecommendationHistoryEntry): void {
+    this.selectedHistoryEntry.set(entry);
+    // Don't set aiRecommendations, aiRecommendationReasoning, or naturalLanguageQuery
+    // to avoid duplication and unwanted text in textarea
+    // The history entry will display its own recommendations in the history view
+  }
+
+  /**
+   * Clears the selected history entry
+   */
+  clearSelectedHistoryEntry(): void {
+    this.selectedHistoryEntry.set(null);
   }
 
   // Method to load favorites from Firestore

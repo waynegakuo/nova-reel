@@ -1,0 +1,13 @@
+<div class="tabs">
+  @for (tab of tabs; track $index) {
+    <button
+      class="btn-tab"
+      [class.active]="activeTab === tab.value"
+      (click)="onTabClick(tab)">
+      @if (tab.icon) {
+        <span class="material-icons ai-icon">{{ tab.icon }}</span>
+      }
+      {{ tab.label }}
+    </button>
+  }
+</div>

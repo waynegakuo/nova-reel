@@ -1,0 +1,24 @@
+<div class="pagination-controls">
+  <button
+    class="btn-pagination"
+    [disabled]="currentPage <= 1"
+    (click)="onPreviousPage()">
+    Previous
+  </button>
+
+  @for (page of pages; track page) {
+    <button
+      class="btn-pagination page-number"
+      [class.active]="currentPage === page"
+      (click)="onPageClick(page)">
+      {{ page }}
+    </button>
+  }
+
+  <button
+    class="btn-pagination"
+    [disabled]="currentPage >= maxPages"
+    (click)="onNextPage()">
+    Next
+  </button>
+</div>

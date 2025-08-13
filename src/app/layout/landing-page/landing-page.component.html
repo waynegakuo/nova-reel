@@ -32,41 +32,13 @@
     }
   </div>
 
-  <div class="tabs">
-    @for (tab of ['Movies', 'TV Shows', 'Favorites', 'For You', 'Guess the Movie']; track $index) {
-      <button
-        class="btn-tab"
-        [class.active]="activeTab() === tab"
-        (click)="setActiveTab(tab)">
-        @if (tab === 'For You') {
-          <span class="material-icons ai-icon">auto_awesome</span>
-        }
-        @if (tab === 'Guess the Movie') {
-          <span class="material-icons ai-icon">movie_filter</span>
-        }
-        {{ tab }}
-      </button>
-    }
-  </div>
+  <app-tab-navigation
+    [tabs]="tabsConfig"
+    [activeTab]="activeTab()"
+    (tabChange)="setActiveTab($event)">
+  </app-tab-navigation>
 
   <div class="content">
-    <!-- Category selectors - always visible based on active tab -->
-    @if (activeTab() === 'Movies') {
-      <div class="category-selector">
-        <button (click)="loadMovies('popular')" class="btn-category" [class.active]="activeMovieCategory() === 'popular'">Popular</button>
-        <button (click)="loadMovies('top_rated')" class="btn-category" [class.active]="activeMovieCategory() === 'top_rated'">Top Rated</button>
-        <button (click)="loadMovies('now_playing')" class="btn-category" [class.active]="activeMovieCategory() === 'now_playing'">Now Playing</button>
-        <button (click)="loadMovies('upcoming')" class="btn-category" [class.active]="activeMovieCategory() === 'upcoming'">Upcoming</button>
-      </div>
-    } @else if (activeTab() === 'TV Shows') {
-      <div class="category-selector">
-        <button (click)="loadTVShows('popular')" class="btn-category" [class.active]="activeTVShowCategory() === 'popular'">Popular</button>
-        <button (click)="loadTVShows('top_rated')" class="btn-category" [class.active]="activeTVShowCategory() === 'top_rated'">Top Rated</button>
-        <button (click)="loadTVShows('on_the_air')" class="btn-category" [class.active]="activeTVShowCategory() === 'on_the_air'">On The Air</button>
-        <button (click)="loadTVShows('airing_today')" class="btn-category" [class.active]="activeTVShowCategory() === 'airing_today'">Airing Today</button>
-      </div>
-    }
-
     <!-- Dynamic content area that refreshes -->
     <div class="dynamic-content">
       <!-- Loading indicator -->
@@ -87,193 +59,81 @@
         </div>
       }
 
-      <!-- Movies tab content -->
-      @if (activeTab() === 'Movies' && !isLoading() && !error()) {
-        <div class="media-grid">
-          @if (movies().length === 0 && !isLoading()) {
-            <p>No movies found.</p>
-          } @else {
-            @for (movie of movies(); track movie.id) {
-              <app-media-card
-                [item]="movie"
-                type="movie"
-                (share)="onShareMedia($event)">
-              </app-media-card>
-            }
-          }
-        </div>
-
-        <!-- Pagination controls for Movies -->
-        <div class="pagination-controls">
-          <button
-            class="btn-pagination"
-            [disabled]="currentMoviePage() <= 1"
-            (click)="prevMoviePage()">
-            Previous
-          </button>
-
-          @for (page of [1, 2, 3, 4, 5]; track page) {
-            <button
-              class="btn-pagination page-number"
-              [class.active]="currentMoviePage() === page"
-              (click)="goToMoviePage(page)">
-              {{ page }}
-            </button>
-          }
-
-          <button
-            class="btn-pagination"
-            [disabled]="currentMoviePage() >= MAX_PAGES"
-            (click)="nextMoviePage()">
-            Next
-          </button>
-        </div>
+      <!-- Movies and TV Shows content -->
+      @if ((activeTab() === 'Movies' || activeTab() === 'TV Shows') && !isLoading() && !error()) {
+        <app-movies-and-tv-shows
+          [activeTab]="activeTab()"
+          [movies]="movies()"
+          [tvShows]="tvShows()"
+          [isLoading]="isLoading()"
+          [error]="error()"
+          [movieCategories]="movieCategories"
+          [tvShowCategories]="tvShowCategories"
+          [activeMovieCategory]="activeMovieCategory()"
+          [activeTVShowCategory]="activeTVShowCategory()"
+          [currentMoviePage]="currentMoviePage()"
+          [currentTVShowPage]="currentTVShowPage()"
+          [maxPages]="MAX_PAGES"
+          (loadMovies)="loadMovies($event)"
+          (loadTVShows)="loadTVShows($event)"
+          (goToMoviePage)="goToMoviePage($event)"
+          (goToTVShowPage)="goToTVShowPage($event)"
+          (shareMedia)="onShareMedia($event)">
+        </app-movies-and-tv-shows>
       }
 
-      <!-- TV Shows tab content -->
-      @if (activeTab() === 'TV Shows' && !isLoading() && !error()) {
-        <div class="media-grid">
-          @if (tvShows().length === 0 && !isLoading()) {
-            <p>No TV shows found.</p>
-          } @else {
-            @for (tvShow of tvShows(); track tvShow.id) {
-              <app-media-card
-                [item]="tvShow"
-                type="tvshow"
-                (share)="onShareMedia($event)">
-              </app-media-card>
-            }
-          }
-        </div>
-
-        <!-- Pagination controls for TV Shows -->
-        <div class="pagination-controls">
-          <button
-            class="btn-pagination"
-            [disabled]="currentTVShowPage() <= 1"
-            (click)="prevTVShowPage()">
-            Previous
-          </button>
-
-          @for (page of [1, 2, 3, 4, 5]; track page) {
-            <button
-              class="btn-pagination page-number"
-              [class.active]="currentTVShowPage() === page"
-              (click)="goToTVShowPage(page)">
-              {{ page }}
-            </button>
-          }
-
-          <button
-            class="btn-pagination"
-            [disabled]="currentTVShowPage() >= MAX_PAGES"
-            (click)="nextTVShowPage()">
-            Next
-          </button>
-        </div>
-      }
-
-      <!-- Favorites tab content -->
+      <!-- Favorites content -->
       @if (activeTab() === 'Favorites' && !isLoading() && !error()) {
-        <div class="media-grid">
-          @if (favorites().length === 0) {
-            <div class="favorites-placeholder">
-              <p>You haven't added any favorites yet</p>
-            </div>
-          } @else {
-            @for (favorite of favorites(); track favorite.id) {
-              <app-media-card
-                [item]="favorite"
-                [type]="favorite.mediaType"
-                (share)="onShareMedia($event)">
-              </app-media-card>
-            }
-          }
-        </div>
+        <app-favorites
+          [favorites]="favorites()"
+          [isLoading]="isLoading()"
+          [error]="error()"
+          (shareMedia)="onShareMedia($event)">
+        </app-favorites>
       }
 
-      <!--
-        AI Recommendations tab content - "For You" section
-        This section displays personalized movie and TV show recommendations generated by
-        the Genkit AI system based on the user's favorites. It includes:
-        1. The reasoning behind the recommendations (if available)
-        2. A grid of recommended media items
-        3. A button to refresh recommendations
-      -->
+
+      <!-- Smart Recommendations content -->
+      @if (activeTab() === 'Smart Recommendations' && !isLoading() && !error()) {
+        <app-smart-recommendations
+          [aiRecommendations]="aiRecommendations()"
+          [aiRecommendationReasoning]="aiRecommendationReasoning()"
+          [isLoading]="isLoading()"
+          [error]="error()"
+          [recommendationHistory]="recommendationHistory()"
+          [showHistory]="showHistory()"
+          [selectedHistoryEntry]="selectedHistoryEntry()"
+          [naturalLanguageQuery]="naturalLanguageQuery()"
+          [historyService]="historyService"
+          (loadAiRecommendations)="loadAiRecommendations($event)"
+          (shareMedia)="onShareMedia($event)"
+          (naturalLanguageQueryChange)="naturalLanguageQuery.set($event)"
+          (onNaturalLanguageQuery)="onNaturalLanguageQuery($event)"
+          (clearNaturalLanguageQuery)="clearNaturalLanguageQuery()"
+          (toggleHistoryView)="toggleHistoryView()"
+          (loadHistoryEntry)="loadHistoryEntry($event)"
+          (clearSelectedHistoryEntry)="clearSelectedHistoryEntry()">
+        </app-smart-recommendations>
+      }
+
+      <!-- For You content -->
       @if (activeTab() === 'For You' && !isLoading() && !error()) {
-        <div class="recommendations-container">
-          @if (aiRecommendations().length === 0) {
-            <div class="recommendations-placeholder">
-              <p>No personalized recommendations available yet.</p>
-              <p>Add some favorites to get started!</p>
-            </div>
-          } @else {
-            @if (aiRecommendationReasoning()) {
-              <div class="recommendation-reasoning">
-                <h3>Why we think you'll like these:</h3>
-                <p>{{ aiRecommendationReasoning() }}</p>
-              </div>
-            }
-
-            <div class="media-grid">
-              @for (recommendation of aiRecommendations(); track recommendation.tmdbId) {
-                <app-media-card
-                  [item]="{
-                    id: recommendation.tmdbId,
-                    title: recommendation.title,
-                    name: recommendation.title,
-                    overview: recommendation.overview,
-                    poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
-                    backdrop_path: '',
-                    vote_average: recommendation.vote_average,
-                    popularity: 0,
-                    vote_count: 0,
-                    genre_ids: [],
-                    adult: false,
-                    original_language: '',
-                    release_date: recommendation.release_date,
-                    first_air_date: recommendation.release_date,
-                    origin_country: [],
-                    original_name: recommendation.title
-                  }"
-                  [type]="recommendation.type === 'movie' ? 'movie' : 'tvshow'"
-                  (share)="onShareMedia({
-                    item: {
-                      id: recommendation.tmdbId,
-                      title: recommendation.title,
-                      name: recommendation.title,
-                      overview: recommendation.overview,
-                      poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
-                      backdrop_path: '',
-                      vote_average: 0,
-                      popularity: 0,
-                      vote_count: 0,
-                      genre_ids: [],
-                      adult: false,
-                      original_language: '',
-                      release_date: '',
-                      first_air_date: '',
-                      origin_country: [],
-                      original_name: recommendation.title
-                    },
-                    type: recommendation.type
-                  })">
-                </app-media-card>
-              }
-            </div>
-
-            <div class="refresh-recommendations">
-              <button class="btn btn-primary" (click)="loadAiRecommendations(true)">
-                Refresh Recommendations
-              </button>
-            </div>
-          }
-        </div>
+        <app-for-you
+          [aiRecommendations]="aiRecommendations()"
+          [aiRecommendationReasoning]="aiRecommendationReasoning()"
+          [isLoading]="isLoading()"
+          [error]="error()"
+          (loadAiRecommendations)="loadAiRecommendations($event)"
+          (shareMedia)="onShareMedia($event)">
+        </app-for-you>
       }
 
-      <!-- Guess the Movie tab content -->
+      <!-- Guess the Movie content -->
       @if (activeTab() === 'Guess the Movie' && !isLoading() && !error()) {
-        <app-guess-movie></app-guess-movie>
+        <app-guess-the-movie
+          [isLoading]="isLoading()"
+          [error]="error()">
+        </app-guess-the-movie>
       }
     </div>
   </div>

@@ -1,5 +1,6 @@
 // Import variables
 @use '../../../../styles/variables' as variables;
+@use 'sass:color';
 
 // Common styles
 %card-shadow {
@@ -70,7 +71,7 @@
     @extend %card-base;
 
     &.has-image {
-      background-color: darken(variables.$card-background-light, 5%);
+      background-color: color.adjust(variables.$card-background-light, $lightness: -5%);
     }
 
     .upload-placeholder {

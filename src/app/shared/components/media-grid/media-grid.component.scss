@@ -1,0 +1,27 @@
+@use '../../../../styles/variables' as variables;
+
+.media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+
+  .empty-message {
+    color: variables.$text-secondary-light;
+    font-size: 1.2rem;
+    text-align: center;
+    width: 100%;
+    padding: 2rem;
+  }
+}
+
+// Animation for cards
+app-media-card {
+  animation: fadeIn 0.5s ease forwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}

@@ -1,0 +1,66 @@
+<!-- Category selectors - always visible based on active tab -->
+@if (activeTab === 'Movies') {
+  <app-category-selector
+    [categories]="movieCategories"
+    [activeCategory]="activeMovieCategory"
+    (categoryChange)="onMovieCategoryChange($event)">
+  </app-category-selector>
+} @else if (activeTab === 'TV Shows') {
+  <app-category-selector
+    [categories]="tvShowCategories"
+    [activeCategory]="activeTVShowCategory"
+    (categoryChange)="onTVShowCategoryChange($event)">
+  </app-category-selector>
+}
+
+<!-- Loading indicator -->
+@if (isLoading) {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading...</p>
+  </div>
+}
+
+<!-- Error message -->
+@if (error) {
+  <div class="error-container">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="activeTab === 'Movies' ? loadMovies.emit('popular') : loadTVShows.emit('popular')">
+      Try Again
+    </button>
+  </div>
+}
+
+<!-- Movies tab content -->
+@if (activeTab === 'Movies' && !isLoading && !error) {
+  <app-media-grid
+    [items]="movies"
+    type="movie"
+    emptyMessage="No movies found."
+    (share)="onShareMedia($event)">
+  </app-media-grid>
+
+  <app-pagination-controls
+    [currentPage]="currentMoviePage"
+    [maxPages]="maxPages"
+    [totalPages]="maxPages"
+    (pageChange)="onMoviePageChange($event)">
+  </app-pagination-controls>
+}
+
+<!-- TV Shows tab content -->
+@if (activeTab === 'TV Shows' && !isLoading && !error) {
+  <app-media-grid
+    [items]="tvShows"
+    type="tvshow"
+    emptyMessage="No TV shows found."
+    (share)="onShareMedia($event)">
+  </app-media-grid>
+
+  <app-pagination-controls
+    [currentPage]="currentTVShowPage"
+    [maxPages]="maxPages"
+    [totalPages]="maxPages"
+    (pageChange)="onTVShowPageChange($event)">
+  </app-pagination-controls>
+}

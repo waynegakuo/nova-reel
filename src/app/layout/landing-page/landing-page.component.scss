@@ -49,118 +49,11 @@
   transition: all 0.3s ease;
 }
 
-// Category selector
-.category-selector {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-}
-
-.media-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-// Search loading container
-.search-loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  margin: 1rem 0;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: variables.$border-radius-md;
-  min-height: 200px;
-
-  .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(variables.$primary-color, 0.3);
-    border-top: 3px solid variables.$primary-color;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: variables.$text-secondary-light;
-    font-size: 1rem;
-  }
-}
+// Use global .loading-container class instead
 
 // App search results will be displayed here
 
-.favorites-placeholder,
-.recommendations-placeholder {
-  @include variables.flex-center;
-  flex-direction: column;
-  height: 300px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: variables.$border-radius-md;
-
-  p {
-    color: variables.$text-secondary-light;
-    font-size: 1.2rem;
-    margin: 0.5rem 0;
-  }
-}
-
-.recommendations-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.recommendation-reasoning {
-  background-color: rgba(variables.$primary-color, 0.1);
-  padding: 1.5rem;
-  border-radius: variables.$border-radius-md;
-  margin-bottom: 1rem;
-
-  h3 {
-    color: variables.$primary-color;
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-  }
-
-  p {
-    color: variables.$text-color-light;
-    line-height: 1.5;
-  }
-}
-
-.refresh-recommendations {
-  display: flex;
-  justify-content: center;
-  margin-top: 1.5rem;
-
-  button {
-    padding: 0.75rem 1.5rem;
-    background-color: variables.$secondary-color;
-    color: white;
-    border: none;
-    border-radius: variables.$border-radius-sm;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: color.adjust(variables.$secondary-color, $lightness: -10%);
-    }
-  }
-}
-
-// Pagination controls
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 2rem 0;
-  flex-wrap: wrap;
-}
+// Use global .pagination-controls class
 
 // Animation for cards - using global animation
 app-media-card {
@@ -223,5 +116,6 @@ app-media-card {
     }
   }
 }
+
 
 // Animation keyframes moved to search components

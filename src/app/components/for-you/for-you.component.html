@@ -1,0 +1,89 @@
+<!-- Loading indicator -->
+@if (isLoading) {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading...</p>
+  </div>
+}
+
+<!-- Error message -->
+@if (error) {
+  <div class="error-container">
+    <p>{{ error }}</p>
+  </div>
+}
+
+<!-- For You AI Recommendations content -->
+@if (!isLoading && !error) {
+  <div class="recommendations-container">
+    @if (aiRecommendations.length === 0) {
+      <div class="recommendations-placeholder">
+        <p>No personalized recommendations available yet.</p>
+        <p>Add some favorites to get recommendations based on your viewing history!</p>
+      </div>
+    } @else {
+      @if (aiRecommendationReasoning) {
+        <div class="recommendation-reasoning">
+          <h3>Why we think you'll like these:</h3>
+          <app-truncated-text
+            [text]="aiRecommendationReasoning || ''"
+            [maxLines]="6">
+          </app-truncated-text>
+        </div>
+      }
+
+      <div class="media-grid">
+        @for (recommendation of aiRecommendations; track recommendation.tmdbId) {
+          <app-media-card
+            [item]="{
+              id: recommendation.tmdbId,
+              title: recommendation.title,
+              name: recommendation.title,
+              overview: recommendation.overview,
+              poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
+              backdrop_path: '',
+              vote_average: recommendation.vote_average,
+              popularity: 0,
+              vote_count: 0,
+              genre_ids: [],
+              adult: false,
+              original_language: '',
+              release_date: recommendation.release_date,
+              first_air_date: recommendation.release_date,
+              origin_country: [],
+              original_name: recommendation.title
+            }"
+            [type]="recommendation.type === 'movie' ? 'movie' : 'tvshow'"
+            (share)="onShareMedia({
+              item: {
+                id: recommendation.tmdbId,
+                title: recommendation.title,
+                name: recommendation.title,
+                overview: recommendation.overview,
+                poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
+                backdrop_path: '',
+                vote_average: 0,
+                popularity: 0,
+                vote_count: 0,
+                genre_ids: [],
+                adult: false,
+                original_language: '',
+                release_date: '',
+                first_air_date: '',
+                origin_country: [],
+                original_name: recommendation.title
+              },
+              type: recommendation.type
+            })">
+          </app-media-card>
+        }
+      </div>
+
+      <div class="refresh-recommendations">
+        <button class="btn btn-primary" (click)="onRefreshRecommendations()">
+          Refresh Recommendations
+        </button>
+      </div>
+    }
+  </div>
+}
