@@ -11,6 +11,8 @@ import { SearchBarComponent } from '../../shared/components/search/search-bar/se
 import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
 import { LoadingMessagesService } from '../../services/loading-messages/loading-messages.service';
 import { GuessMovieComponent } from '../../shared/components/guess-movie/guess-movie.component';
+import { RecommendationHistoryService } from '../../services/recommendation-history/recommendation-history.service';
+import { RecommendationHistoryEntry } from '../../models/recommendation-history.model';
 
 @Component({
   selector: 'app-landing-page',
@@ -41,6 +43,12 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
 
+  // Recommendation history signals
+  recommendationHistory = signal<RecommendationHistoryEntry[]>([]);
+  hasRecentHistory = signal<boolean>(false);
+  selectedHistoryEntry = signal<RecommendationHistoryEntry | null>(null);
+  showHistory = signal<boolean>(false);
+
   // Search related signals
   searchQuery = signal<string>('');
   searchResults = signal<(Movie | TvShow)[]>([]);
@@ -57,7 +65,8 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   currentSearchPage = signal<number>(1);
   readonly MAX_PAGES = 5; // Maximum number of pages as per requirements
 
-  novaTabs = ['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie'];
+  // Static tabs array (Recent History is now integrated within Smart Recommendations)
+  novaTabs = signal<string[]>(['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie']);
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
@@ -65,11 +74,20 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   mediaService = inject(MediaService);
   private router = inject(Router);
   loadingMessagesService = inject(LoadingMessagesService);
+  historyService = inject(RecommendationHistoryService);
 
 
   ngOnInit(): void {
     this.loadMovies('popular');
     this.loadTVShows('popular');
+
+    // Subscribe to recommendation history changes
+    this.historyService.history$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(history => {
+        this.recommendationHistory.set(history);
+        this.hasRecentHistory.set(history.length > 0);
+      });
   }
 
   ngOnDestroy(): void {
@@ -218,6 +236,11 @@ export class LandingPageComponent implements OnInit, OnDestroy {
           this.aiRecommendationReasoning.set(data.reasoning);
           this.isLoading.set(false);
           this.loadingMessagesService.stopLoadingMessages();
+
+          // Save to history if this was a natural language query with results
+          if (naturalLanguageQuery && data.recommendations.length > 0) {
+            this.historyService.saveToHistory(naturalLanguageQuery, data.recommendations, data.reasoning);
+          }
         },
         error: (err) => {
           console.error('Error loading AI recommendations:', err);
@@ -247,6 +270,35 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   clearNaturalLanguageQuery(): void {
     this.naturalLanguageQuery.set('');
     this.loadAiRecommendations(true); // Force refresh to get favorites-based recommendations
+  }
+
+  /**
+   * Toggles the visibility of the history section within Smart Recommendations
+   */
+  toggleHistoryView(): void {
+    this.showHistory.set(!this.showHistory());
+    // Clear selected history entry when toggling history view
+    if (!this.showHistory()) {
+      this.clearSelectedHistoryEntry();
+    }
+  }
+
+  /**
+   * Loads a specific history entry and displays its recommendations
+   * @param entry - The history entry to load
+   */
+  loadHistoryEntry(entry: RecommendationHistoryEntry): void {
+    this.selectedHistoryEntry.set(entry);
+    // Don't set aiRecommendations, aiRecommendationReasoning, or naturalLanguageQuery
+    // to avoid duplication and unwanted text in textarea
+    // The history entry will display its own recommendations in the history view
+  }
+
+  /**
+   * Clears the selected history entry
+   */
+  clearSelectedHistoryEntry(): void {
+    this.selectedHistoryEntry.set(null);
   }
 
   // Method to load favorites from Firestore

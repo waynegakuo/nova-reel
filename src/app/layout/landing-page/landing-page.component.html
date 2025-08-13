@@ -33,7 +33,7 @@
   </div>
 
   <div class="tabs">
-    @for (tab of novaTabs; track $index) {
+    @for (tab of novaTabs(); track $index) {
       <button
         class="btn-tab"
         [class.active]="activeTab() === tab"
@@ -195,6 +195,7 @@
         </div>
       }
 
+
       <!--
         Smart Recommendations tab content
         This section provides natural language query input for AI-powered recommendations
@@ -202,6 +203,142 @@
       -->
       @if (activeTab() === 'Smart Recommendations' && !isLoading() && !error()) {
         <div class="recommendations-container">
+          <!-- Recent History Section (integrated within Smart Recommendations) -->
+          @if (recommendationHistory().length > 0 && !aiRecommendations().length) {
+            <div class="history-section" [class.collapsed]="!showHistory()">
+              <div class="history-toggle-header">
+                <button
+                  class="btn btn-secondary history-toggle-btn"
+                  (click)="toggleHistoryView()"
+                >
+                  <span class="material-icons">{{ showHistory() ? 'expand_less' : 'history' }}</span>
+                  {{ showHistory() ? 'Hide Recent History' : 'View Recent History' }}
+                  ({{ recommendationHistory().length }})
+                </button>
+              </div>
+
+              @if (showHistory()) {
+                <div class="history-container">
+                  @if (selectedHistoryEntry()) {
+                    <!-- Display selected history entry results -->
+                    <div class="selected-history-view">
+                    <div class="selected-history-header">
+                      <button
+                        class="btn btn-secondary back-button"
+                        (click)="clearSelectedHistoryEntry()"
+                      >
+                        <span class="material-icons">arrow_back</span>
+                        Back to History
+                      </button>
+                      <div class="selected-query-info">
+                        <h3>Previous Query Results</h3>
+                        <p class="query-text">"{{ selectedHistoryEntry()?.query }}"</p>
+                        <p class="query-date">{{ selectedHistoryEntry()?.dateString }}</p>
+                      </div>
+                    </div>
+
+                    @if (selectedHistoryEntry()?.reasoning) {
+                      <div class="recommendation-reasoning">
+                        <h3>Why we recommended these:</h3>
+                        <p>{{ selectedHistoryEntry()?.reasoning }}</p>
+                      </div>
+                    }
+
+                    <div class="media-grid">
+                      @for (recommendation of selectedHistoryEntry()?.recommendations || []; track recommendation.tmdbId) {
+                        <app-media-card
+                          [item]="{
+                            id: recommendation.tmdbId,
+                            title: recommendation.title,
+                            name: recommendation.title,
+                            overview: recommendation.overview,
+                            poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
+                            backdrop_path: '',
+                            vote_average: recommendation.vote_average,
+                            popularity: 0,
+                            vote_count: 0,
+                            genre_ids: [],
+                            adult: false,
+                            original_language: '',
+                            release_date: recommendation.release_date,
+                            first_air_date: recommendation.release_date,
+                            origin_country: [],
+                            original_name: recommendation.title
+                          }"
+                          [type]="recommendation.type === 'movie' ? 'movie' : 'tvshow'"
+                          (share)="onShareMedia({
+                            item: {
+                              id: recommendation.tmdbId,
+                              title: recommendation.title,
+                              name: recommendation.title,
+                              overview: recommendation.overview,
+                              poster_path: recommendation.poster_path.startsWith('/') ? recommendation.poster_path : '/' + recommendation.poster_path,
+                              backdrop_path: '',
+                              vote_average: 0,
+                              popularity: 0,
+                              vote_count: 0,
+                              genre_ids: [],
+                              adult: false,
+                              original_language: '',
+                              release_date: '',
+                              first_air_date: '',
+                              origin_country: [],
+                              original_name: recommendation.title
+                            },
+                            type: recommendation.type
+                          })">
+                        </app-media-card>
+                      }
+                    </div>
+                    </div>
+                  } @else {
+                    <!-- Display history list -->
+                    <div class="history-list-view">
+                    <div class="history-header">
+                      <h3>Recent Recommendation History</h3>
+                      <p class="history-description">
+                        Click on any previous query to view its recommendations again
+                      </p>
+                      <button
+                        class="btn btn-secondary clear-history-btn"
+                        (click)="historyService.clearHistory()"
+                      >
+                        Clear All History
+                      </button>
+                    </div>
+
+                    <div class="history-list">
+                      @for (entry of recommendationHistory(); track entry.id) {
+                        <div class="history-item" (click)="loadHistoryEntry(entry)">
+                          <div class="history-item-content">
+                            <div class="query-preview">
+                              <h4>"{{ entry.query }}"</h4>
+                              <p class="results-count">
+                                {{ entry.recommendations.length }} recommendation{{ entry.recommendations.length !== 1 ? 's' : '' }}
+                              </p>
+                            </div>
+                            <div class="history-item-meta">
+                              <span class="history-date">{{ entry.dateString }}</span>
+                              <button
+                                class="btn-icon delete-btn"
+                                (click)="$event.stopPropagation(); historyService.removeHistoryEntry(entry.id)"
+                                title="Remove this entry"
+                              >
+                                <span class="material-icons">delete</span>
+                              </button>
+                            </div>
+                          </div>
+                          <span class="material-icons arrow-icon">chevron_right</span>
+                        </div>
+                      }
+                    </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
           <!-- Natural Language Query Input -->
           <div class="natural-language-input">
             <h3>Tell us what you're in the mood for</h3>
@@ -237,7 +374,7 @@
             </div>
           </div>
 
-          @if (aiRecommendations().length === 0) {
+          @if (aiRecommendations().length === 0 && !selectedHistoryEntry()) {
             <div class="recommendations-placeholder">
               <p>No recommendations available yet.</p>
               @if (!naturalLanguageQuery()) {
