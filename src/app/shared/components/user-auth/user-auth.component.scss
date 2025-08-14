@@ -87,6 +87,31 @@
   svg {
     margin-right: 8px;
   }
+
+  // Mobile responsive styles
+  @media (max-width: 768px) {
+    padding: 6px 8px;
+    font-size: 12px;
+    gap: 4px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 4px 6px;
+    font-size: 11px;
+    gap: 2px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+      margin-right: 2px;
+    }
+  }
 }
 
 // User profile
