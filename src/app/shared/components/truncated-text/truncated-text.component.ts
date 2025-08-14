@@ -1,5 +1,5 @@
-import { Component, Input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, signal, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-truncated-text',
@@ -109,18 +109,40 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class TruncatedTextComponent {
+export class TruncatedTextComponent implements OnInit, OnDestroy {
   @Input() text: string = '';
   @Input() maxLines: number = 6; // Default to 6 lines as requested
 
   isExpanded = signal(false);
+  isMobile = signal(false);
+  private resizeListener?: () => void;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.checkMobile();
+      this.resizeListener = () => this.checkMobile();
+      window.addEventListener('resize', this.resizeListener);
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.resizeListener && isPlatformBrowser(this.platformId)) {
+      window.removeEventListener('resize', this.resizeListener);
+    }
+  }
+
+  private checkMobile() {
+    this.isMobile.set(window.innerWidth <= 768);
+  }
 
   displayText() {
     return this.text || '';
   }
 
   shouldTruncate(): boolean {
-    if (!this.text) return false;
+    if (!this.text || !this.isMobile()) return false;
 
     // Simple heuristic: if text is longer than approximately 6 lines worth of characters
     // Assuming roughly 80-100 characters per line for mobile-friendly text
