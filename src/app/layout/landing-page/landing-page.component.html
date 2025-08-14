@@ -88,7 +88,8 @@
           [favorites]="favorites()"
           [isLoading]="isLoading()"
           [error]="error()"
-          (shareMedia)="onShareMedia($event)">
+          (shareMedia)="onShareMedia($event)"
+          (refreshFavorites)="loadFavorites()">
         </app-favorites>
       }
 

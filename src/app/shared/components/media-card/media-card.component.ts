@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Movie, TvShow } from '../../../models/media.model';
+import { MediaService } from '../../../services/media/media.service';
 
 @Component({
   selector: 'app-media-card',
@@ -12,11 +13,14 @@ import { Movie, TvShow } from '../../../models/media.model';
 })
 export class MediaCardComponent {
   private router = inject(Router);
+  private mediaService = inject(MediaService);
 
   @Input() item!: Movie | TvShow;
   @Input() type: 'movie' | 'tvshow' = 'movie';
+  @Input() showRemoveFromFavorites: boolean = false;
 
   @Output() share = new EventEmitter<{ item: Movie | TvShow, type: string }>();
+  @Output() removeFromFavorites = new EventEmitter<number>();
 
   // Helper method to determine if the item is a movie
   isMovie(): boolean {
@@ -54,6 +58,11 @@ export class MediaCardComponent {
   onViewDetails(): void {
     const type = this.isMovie() ? 'movie' : 'tvshow';
     this.router.navigate(['/details', type, this.item.id]);
+  }
+
+  // Method to handle remove from favorites
+  onRemoveFromFavorites(): void {
+    this.removeFromFavorites.emit(this.item.id);
   }
 
   // Helper method to get the full image URL
