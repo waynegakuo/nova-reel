@@ -239,7 +239,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     } else if (tab === 'For You') {
       // Clear natural language query for favorites-based recommendations
       this.naturalLanguageQuery.set('');
-      this.loadAiRecommendations();
+      this.loadAiRecommendations(false, false); // Don't force refresh, don't use natural language
     } else if (tab === 'Smart Recommendations') {
       // Smart Recommendations tab doesn't auto-load - it's user-driven
       // Just ensure we have a clean state if switching from another tab
@@ -258,16 +258,28 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    *
    * @param forceRefresh - Whether to force a refresh of the cache (default: false)
    * @param useNaturalLanguage - Whether to use natural language query (default: true for Smart Recommendations tab)
+   * @param preserveQuery - Whether to preserve the existing natural language query (default: true)
    */
-  loadAiRecommendations(forceRefresh: boolean = false, useNaturalLanguage: boolean = true): void {
+  loadAiRecommendations(forceRefresh: boolean = false, useNaturalLanguage: boolean = true, preserveQuery: boolean = true): void {
     this.isLoading.set(true);
     this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
 
-    // Only use natural language query if explicitly allowed and we're not in "For You" tab
-    const naturalLanguageQuery = (useNaturalLanguage && this.activeTab() !== 'For You')
-      ? this.naturalLanguageQuery().trim() || undefined
-      : undefined;
+    // Determine which natural language query to use
+    let queryToUse: string | undefined = undefined;
+
+    if (useNaturalLanguage && this.activeTab() !== 'For You') {
+      const currentQuery = this.naturalLanguageQuery().trim();
+      if (currentQuery && preserveQuery) {
+        // Use the existing query if we're preserving it and it exists
+        queryToUse = currentQuery;
+      } else if (currentQuery) {
+        // Use current query if not explicitly preserving but one exists
+        queryToUse = currentQuery;
+      }
+    }
+
+    const naturalLanguageQuery = queryToUse || undefined;
 
     this.mediaService.getAiRecommendations(forceRefresh, 5, naturalLanguageQuery)
       .pipe(takeUntil(this.destroy$))
@@ -310,7 +322,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    */
   clearNaturalLanguageQuery(): void {
     this.naturalLanguageQuery.set('');
-    this.loadAiRecommendations(true); // Force refresh to get favorites-based recommendations
+    this.loadAiRecommendations(true, true, false); // Force refresh, use natural language, don't preserve query
   }
 
   /**
