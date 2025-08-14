@@ -23,8 +23,10 @@
     <app-media-grid
       [items]="favorites"
       [type]="'movie'"
+      [showRemoveFromFavorites]="true"
       emptyMessage="You haven't added any favorites yet"
-      (share)="onShareMedia($event)">
+      (share)="onShareMedia($event)"
+      (removeFromFavorites)="onRemoveFromFavorites($event)">
     </app-media-grid>
   }
 }

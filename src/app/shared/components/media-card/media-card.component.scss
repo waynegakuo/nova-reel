@@ -137,6 +137,15 @@
       background-color: #c23251;
     }
   }
+
+  .btn-remove-favorite {
+    background-color: #dc3545;
+    color: white;
+
+    &:hover {
+      background-color: #c82333;
+    }
+  }
 }
 
 // Responsive styles

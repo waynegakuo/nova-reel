@@ -6,7 +6,9 @@
       <app-media-card
         [item]="item"
         [type]="type"
-        (share)="onShare($event)">
+        [showRemoveFromFavorites]="showRemoveFromFavorites"
+        (share)="onShare($event)"
+        (removeFromFavorites)="onRemoveFromFavorites($event)">
       </app-media-card>
     }
   }

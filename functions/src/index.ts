@@ -39,7 +39,7 @@ const ai = genkit({
   plugins: [
     googleAI({apiKey: process.env.GEMINI_API_KEY }),
   ],
-  model: googleAI.model('gemini-2.5-pro'), // Specify your Gemini model
+  model: googleAI.model('gemini-2.5-flash'), // Specify your Gemini model
 });
 
 genkitLogger.setLogLevel('debug'); // Or 'info', 'warn', 'error'
@@ -185,7 +185,7 @@ export const _getRecommendationsFlowLogic  = ai.defineFlow( // FIX: Use ai.defin
     let favoritesContext = '';
     if (favoriteItems.length > 0) {
       favoritesContext = favoriteItems.map(item =>
-        `${item['type'] === 'movie' ? 'Movie' : 'TV Show'}: ${item['title']} (TMDB ID: ${item['tmdbId']})`
+        `${item['mediaType'] === 'movie' ? 'Movie' : 'TV Show'}: ${item['title'] || item['name']} (TMDB ID: ${item['id']})`
       ).join('; ');
     }
 

@@ -15,8 +15,8 @@ import { AiRecommendation } from '../../models/ai-recommendations.model';
   styleUrl: './for-you.component.scss'
 })
 export class ForYouComponent {
-  @Input() aiRecommendations: AiRecommendation[] = [];
-  @Input() aiRecommendationReasoning: string | null = null;
+  @Input() forYouRecommendations: AiRecommendation[] = [];
+  @Input() forYouRecommendationReasoning: string | null = null;
   @Input() isLoading: boolean = false;
   @Input() error: string | null = null;
 
