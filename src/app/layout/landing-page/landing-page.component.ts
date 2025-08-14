@@ -44,8 +44,15 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   movies = signal<Movie[]>([]);
   tvShows = signal<TvShow[]>([]);
   favorites = signal<((MovieDetails | TvShowDetails) & Favorite)[]>([]);
-  aiRecommendations = signal<AiRecommendation[]>([]);
-  aiRecommendationReasoning = signal<string | null>(null);
+
+  // Separate properties for For You tab (favorites-based recommendations)
+  forYouRecommendations = signal<AiRecommendation[]>([]);
+  forYouRecommendationReasoning = signal<string | null>(null);
+
+  // Separate properties for Smart Recommendations tab (natural language-based recommendations)
+  smartRecommendations = signal<AiRecommendation[]>([]);
+  smartRecommendationReasoning = signal<string | null>(null);
+
   naturalLanguageQuery = signal<string>('');
   activeTab = signal<string>('Movies');
   activeMovieCategory = signal<string>('popular');
@@ -244,8 +251,8 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       // Smart Recommendations tab doesn't auto-load - it's user-driven
       // Just ensure we have a clean state if switching from another tab
       if (!this.naturalLanguageQuery().trim()) {
-        this.aiRecommendations.set([]);
-        this.aiRecommendationReasoning.set(null);
+        this.smartRecommendations.set([]);
+        this.smartRecommendationReasoning.set(null);
       }
     }
   }
@@ -285,8 +292,15 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.aiRecommendations.set(data.recommendations);
-          this.aiRecommendationReasoning.set(data.reasoning ?? null);
+          // Set the appropriate properties based on the active tab
+          if (this.activeTab() === 'For You') {
+            this.forYouRecommendations.set(data.recommendations);
+            this.forYouRecommendationReasoning.set(data.reasoning ?? null);
+          } else if (this.activeTab() === 'Smart Recommendations') {
+            this.smartRecommendations.set(data.recommendations);
+            this.smartRecommendationReasoning.set(data.reasoning ?? null);
+          }
+
           this.isLoading.set(false);
           this.loadingMessagesService.stopLoadingMessages();
 
@@ -342,7 +356,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    */
   loadHistoryEntry(entry: RecommendationHistoryEntry): void {
     this.selectedHistoryEntry.set(entry);
-    // Don't set aiRecommendations, aiRecommendationReasoning, or naturalLanguageQuery
+    // Don't set smartRecommendations, smartRecommendationReasoning, or naturalLanguageQuery
     // to avoid duplication and unwanted text in textarea
     // The history entry will display its own recommendations in the history view
   }

@@ -17,7 +17,7 @@
 @if (!isLoading && !error) {
   <div class="recommendations-container">
     <!-- Recent History Section (integrated within Smart Recommendations) -->
-    @if (recommendationHistory.length > 0 && !aiRecommendations.length) {
+    @if (recommendationHistory.length > 0 && !smartRecommendations.length) {
       <div class="history-section" [class.collapsed]="!showHistory">
         <div class="history-toggle-header">
           <button
@@ -190,7 +190,7 @@
       </div>
     </div>
 
-    @if (aiRecommendations.length === 0 && !selectedHistoryEntry) {
+    @if (smartRecommendations.length === 0 && !selectedHistoryEntry) {
       <div class="recommendations-placeholder">
         <p>No recommendations available yet.</p>
         @if (!naturalLanguageQuery) {
@@ -200,18 +200,18 @@
         }
       </div>
     } @else {
-      @if (aiRecommendationReasoning) {
+      @if (smartRecommendationReasoning) {
         <div class="recommendation-reasoning">
           <h3>Why we recommend these:</h3>
           <app-truncated-text
-            [text]="aiRecommendationReasoning || ''"
+            [text]="smartRecommendationReasoning || ''"
             [maxLines]="6">
           </app-truncated-text>
         </div>
       }
 
       <div class="media-grid">
-        @for (recommendation of aiRecommendations; track recommendation.tmdbId) {
+        @for (recommendation of smartRecommendations; track recommendation.tmdbId) {
           <app-media-card
             [item]="{
               id: recommendation.tmdbId,

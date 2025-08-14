@@ -17,8 +17,8 @@ import { RecommendationHistoryService } from '../../services/recommendation-hist
   styleUrl: './smart-recommendations.component.scss'
 })
 export class SmartRecommendationsComponent {
-  @Input() aiRecommendations: AiRecommendation[] = [];
-  @Input() aiRecommendationReasoning: string | null = null;
+  @Input() smartRecommendations: AiRecommendation[] = [];
+  @Input() smartRecommendationReasoning: string | null = null;
   @Input() isLoading: boolean = false;
   @Input() error: string | null = null;
   @Input() recommendationHistory: RecommendationHistoryEntry[] = [];

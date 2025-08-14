@@ -16,24 +16,24 @@
 <!-- For You AI Recommendations content -->
 @if (!isLoading && !error) {
   <div class="recommendations-container">
-    @if (aiRecommendations.length === 0) {
+    @if (forYouRecommendations.length === 0) {
       <div class="recommendations-placeholder">
         <p>No personalized recommendations available yet.</p>
         <p>Add some favorites to get recommendations based on your viewing history!</p>
       </div>
     } @else {
-      @if (aiRecommendationReasoning) {
+      @if (forYouRecommendationReasoning) {
         <div class="recommendation-reasoning">
           <h3>Why we think you'll like these:</h3>
           <app-truncated-text
-            [text]="aiRecommendationReasoning || ''"
+            [text]="forYouRecommendationReasoning || ''"
             [maxLines]="6">
           </app-truncated-text>
         </div>
       }
 
       <div class="media-grid">
-        @for (recommendation of aiRecommendations; track recommendation.tmdbId) {
+        @for (recommendation of forYouRecommendations; track recommendation.tmdbId) {
           <app-media-card
             [item]="{
               id: recommendation.tmdbId,

@@ -97,8 +97,8 @@
       <!-- Smart Recommendations content -->
       @if (activeTab() === 'Smart Recommendations' && !isLoading() && !error()) {
         <app-smart-recommendations
-          [aiRecommendations]="aiRecommendations()"
-          [aiRecommendationReasoning]="aiRecommendationReasoning()"
+          [smartRecommendations]="smartRecommendations()"
+          [smartRecommendationReasoning]="smartRecommendationReasoning()"
           [isLoading]="isLoading()"
           [error]="error()"
           [recommendationHistory]="recommendationHistory()"
@@ -120,8 +120,8 @@
       <!-- For You content -->
       @if (activeTab() === 'For You' && !isLoading() && !error()) {
         <app-for-you
-          [aiRecommendations]="aiRecommendations()"
-          [aiRecommendationReasoning]="aiRecommendationReasoning()"
+          [forYouRecommendations]="forYouRecommendations()"
+          [forYouRecommendationReasoning]="forYouRecommendationReasoning()"
           [isLoading]="isLoading()"
           [error]="error()"
           (loadAiRecommendations)="loadAiRecommendations($event)"
