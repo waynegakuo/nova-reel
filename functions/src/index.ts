@@ -702,13 +702,14 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
         mediaId,
         mediaType,
         mediaTitle: mediaInfo.title,
-        genre,
         questionCount: output.questions.length,
         difficulty,
         categories: categories || ['general'],
         createdAt: new Date(),
         status: 'pending',
         mediaInfo,
+        // Only include genre if it's defined
+        ...(genre ? { genre } : {}),
       };
 
       await db.collection('triviaGameSessions').doc(sessionId).set(triviaSessionData);
