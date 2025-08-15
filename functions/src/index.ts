@@ -517,6 +517,234 @@ export const guessMovieFromScreenshot = onCall(
   }
 );
 
+// --- Trivia Challenge Feature ---
+
+// Schemas for Trivia Generation Flow
+const TriviaFlowInputSchema = z.object({
+  userId: z.string().describe('The ID of the user requesting trivia.'),
+  movieId: z.number().optional().describe('TMDB ID of the movie for trivia.'),
+  tvShowId: z.number().optional().describe('TMDB ID of the TV show for trivia.'),
+  mediaType: z.enum(['movie', 'tv']).describe('Type of media: "movie" or "tv".'),
+  genre: z.string().optional().describe('Genre for genre-based trivia.'),
+  difficulty: z.enum(['easy', 'medium', 'hard', 'mixed']).default('mixed').describe('Difficulty level of questions.'),
+  questionCount: z.number().int().min(3).max(15).default(5).describe('Number of trivia questions to generate.'),
+  categories: z.array(z.string()).optional().describe('Specific categories to focus on (e.g., plot, cast, production).'),
+});
+
+const TriviaQuestionSchema = z.object({
+  id: z.string().describe('Unique identifier for the question.'),
+  question: z.string().describe('The trivia question text.'),
+  options: z.array(z.string()).length(4).describe('Four multiple choice options.'),
+  correctAnswer: z.number().int().min(0).max(3).describe('Index of the correct answer (0-3).'),
+  explanation: z.string().optional().describe('Explanation for the correct answer.'),
+  difficulty: z.enum(['easy', 'medium', 'hard']).describe('Difficulty level of this question.'),
+  category: z.string().describe('Category of the question (e.g., plot, cast, production, general).'),
+});
+
+const TriviaFlowOutputSchema = z.object({
+  sessionId: z.string().describe('Unique session ID for the trivia game.'),
+  questions: z.array(TriviaQuestionSchema).describe('Array of generated trivia questions.'),
+  mediaInfo: z.object({
+    title: z.string().describe('Title of the movie/TV show.'),
+    year: z.string().optional().describe('Release year.'),
+    posterPath: z.string().optional().describe('Poster image path.'),
+    overview: z.string().optional().describe('Brief overview.'),
+  }).describe('Information about the media the trivia is based on.'),
+  estimatedDuration: z.number().describe('Estimated time to complete trivia in minutes.'),
+});
+
+// Define the Genkit Flow for trivia generation
+export const _generateTriviaFlowLogic = ai.defineFlow(
+  {
+    name: 'generateTriviaFlow',
+    inputSchema: TriviaFlowInputSchema,
+    outputSchema: TriviaFlowOutputSchema,
+  },
+  async (input) => {
+    const { userId, movieId, tvShowId, mediaType, genre, difficulty, questionCount, categories } = input;
+
+    // Generate unique session ID
+    const sessionId = `trivia_${userId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+
+    let mediaData: any;
+    let mediaInfo: any;
+
+    try {
+      // Fetch media details from TMDB
+      if (movieId || tvShowId) {
+        const id = movieId || tvShowId!;
+        const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
+
+        // Get basic media details
+        mediaData = await getTmdbDataTool({
+          endpoint: endpoint,
+          id: id,
+        });
+
+        // Get additional details like cast and crew
+        const creditsData = await getTmdbDataTool({
+          endpoint: `${endpoint}/${id}/credits`,
+        });
+
+        // Combine media data with credits for richer trivia generation
+        mediaData = {
+          ...mediaData,
+          credits: creditsData,
+        };
+
+        mediaInfo = {
+          title: mediaData.title || mediaData.name,
+          year: mediaType === 'movie'
+            ? mediaData.release_date?.substring(0, 4)
+            : mediaData.first_air_date?.substring(0, 4),
+          posterPath: mediaData.poster_path,
+          overview: mediaData.overview,
+        };
+      } else if (genre) {
+        // For genre-based trivia, we'll generate general questions
+        mediaInfo = {
+          title: `${genre.charAt(0).toUpperCase() + genre.slice(1)} Movies & TV Shows`,
+          year: new Date().getFullYear().toString(),
+          posterPath: null,
+          overview: `Trivia questions about ${genre} movies and TV shows.`,
+        };
+        mediaData = { genre: genre, type: 'genre-based' };
+      } else {
+        throw new Error('Either movieId/tvShowId or genre must be provided.');
+      }
+
+      // Prepare context for AI trivia generation
+      let triviaPrompt = '';
+
+      if (movieId || tvShowId) {
+        const castList = mediaData.credits?.cast?.slice(0, 10).map((actor: any) =>
+          `${actor.name} as ${actor.character}`).join(', ') || '';
+
+        const crewList = mediaData.credits?.crew?.filter((person: any) =>
+          ['Director', 'Producer', 'Writer', 'Screenplay'].includes(person.job))
+          .slice(0, 5).map((person: any) => `${person.name} (${person.job})`).join(', ') || '';
+
+        triviaPrompt = `
+          Generate ${questionCount} trivia questions about the ${mediaType === 'movie' ? 'movie' : 'TV show'} "${mediaInfo.title}" (${mediaInfo.year}).
+
+          Media Information:
+          - Title: ${mediaInfo.title}
+          - Release ${mediaType === 'movie' ? 'Date' : 'Year'}: ${mediaInfo.year}
+          - Overview: ${mediaData.overview || 'No overview available'}
+          - Genre: ${mediaData.genres?.map((g: any) => g.name).join(', ') || 'Unknown'}
+          - Runtime: ${mediaData.runtime || mediaData.episode_run_time?.[0] || 'Unknown'} minutes
+          ${castList ? `- Main Cast: ${castList}` : ''}
+          ${crewList ? `- Key Crew: ${crewList}` : ''}
+          ${mediaData.production_companies ? `- Production: ${mediaData.production_companies.map((c: any) => c.name).join(', ')}` : ''}
+          ${mediaData.budget ? `- Budget: $${mediaData.budget.toLocaleString()}` : ''}
+          ${mediaData.revenue ? `- Box Office: $${mediaData.revenue.toLocaleString()}` : ''}
+
+          Question Guidelines:
+          - Difficulty: ${difficulty === 'mixed' ? 'Mix of easy, medium, and hard questions' : difficulty}
+          - Categories to include: ${categories?.join(', ') || 'plot, cast, production, general knowledge'}
+          - Each question must have exactly 4 multiple choice options
+          - Only one option should be correct
+          - Make incorrect options plausible but clearly wrong
+          - Include brief explanations for correct answers when helpful
+          - Vary the question types: plot details, cast/crew, production facts, trivia, etc.
+
+          Format each question with:
+          - A unique ID (question_1, question_2, etc.)
+          - Clear question text
+          - Exactly 4 options labeled A, B, C, D
+          - Correct answer index (0 for A, 1 for B, 2 for C, 3 for D)
+          - Difficulty level for this specific question
+          - Category (plot, cast, production, general)
+          - Optional explanation
+        `;
+      } else {
+        // Genre-based trivia prompt
+        triviaPrompt = `
+          Generate ${questionCount} general trivia questions about ${genre} movies and TV shows.
+
+          Question Guidelines:
+          - Focus on well-known ${genre} movies and TV shows
+          - Difficulty: ${difficulty === 'mixed' ? 'Mix of easy, medium, and hard questions' : difficulty}
+          - Include questions about famous actors, directors, iconic scenes, plot elements typical of ${genre}
+          - Each question must have exactly 4 multiple choice options
+          - Only one option should be correct
+          - Make incorrect options plausible but clearly wrong
+          - Vary between movies and TV shows
+
+          Format each question with:
+          - A unique ID (question_1, question_2, etc.)
+          - Clear question text
+          - Exactly 4 options
+          - Correct answer index (0-3)
+          - Difficulty level for this specific question
+          - Category (genre-knowledge, cast, directors, plot-elements)
+        `;
+      }
+
+      // Generate trivia questions using AI
+      const { output } = await ai.generate({
+        tools: [getTmdbDataTool], // Allow AI to fetch additional TMDB data if needed
+        prompt: triviaPrompt,
+        output: {
+          format: 'json',
+          schema: z.object({
+            questions: z.array(TriviaQuestionSchema),
+          }),
+        },
+      });
+
+      if (!output || !output.questions || output.questions.length === 0) {
+        throw new Error('Failed to generate trivia questions.');
+      }
+
+      // Store trivia session in Firestore for tracking
+      const triviaSessionData = {
+        sessionId,
+        userId,
+        movieId,
+        tvShowId,
+        mediaType,
+        mediaTitle: mediaInfo.title,
+        genre,
+        questionCount: output.questions.length,
+        difficulty,
+        categories: categories || ['general'],
+        createdAt: new Date(),
+        status: 'pending',
+        mediaInfo,
+      };
+
+      await db.collection('triviaGameSessions').doc(sessionId).set(triviaSessionData);
+
+      // Calculate estimated duration (assume 30 seconds per question + 2 minutes setup)
+      const estimatedDuration = Math.ceil((output.questions.length * 0.5) + 2);
+
+      return {
+        sessionId,
+        questions: output.questions,
+        mediaInfo,
+        estimatedDuration,
+      };
+
+    } catch (error: any) {
+      logger.error('Error in generateTriviaFlow:', error);
+      throw new HttpsError('internal', `Failed to generate trivia: ${error.message}`);
+    }
+  }
+);
+
+// Firebase Cloud Function for trivia generation
+export const generateTriviaFlow = onCallGenkit(
+  {
+    secrets: [TMDB_BEARER_TOKEN, GEMINI_API_KEY],
+    region: 'africa-south1',
+    cors: true,
+    memory: '1GiB', // Increased memory for complex AI operations
+    timeoutSeconds: 120, // Allow time for AI processing
+  },
+  _generateTriviaFlowLogic
+);
+
 export const getTmdbData = onCall(
   {
     // Make sure your function has access to the secret

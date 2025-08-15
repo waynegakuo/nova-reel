@@ -8,5 +8,9 @@ export const routes: Routes = [
   {
     path: 'details/:type/:id',
     loadComponent: () => import('./pages/media-details/media-details.component').then(m => m.MediaDetailsComponent)
+  },
+  {
+    path: 'trivia',
+    loadComponent: () => import('./components/trivia-game/trivia-game.component').then(m => m.TriviaGameComponent)
   }
 ];
