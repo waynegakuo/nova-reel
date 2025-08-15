@@ -232,7 +232,8 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    * @param type - The type of media ('movie' or 'tv')
    */
   navigateToDetails(media: Movie | TvShow, type: 'movie' | 'tv'): void {
-    this.router.navigate(['/details', type, media.id]);
+    const routeType = type === 'tv' ? 'tvshow' : type;
+    this.router.navigate(['/details', routeType, media.id]);
   }
 
   // Method to handle tab changes

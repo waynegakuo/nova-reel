@@ -444,6 +444,7 @@ Nova Reel features an intuitive tab-based interface with the following sections:
 4. **🎯 For You**: Personalized recommendations based on your viewing history and favorites
 5. **🤖 Smart Recommendations**: AI-powered recommendations using natural language queries
 6. **🎬 Guess the Movie**: Interactive game to identify movies/TV shows from screenshots
+7. **🧠 Trivia Challenge**: Test your knowledge with timed trivia questions about any movie or TV show
 
 ### 🔧 How to Use Each Feature
 
@@ -475,6 +476,14 @@ Nova Reel features an intuitive tab-based interface with the following sections:
 - Upload a screenshot from any movie or TV show
 - Let the AI analyze and identify the content
 - View confidence scores and detailed information about identified content
+
+#### 🧠 Trivia Challenge
+- Select any movie or TV show from the browse tabs or search results
+- Click the "Trivia Challenge" button on the movie/TV show detail page
+- Answer timed trivia questions (30 seconds per question) about the selected content
+- Track your score and performance throughout the challenge
+- View your final results and statistics when the game is complete
+- Challenge yourself again or try trivia for different movies and shows
 
 ## 💻 Development
 

@@ -65,3 +65,25 @@ section {
 
 // Media grids
 @include variables.media-grids;
+
+// Trivia button styling
+.btn.btn-accent {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  border: none;
+
+  &:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+  }
+
+  svg {
+    animation: rotate 3s linear infinite;
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

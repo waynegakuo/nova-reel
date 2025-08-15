@@ -1,0 +1,264 @@
+.trivia-game-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 4rem);
+
+  // Use global loading and error styles
+
+  // Setup State
+  .setup-container {
+    text-align: center;
+
+    .media-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+
+      .media-poster {
+        width: 200px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      .media-details {
+        text-align: left;
+
+        h2 {
+          margin: 0 0 1rem 0;
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #212529;
+        }
+
+        .media-type {
+          font-size: 1.2rem;
+          color: #007bff;
+          margin: 0 0 0.5rem 0;
+          font-weight: 600;
+        }
+
+        .genre {
+          color: #6c757d;
+          margin: 0;
+        }
+      }
+    }
+
+    .game-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+      // Uses global .info-card styles
+    }
+
+    .start-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+
+  // Playing State
+  .playing-container {
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 12px;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      // Uses global .progress-container and .timer styles
+    }
+
+    .question-container {
+      .question-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        // Uses global .badge-category and .badge-easy/medium/hard styles
+      }
+
+      .question-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.4;
+        margin-bottom: 2rem;
+        color: #212529;
+      }
+
+      .answers-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        // Uses global .answer-option styles
+      }
+
+      .submit-container {
+        text-align: center;
+      }
+    }
+
+    .score-display {
+      text-align: center;
+      margin-top: 2rem;
+
+      .score-text {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #495057;
+        background: #f8f9fa;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        display: inline-block;
+      }
+    }
+  }
+
+  // Results State
+  .results-container {
+    text-align: center;
+
+    .results-header {
+      margin-bottom: 2rem;
+
+      h2 {
+        margin-bottom: 1.5rem;
+        font-size: 2.5rem;
+        color: #212529;
+      }
+
+      .final-score {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+
+        .score-number {
+          font-size: 4rem;
+          font-weight: 700;
+          color: #007bff;
+        }
+
+        .score-divider {
+          font-size: 3rem;
+          color: #6c757d;
+        }
+
+        .score-total {
+          font-size: 3rem;
+          font-weight: 700;
+          color: #6c757d;
+        }
+      }
+
+      .percentage {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+
+        &.text-green-500 { color: #28a745; }
+        &.text-blue-500 { color: #007bff; }
+        &.text-yellow-500 { color: #ffc107; }
+        &.text-red-500 { color: #dc3545; }
+      }
+    }
+
+    .performance-message {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 3rem;
+
+      &.text-green-500 { color: #28a745; }
+      &.text-blue-500 { color: #007bff; }
+      &.text-yellow-500 { color: #e67e22; }
+      &.text-red-500 { color: #dc3545; }
+    }
+
+    // Uses global .stats-grid, .achievements-section, and .review-section styles
+
+    .results-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+
+  // Uses global button styles (.btn, .btn-primary, .btn-secondary, .btn-danger, .btn-large, .btn-small)
+}
+
+// Uses global animations (spin, pulse)
+
+// Responsive Design
+@media (max-width: 768px) {
+  .trivia-game-container {
+    padding: 1rem;
+
+    .setup-container .media-info {
+      flex-direction: column;
+      text-align: center;
+
+      .media-details {
+        text-align: center;
+
+        h2 {
+          font-size: 2rem;
+        }
+      }
+    }
+
+    .playing-container {
+      .game-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+
+      .question-container .question-text {
+        font-size: 1.2rem;
+      }
+
+      .answers-grid .answer-option {
+        padding: 1rem;
+
+        .answer-text {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .results-container {
+      .results-header .final-score {
+        .score-number, .score-total {
+          font-size: 3rem;
+        }
+
+        .score-divider {
+          font-size: 2.5rem;
+        }
+      }
+
+      .percentage {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
