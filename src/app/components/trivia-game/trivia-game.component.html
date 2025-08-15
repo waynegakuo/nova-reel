@@ -198,13 +198,13 @@
       <div class="review-section">
         <h4>Question Review</h4>
         <div class="questions-review">
-          @for (question of currentSession()!.questions; track question.id; let i = $index) {
+          @for (question of gameResult()!.session.questions; track question.id; let i = $index) {
             <div class="review-question"
-                 [class]="currentSession()!.answers[i] && currentSession()!.answers[i].isCorrect ? 'correct' : 'incorrect'">
+                 [class]="gameResult()!.session.answers[i] && gameResult()!.session.answers[i].isCorrect ? 'correct' : 'incorrect'">
               <div class="review-header">
                 <span class="question-number">Q{{ i + 1 }}</span>
                 <span class="result-icon">
-                  {{ currentSession()!.answers[i] && currentSession()!.answers[i].isCorrect ? '✓' : '✗' }}
+                  {{ gameResult()!.session.answers[i] && gameResult()!.session.answers[i].isCorrect ? '✓' : '✗' }}
                 </span>
               </div>
               <p class="review-question-text">{{ question.question }}</p>
@@ -212,11 +212,11 @@
                 <div class="correct-answer">
                   <strong>Correct:</strong> {{ question.options[question.correctAnswer] }}
                 </div>
-                @if (currentSession()!.answers[i] && !currentSession()!.answers[i].isCorrect) {
+                @if (gameResult()!.session.answers[i] && !gameResult()!.session.answers[i].isCorrect) {
                   <div class="your-answer">
                     <strong>Your answer:</strong>
-                    @if (currentSession()!.answers[i].selectedAnswer >= 0) {
-                      {{ question.options[currentSession()!.answers[i].selectedAnswer] }}
+                    @if (gameResult()!.session.answers[i].selectedAnswer >= 0) {
+                      {{ question.options[gameResult()!.session.answers[i].selectedAnswer] }}
                     } @else {
                       No answer (time up)
                     }

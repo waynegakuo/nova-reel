@@ -89,17 +89,15 @@ export interface TriviaLeaderboard {
 
 // Response from the backend trivia generation function
 export interface TriviaFlowResponse {
-  success: boolean;
-  sessionId?: string;
-  questions?: TriviaQuestion[];
-  mediaInfo?: {
+  sessionId: string;
+  questions: TriviaQuestion[];
+  mediaInfo: {
     title: string;
     year?: string;
     posterPath?: string;
     overview?: string;
   };
-  error?: string;
-  estimatedDuration?: number;
+  estimatedDuration: number;
 }
 
 // Request format for the backend trivia generation function

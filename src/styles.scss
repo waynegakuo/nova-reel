@@ -607,6 +607,9 @@ p, span, a, button, input, textarea, .body-text {
       font-size: 1.8rem;
       font-weight: 700;
       color: #212529;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.2;
     }
   }
 }

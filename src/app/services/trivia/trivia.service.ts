@@ -78,17 +78,20 @@ export class TriviaService {
 
     return from(generateTriviaFunction(triviaRequest)).pipe(
       map(result => {
-        if (!result.data.success) {
-          throw new Error(result.data.error || 'Failed to generate trivia');
+        console.log('Trivia generation result:', result);
+        // Access the result object from the response
+        const data = result.data
+        if (!data || !data.sessionId) {
+          throw new Error('Invalid response from trivia generation service');
         }
 
         const response: TriviaGenerationResponse = {
-          sessionId: result.data.sessionId!,
-          questions: result.data.questions!,
-          mediaTitle: result.data.mediaInfo!.title,
-          mediaYear: result.data.mediaInfo!.year,
-          posterPath: result.data.mediaInfo!.posterPath,
-          estimatedDuration: result.data.estimatedDuration!
+          sessionId: data.sessionId,
+          questions: data.questions,
+          mediaTitle: data.mediaInfo.title,
+          mediaYear: data.mediaInfo.year,
+          posterPath: data.mediaInfo.posterPath,
+          estimatedDuration: data.estimatedDuration
         };
 
         // Create initial game session
@@ -199,7 +202,7 @@ export class TriviaService {
       score: updatedScore,
       totalTimeSpent: updatedTotalTime,
       status: updatedSession.status,
-      completedAt: updatedSession.completedAt
+      ...(updatedSession.completedAt ? { completedAt: updatedSession.completedAt } : {})
     })).pipe(
       map(() => {
         this.currentSessionSubject.next(updatedSession);

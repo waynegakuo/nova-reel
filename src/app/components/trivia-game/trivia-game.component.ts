@@ -314,8 +314,15 @@ export class TriviaGameComponent implements OnInit, OnDestroy {
 
   formatTime(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    if (minutes === 0) {
+      return `${remainingSeconds} seconds`;
+    } else if (remainingSeconds === 0) {
+      return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    } else {
+      return `${minutes} minute${minutes !== 1 ? 's' : ''}, ${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
+    }
   }
 
   getTimerColor(): string {
