@@ -65,7 +65,15 @@ export class TriviaService {
 
     const triviaRequest: TriviaFlowRequest = {
       userId: userId,
-      ...request
+      mediaType: request.mediaType,
+      difficulty: request.difficulty,
+      questionCount: request.questionCount,
+      // Ensure mediaId is a number, not string
+      mediaId: request.mediaId ? Number(request.mediaId) : undefined,
+      // Ensure genre is a string when provided, exclude if undefined
+      ...(request.genre && true ? { genre: request.genre } : {}),
+      // Ensure categories is an array when provided, exclude if undefined
+      ...(request.categories && Array.isArray(request.categories) ? { categories: request.categories } : {}),
     };
 
     return from(generateTriviaFunction(triviaRequest)).pipe(
@@ -87,8 +95,7 @@ export class TriviaService {
         const gameSession: TriviaGameSession = {
           id: response.sessionId,
           userId: userId,
-          movieId: request.movieId,
-          tvShowId: request.tvShowId,
+          mediaId: request.mediaId,
           mediaType: request.mediaType,
           mediaTitle: response.mediaTitle,
           posterPath: response.posterPath,

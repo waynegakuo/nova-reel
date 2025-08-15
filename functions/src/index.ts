@@ -522,8 +522,7 @@ export const guessMovieFromScreenshot = onCall(
 // Schemas for Trivia Generation Flow
 const TriviaFlowInputSchema = z.object({
   userId: z.string().describe('The ID of the user requesting trivia.'),
-  movieId: z.number().optional().describe('TMDB ID of the movie for trivia.'),
-  tvShowId: z.number().optional().describe('TMDB ID of the TV show for trivia.'),
+  mediaId: z.number().optional().describe('TMDB ID of the media (movie or TV show) for trivia.'),
   mediaType: z.enum(['movie', 'tv']).describe('Type of media: "movie" or "tv".'),
   genre: z.string().optional().describe('Genre for genre-based trivia.'),
   difficulty: z.enum(['easy', 'medium', 'hard', 'mixed']).default('mixed').describe('Difficulty level of questions.'),
@@ -561,7 +560,7 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
     outputSchema: TriviaFlowOutputSchema,
   },
   async (input) => {
-    const { userId, movieId, tvShowId, mediaType, genre, difficulty, questionCount, categories } = input;
+    const { userId, mediaId, mediaType, genre, difficulty, questionCount, categories } = input;
 
     // Generate unique session ID
     const sessionId = `trivia_${userId}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
@@ -571,19 +570,18 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
 
     try {
       // Fetch media details from TMDB
-      if (movieId || tvShowId) {
-        const id = movieId || tvShowId!;
+      if (mediaId) {
         const endpoint = mediaType === 'movie' ? 'movie' : 'tv';
 
         // Get basic media details
         mediaData = await getTmdbDataTool({
           endpoint: endpoint,
-          id: id,
+          id: mediaId,
         });
 
         // Get additional details like cast and crew
         const creditsData = await getTmdbDataTool({
-          endpoint: `${endpoint}/${id}/credits`,
+          endpoint: `${endpoint}/${mediaId}/credits`,
         });
 
         // Combine media data with credits for richer trivia generation
@@ -610,13 +608,13 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
         };
         mediaData = { genre: genre, type: 'genre-based' };
       } else {
-        throw new Error('Either movieId/tvShowId or genre must be provided.');
+        throw new Error('Either mediaId or genre must be provided.');
       }
 
       // Prepare context for AI trivia generation
       let triviaPrompt = '';
 
-      if (movieId || tvShowId) {
+      if (mediaId) {
         const castList = mediaData.credits?.cast?.slice(0, 10).map((actor: any) =>
           `${actor.name} as ${actor.character}`).join(', ') || '';
 
@@ -701,8 +699,7 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
       const triviaSessionData = {
         sessionId,
         userId,
-        movieId,
-        tvShowId,
+        mediaId,
         mediaType,
         mediaTitle: mediaInfo.title,
         genre,

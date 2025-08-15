@@ -448,23 +448,17 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
 
     // Prepare trivia request
     const triviaRequest: TriviaGameRequest = {
+      mediaId: this.mediaId(),
       mediaType: this.mediaType() === 'tvshow' ? 'tv' : 'movie',
       questionCount: 5,
       difficulty: 'mixed'
     };
 
-    if (this.mediaType() === 'movie') {
-      triviaRequest.movieId = this.mediaId();
-    } else {
-      triviaRequest.tvShowId = this.mediaId();
-    }
-
     // Navigate to trivia with query parameters
     this.router.navigate(['/trivia'], {
       queryParams: {
         mediaType: triviaRequest.mediaType,
-        movieId: triviaRequest.movieId,
-        tvShowId: triviaRequest.tvShowId,
+        mediaId: triviaRequest.mediaId,
         questionCount: triviaRequest.questionCount,
         difficulty: triviaRequest.difficulty
       }

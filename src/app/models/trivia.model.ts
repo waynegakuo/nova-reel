@@ -21,8 +21,7 @@ export interface TriviaAnswer {
 export interface TriviaGameSession {
   id: string;
   userId: string;
-  movieId?: number;
-  tvShowId?: number;
+  mediaId?: number;
   mediaType: 'movie' | 'tv';
   mediaTitle: string;
   posterPath?: string; // Poster image path from TMDB
@@ -48,8 +47,7 @@ export interface TriviaGameResult {
 }
 
 export interface TriviaGameRequest {
-  movieId?: number;
-  tvShowId?: number;
+  mediaId?: number;
   mediaType: 'movie' | 'tv';
   genre?: string;
   difficulty?: 'easy' | 'medium' | 'hard' | 'mixed';
@@ -107,8 +105,7 @@ export interface TriviaFlowResponse {
 // Request format for the backend trivia generation function
 export interface TriviaFlowRequest {
   userId: string;
-  movieId?: number;
-  tvShowId?: number;
+  mediaId?: number;
   mediaType: 'movie' | 'tv';
   genre?: string;
   difficulty?: 'easy' | 'medium' | 'hard' | 'mixed';

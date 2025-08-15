@@ -69,7 +69,7 @@ export class TriviaGameComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Check if we have route parameters for generating trivia
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-      if (params['movieId'] || params['tvShowId'] || params['genre']) {
+      if (params['mediaId'] || params['genre']) {
         this.generateTriviaFromParams(params);
       }
     });
@@ -95,8 +95,7 @@ export class TriviaGameComponent implements OnInit, OnDestroy {
   private generateTriviaFromParams(params: any) {
     const request: TriviaGameRequest = {
       mediaType: params['mediaType'] as 'movie' | 'tv',
-      movieId: params['movieId'] ? parseInt(params['movieId']) : undefined,
-      tvShowId: params['tvShowId'] ? parseInt(params['tvShowId']) : undefined,
+      mediaId: params['mediaId'] ? parseInt(params['mediaId']) : undefined,
       genre: params['genre'],
       difficulty: params['difficulty'] || 'mixed',
       questionCount: params['questionCount'] ? parseInt(params['questionCount']) : 5
