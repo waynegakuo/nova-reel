@@ -25,6 +25,7 @@ export class TriviaService {
   private firebaseApp = inject(FirebaseApp);
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private functions;
 
   // Current game session state
   private currentSessionSubject = new BehaviorSubject<TriviaGameSession | null>(null);
@@ -35,6 +36,8 @@ export class TriviaService {
   public userStats$ = this.userStatsSubject.asObservable();
 
   constructor() {
+    this.functions = getFunctions(this.firebaseApp, 'africa-south1');
+
     // Load user stats when service initializes
     const userId = this.authService.getUserId();
     if (userId) {
@@ -55,9 +58,8 @@ export class TriviaService {
       return throwError(() => new Error('User must be authenticated to generate trivia.'));
     }
 
-    const functions = getFunctions(this.firebaseApp);
     const generateTriviaFunction = httpsCallable<TriviaFlowRequest, TriviaFlowResponse>(
-      functions,
+      this.functions,
       'generateTriviaFlow'
     );
 
