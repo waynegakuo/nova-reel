@@ -66,6 +66,12 @@ export class TriviaGameComponent implements OnInit, OnDestroy {
 
   gameState = signal<'setup' | 'playing' | 'completed' | 'results'>('setup');
 
+  // Store originating URL for playAgain functionality
+  private originatingUrl: string | null = null;
+
+  // Store original trivia parameters for playAgain functionality
+  private originalTriviaParams: any = null;
+
   ngOnInit() {
     // Check if we have route parameters for generating trivia
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -100,6 +106,14 @@ export class TriviaGameComponent implements OnInit, OnDestroy {
       difficulty: params['difficulty'] || 'mixed',
       questionCount: params['questionCount'] ? parseInt(params['questionCount']) : 5
     };
+
+    // Store originating URL if we have mediaType and mediaId
+    if (params['mediaType'] && params['mediaId']) {
+      this.originatingUrl = `/details/${params['mediaType']}/${params['mediaId']}`;
+    }
+
+    // Store original trivia parameters for playAgain functionality
+    this.originalTriviaParams = { ...params };
 
     this.generateTrivia(request);
   }
@@ -252,11 +266,49 @@ export class TriviaGameComponent implements OnInit, OnDestroy {
   }
 
   playAgain() {
-    this.gameState.set('setup');
-    this.gameResult.set(null);
+    // Reset all game state
+    this.stopTimer();
+    this.currentSession.set(null);
     this.currentQuestionIndex.set(0);
     this.selectedAnswer.set(null);
+    this.isLoading.set(false);
     this.error.set(null);
+    this.gameResult.set(null);
+    this.gameState.set('setup');
+    this.questionStartTime.set(0);
+    this.timeRemaining.set(30);
+
+    // Abandon current session if exists
+    this.triviaService.abandonSession()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // Generate fresh trivia questions with the same parameters
+          if (this.originalTriviaParams) {
+            this.generateTriviaFromParams(this.originalTriviaParams);
+          } else {
+            // Fallback to home page if no original parameters are stored
+            this.router.navigate(['/']);
+          }
+        },
+        error: () => {
+          // Even if abandoning fails, still try to generate fresh trivia
+          if (this.originalTriviaParams) {
+            this.generateTriviaFromParams(this.originalTriviaParams);
+          } else {
+            this.router.navigate(['/']);
+          }
+        }
+      });
+  }
+
+  goToMediaDetails() {
+    if (this.originatingUrl) {
+      this.router.navigate([this.originatingUrl]);
+    } else {
+      // Fallback to home page if no originating URL is stored
+      this.router.navigate(['/']);
+    }
   }
 
   goHome() {
