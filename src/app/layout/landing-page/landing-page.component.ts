@@ -1,11 +1,10 @@
 import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MediaCardComponent } from '../../shared/components/media-card/media-card.component';
 import { Movie, TvShow } from '../../models/media.model';
 import {MediaService} from '../../services/media/media.service';
-import {Subject, takeUntil, of} from 'rxjs';
+import {Subject, takeUntil} from 'rxjs';
 import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
-import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
+import {AiRecommendation} from '../../models/ai-recommendations.model';
 import {Router} from '@angular/router';
 import { SearchBarComponent } from '../../shared/components/search/search-bar/search-bar.component';
 import { SearchResultsComponent } from '../../shared/components/search/search-results/search-results.component';
@@ -13,7 +12,7 @@ import { LoadingMessagesService } from '../../services/loading-messages/loading-
 import { RecommendationHistoryService } from '../../services/recommendation-history/recommendation-history.service';
 import { RecommendationHistoryEntry } from '../../models/recommendation-history.model';
 import { TabNavigationComponent, TabItem } from '../../shared/components/tab-navigation/tab-navigation.component';
-import { CategorySelectorComponent, CategoryItem } from '../../shared/components/category-selector/category-selector.component';
+import { CategoryItem } from '../../shared/components/category-selector/category-selector.component';
 import { MoviesAndTvShowsComponent } from '../../components/movies-and-tv-shows/movies-and-tv-shows.component';
 import { FavoritesComponent } from '../../components/favorites/favorites.component';
 import { ForYouComponent } from '../../components/for-you/for-you.component';
@@ -442,22 +441,6 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.loadMovies(this.activeMovieCategory(), false, page);
   }
 
-  // Method to navigate to the next movie page
-  nextMoviePage(): void {
-    const nextPage = this.currentMoviePage() + 1;
-    if (nextPage <= this.MAX_PAGES) {
-      this.goToMoviePage(nextPage);
-    }
-  }
-
-  // Method to navigate to the previous movie page
-  prevMoviePage(): void {
-    const prevPage = this.currentMoviePage() - 1;
-    if (prevPage >= 1) {
-      this.goToMoviePage(prevPage);
-    }
-  }
-
   // Method to load TV shows from the API
   loadTVShows(list: string, forceRefresh: boolean = false, page?: number): void {
     // If changing categories, reset to page 1
@@ -507,22 +490,6 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     if (page < 1 || page > this.MAX_PAGES) return;
     this.currentTVShowPage.set(page);
     this.loadTVShows(this.activeTVShowCategory(), false, page);
-  }
-
-  // Method to navigate to the next TV show page
-  nextTVShowPage(): void {
-    const nextPage = this.currentTVShowPage() + 1;
-    if (nextPage <= this.MAX_PAGES) {
-      this.goToTVShowPage(nextPage);
-    }
-  }
-
-  // Method to navigate to the previous TV show page
-  prevTVShowPage(): void {
-    const prevPage = this.currentTVShowPage() - 1;
-    if (prevPage >= 1) {
-      this.goToTVShowPage(prevPage);
-    }
   }
 
   // Method to handle sharing
