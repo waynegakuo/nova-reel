@@ -1,12 +1,12 @@
 .content-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 0 1rem;
 }
 
 // Mobile responsive styles
 @media (max-width: 768px) {
   .content-container {
-    padding: 1.5rem 1rem;
+    padding: 0 1rem;
   }
 }

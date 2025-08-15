@@ -5,7 +5,7 @@
 .landing-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem 2rem;
 }
 
 .header {
@@ -69,7 +69,7 @@ app-media-card {
 // Mobile responsive styles - using global mixins
 @include variables.responsive-tablet {
   .landing-container {
-    padding: 1.5rem 1rem;
+    padding: 0.5rem 1rem;
   }
 
   .header {
