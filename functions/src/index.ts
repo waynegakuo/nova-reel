@@ -701,7 +701,6 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
         userId,
         mediaId,
         mediaType,
-        mediaTitle: mediaInfo.title,
         questionCount: output.questions.length,
         difficulty,
         categories: categories || ['general'],
@@ -712,7 +711,8 @@ export const _generateTriviaFlowLogic = ai.defineFlow(
         ...(genre ? { genre } : {}),
       };
 
-      await db.collection('triviaGameSessions').doc(sessionId).set(triviaSessionData);
+      // Save to users subcollection structure instead of separate collection
+      await db.collection('users').doc(userId).collection('triviaGameSessions').doc(sessionId).set(triviaSessionData);
 
       // Calculate estimated duration (assume 30 seconds per question + 2 minutes setup)
       const estimatedDuration = Math.ceil((output.questions.length * 0.5) + 2);
