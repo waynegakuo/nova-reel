@@ -12,5 +12,9 @@ export const routes: Routes = [
   {
     path: 'trivia',
     loadComponent: () => import('./components/trivia-game/trivia-game.component').then(m => m.TriviaGameComponent)
+  },
+  {
+    path: 'trivia-history',
+    loadComponent: () => import('./pages/trivia-history/trivia-history.component').then(m => m.TriviaHistoryComponent)
   }
 ];

@@ -63,6 +63,17 @@
           <div class="dropdown-divider"></div>
           <button
             class="dropdown-item"
+            (click)="navigateToTriviaHistory()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4m6-6h4a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-4m-6 0a2 2 0 0 0-2-2v-3a2 2 0 0 0 2-2m6 6a2 2 0 0 1 2-2v-3a2 2 0 0 1-2-2"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Trivia History
+          </button>
+          <div class="dropdown-divider"></div>
+          <button
+            class="dropdown-item"
             (click)="signOut()"
             [disabled]="isLoading()"
           >
