@@ -1,0 +1,404 @@
+@use '../../../styles/variables' as variables;
+
+.trivia-history-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      font-size: 2.5rem;
+      color: variables.$text-color-light;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      font-size: 1.2rem;
+      color: variables.$text-secondary-light;
+      margin: 0;
+    }
+  }
+
+  // Reuse global loading and error styles
+  .loading-container {
+    min-height: 400px;
+  }
+
+  .error-container {
+    min-height: 400px;
+
+    .error-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      svg {
+        width: 48px;
+        height: 48px;
+        color: variables.$primary-color;
+      }
+
+      .retry-btn {
+        // Use btn and btn-primary styles directly
+      }
+    }
+  }
+
+  // Empty state
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    padding: 2rem;
+
+    svg {
+      color: variables.$text-secondary-light;
+      margin-bottom: 1.5rem;
+      opacity: 0.7;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      color: variables.$text-color-light;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: variables.$text-secondary-light;
+      margin-bottom: 2rem;
+      max-width: 400px;
+    }
+
+    .start-trivia-btn {
+      // Use btn and btn-primary styles directly
+    }
+  }
+
+  // History stats overview
+  .history-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .stat-card {
+      background-color: variables.$card-background-light;
+      border-radius: variables.$border-radius-md;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+
+      &:hover {
+        transform: translateY(-2px);
+      }
+
+      .stat-number {
+        display: block;
+        font-size: 2rem;
+        font-weight: bold;
+        color: variables.$primary-color;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: variables.$text-secondary-light;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  // History list
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .history-item {
+      display: flex;
+      background-color: variables.$card-background-light;
+      border-radius: variables.$border-radius-md;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      border-left: 4px solid transparent;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      // Performance-based border colors
+      &.performance-excellent {
+        border-left-color: #28a745;
+      }
+
+      &.performance-good {
+        border-left-color: #17a2b8;
+      }
+
+      &.performance-average {
+        border-left-color: #ffc107;
+      }
+
+      &.performance-needs-improvement {
+        border-left-color: #dc3545;
+      }
+
+      .media-poster {
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: transform 0.3s;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+
+        .poster-image {
+          width: 120px;
+          height: 180px;
+          object-fit: cover;
+          display: block;
+
+          @media (max-width: 768px) {
+            width: 80px;
+            height: 120px;
+          }
+        }
+      }
+
+      .session-details {
+        flex: 1;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        @media (max-width: 768px) {
+          padding: 1rem;
+        }
+
+        .media-info {
+          margin-bottom: 1rem;
+
+          .media-title {
+            font-size: 1.3rem;
+            color: variables.$text-color-light;
+            margin: 0 0 0.25rem 0;
+            cursor: pointer;
+            transition: color 0.3s;
+
+            &:hover {
+              color: variables.$primary-color;
+            }
+
+            .media-year {
+              font-weight: normal;
+              color: variables.$text-secondary-light;
+              font-size: 0.9em;
+            }
+          }
+
+          .media-type {
+            display: inline-block;
+            background-color: variables.$primary-color;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: variables.$border-radius-sm;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+          }
+        }
+
+        .game-info {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1rem;
+
+          @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+          }
+
+          .score-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .score-circle {
+              width: 60px;
+              height: 60px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: bold;
+              color: white;
+
+              &.score-excellent {
+                background-color: #28a745;
+              }
+
+              &.score-good {
+                background-color: #17a2b8;
+              }
+
+              &.score-average {
+                background-color: #ffc107;
+                color: #212529;
+              }
+
+              &.score-needs-improvement {
+                background-color: #dc3545;
+              }
+
+              .score-percentage {
+                font-size: 0.9rem;
+              }
+            }
+
+            .score-details {
+              display: flex;
+              flex-direction: column;
+
+              .score-text {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: variables.$text-color-light;
+              }
+
+              .performance-text {
+                font-size: 0.9rem;
+                color: variables.$text-secondary-light;
+              }
+            }
+          }
+
+          .game-stats {
+            display: flex;
+            gap: 1.5rem;
+
+            @media (max-width: 768px) {
+              gap: 1rem;
+            }
+
+            .stat-item {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              color: variables.$text-secondary-light;
+              font-size: 0.9rem;
+
+              svg {
+                flex-shrink: 0;
+              }
+            }
+          }
+        }
+
+        .session-date {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: variables.$text-secondary-light;
+          font-size: 0.9rem;
+
+          svg {
+            flex-shrink: 0;
+          }
+        }
+      }
+    }
+  }
+
+  // Dark theme support
+  :host-context(.dark-theme) & {
+    .page-header h1 {
+      color: variables.$text-color-dark;
+    }
+
+    .page-header .page-subtitle {
+      color: variables.$text-secondary-dark;
+    }
+
+    .stat-card,
+    .history-item {
+      background-color: variables.$card-background-dark;
+    }
+
+    .history-item .session-details {
+      .media-title {
+        color: variables.$text-color-dark;
+      }
+
+      .score-details .score-text {
+        color: variables.$text-color-dark;
+      }
+    }
+
+    .empty-state h3 {
+      color: variables.$text-color-dark;
+    }
+  }
+
+  // Mobile responsiveness
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .history-stats {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+
+      .stat-card {
+        padding: 1rem;
+
+        .stat-number {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .page-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .history-stats {
+      grid-template-columns: 1fr;
+
+      .stat-card {
+        .stat-number {
+          font-size: 1.8rem;
+        }
+      }
+    }
+
+    .history-list .history-item {
+      flex-direction: column;
+
+      .media-poster .poster-image {
+        width: 100%;
+        height: 200px;
+      }
+    }
+  }
+}
