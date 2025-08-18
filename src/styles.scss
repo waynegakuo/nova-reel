@@ -372,6 +372,83 @@ p, span, a, button, input, textarea, .body-text {
   }
 }
 
+// Stat card for trivia history and stats
+.stat-card {
+  background-color: variables.$card-background-light;
+  border-radius: variables.$border-radius-md;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  .stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: variables.$primary-color;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: variables.$text-secondary-light;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Empty state container
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+
+  svg {
+    color: variables.$text-secondary-light;
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    color: variables.$text-color-light;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: variables.$text-secondary-light;
+    margin-bottom: 2rem;
+    max-width: 400px;
+  }
+}
+
+// History stats grid
+.history-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .progress-container {
   flex: 1;
   min-width: 200px;
