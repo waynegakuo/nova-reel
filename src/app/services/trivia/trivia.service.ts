@@ -78,7 +78,6 @@ export class TriviaService {
 
     return from(generateTriviaFunction(triviaRequest)).pipe(
       map(result => {
-        console.log('Trivia generation result:', result);
         // Access the result object from the response
         const data = result.data
         if (!data || !data.sessionId) {
@@ -88,9 +87,7 @@ export class TriviaService {
         const response: TriviaGenerationResponse = {
           sessionId: data.sessionId,
           questions: data.questions,
-          mediaTitle: data.mediaInfo.title,
-          mediaYear: data.mediaInfo.year,
-          posterPath: data.mediaInfo.posterPath,
+          mediaInfo: data.mediaInfo,
           estimatedDuration: data.estimatedDuration
         };
 
@@ -100,9 +97,8 @@ export class TriviaService {
           userId: userId,
           mediaId: request.mediaId,
           mediaType: request.mediaType,
-          mediaTitle: response.mediaTitle,
-          posterPath: response.posterPath,
           genre: request.genre,
+          mediaInfo: data.mediaInfo,
           questions: response.questions,
           answers: [],
           status: 'pending',
@@ -137,21 +133,9 @@ export class TriviaService {
       startedAt: new Date()
     };
 
-    // Update in Firestore
-    const sessionDoc = doc(this.firestore, `triviaGameSessions/${sessionId}`);
-    return from(updateDoc(sessionDoc, {
-      status: 'in-progress',
-      startedAt: new Date()
-    })).pipe(
-      map(() => {
-        this.currentSessionSubject.next(updatedSession);
-        return true;
-      }),
-      catchError(error => {
-        console.error('Error starting trivia session:', error);
-        return throwError(() => error);
-      })
-    );
+    // Update local session state only - no need to save to Firestore during gameplay
+    this.currentSessionSubject.next(updatedSession);
+    return of(true);
   }
 
   /**
@@ -195,30 +179,15 @@ export class TriviaService {
       updatedSession.completedAt = new Date();
     }
 
-    // Update Firestore
-    const sessionDoc = doc(this.firestore, `triviaGameSessions/${currentSession.id}`);
-    return from(updateDoc(sessionDoc, {
-      answers: updatedAnswers,
-      score: updatedScore,
-      totalTimeSpent: updatedTotalTime,
-      status: updatedSession.status,
-      ...(updatedSession.completedAt ? { completedAt: updatedSession.completedAt } : {})
-    })).pipe(
-      map(() => {
-        this.currentSessionSubject.next(updatedSession);
+    // Update local session state only - no need to save to Firestore during gameplay
+    this.currentSessionSubject.next(updatedSession);
 
-        // Update user stats if game is complete
-        if (updatedSession.status === 'completed') {
-          this.updateUserStats(updatedSession);
-        }
+    // Update user stats if game is complete
+    if (updatedSession.status === 'completed') {
+      this.updateUserStats(updatedSession);
+    }
 
-        return answer;
-      }),
-      catchError(error => {
-        console.error('Error submitting answer:', error);
-        return throwError(() => error);
-      })
-    );
+    return of(answer);
   }
 
   /**
@@ -250,8 +219,15 @@ export class TriviaService {
       achievements.push('Hard Mode Champion');
     }
 
+    // Mark session as completed and add completion timestamp
+    const completedSession = {
+      ...currentSession,
+      status: 'completed' as const,
+      completedAt: new Date()
+    };
+
     const result: TriviaGameResult = {
-      session: currentSession,
+      session: completedSession,
       percentage,
       correctAnswers,
       totalQuestions,
@@ -260,38 +236,114 @@ export class TriviaService {
       achievements
     };
 
-    // Clear current session
-    this.currentSessionSubject.next(null);
+    // Save completed session to Firebase using the new structure
+    return from(this.saveTriviaSession(completedSession)).pipe(
+      map(() => {
+        // Clear current session after successful save
+        this.currentSessionSubject.next(null);
+        return result;
+      }),
+      catchError(error => {
+        console.error('Error saving trivia session:', error);
+        // Still clear session and return result even if save fails
+        this.currentSessionSubject.next(null);
+        return of(result);
+      })
+    );
+  }
 
-    return of(result);
+  /**
+   * Save trivia session to Firebase using userID document with subcollection structure
+   */
+  private saveTriviaSession(session: TriviaGameSession): Promise<void> {
+    try {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        return Promise.reject(new Error('User must be authenticated to save trivia session'));
+      }
+
+      // Create a reference to the user's document
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const triviaSessionsCollection = collection(userDocRef, 'triviaGameSessions');
+
+      // Use the session ID as the document ID in the subcollection
+      const sessionDocRef = doc(triviaSessionsCollection, session.id);
+
+      // Sanitize session data to remove undefined values
+      const sanitizedSession = this.sanitizeObjectForFirestore({
+        ...session,
+        completedAt: session.completedAt || new Date()
+      });
+
+      // Save the session data
+      return setDoc(sessionDocRef, sanitizedSession);
+    } catch (error) {
+      console.error('Error saving trivia session:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sanitize object by removing undefined values to prevent Firebase errors
+   */
+  private sanitizeObjectForFirestore(obj: any): any {
+    const sanitized: any = {};
+
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
+        if (Array.isArray(obj[key])) {
+          // Handle arrays - recursively sanitize each element
+          sanitized[key] = obj[key].map((item: any) =>
+            typeof item === 'object' && item !== null ? this.sanitizeObjectForFirestore(item) : item
+          );
+        } else if (typeof obj[key] === 'object' && obj[key] !== null && !(obj[key] instanceof Date)) {
+          // Handle nested objects - recursively sanitize
+          sanitized[key] = this.sanitizeObjectForFirestore(obj[key]);
+        } else {
+          // Handle primitive values and Dates
+          sanitized[key] = obj[key];
+        }
+      }
+    }
+
+    return sanitized;
   }
 
   /**
    * Get user's trivia history
    */
   getTriviaHistory(): Observable<TriviaGameSession[]> {
-    // Check if user is authenticated
-    const userId = this.authService.getUserId();
-    if (!userId) {
+    try {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        return of([]);
+      }
+
+      // Create a reference to the user's trivia sessions subcollection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const triviaSessionsCollection = collection(userDocRef, 'triviaGameSessions');
+
+      // Create a query ordered by completedAt (most recent first)
+      const triviaQuery = query(
+        triviaSessionsCollection,
+        where('status', '==', 'completed'),
+        orderBy('completedAt', 'desc')
+      );
+
+      return from(getDocs(triviaQuery)).pipe(
+        map(snapshot => {
+          return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          } as TriviaGameSession));
+        })
+      );
+    } catch (error) {
+      console.error('Error fetching trivia history:', error);
       return of([]);
     }
-
-    const triviaCollection = collection(this.firestore, 'triviaGameSessions');
-    const triviaQuery = query(
-      triviaCollection,
-      where('userId', '==', userId),
-      where('status', '==', 'completed'),
-      orderBy('completedAt', 'desc')
-    );
-
-    return from(getDocs(triviaQuery)).pipe(
-      map(snapshot => {
-        return snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as TriviaGameSession));
-      })
-    );
   }
 
   /**
@@ -374,17 +426,9 @@ export class TriviaService {
       return of(false);
     }
 
-    const sessionDoc = doc(this.firestore, `triviaGameSessions/${currentSession.id}`);
-    return from(updateDoc(sessionDoc, {
-      status: 'abandoned',
-      completedAt: new Date()
-    })).pipe(
-      map(() => {
-        this.currentSessionSubject.next(null);
-        return true;
-      }),
-      catchError(() => of(false))
-    );
+    // Clear local session state only - no need to save abandoned sessions to Firestore
+    this.currentSessionSubject.next(null);
+    return of(true);
   }
 
   /**

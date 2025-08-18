@@ -21,15 +21,15 @@
   @if (gameState() === 'setup' && currentSession() && !isLoading() && !error()) {
     <div class="setup-container">
       <div class="media-info">
-        @if (currentSession()!.posterPath) {
+        @if (currentSession()!.mediaInfo.posterPath) {
           <img
-            [src]="'https://image.tmdb.org/t/p/w300' + currentSession()!.posterPath"
-            [alt]="currentSession()!.mediaTitle"
+            [src]="'https://image.tmdb.org/t/p/w300' + currentSession()!.mediaInfo.posterPath"
+            [alt]="currentSession()!.mediaInfo.title"
             class="media-poster"
           />
         }
         <div class="media-details">
-          <h2>{{ currentSession()!.mediaTitle }}</h2>
+          <h2>{{ currentSession()!.mediaInfo.title }}</h2>
           <p class="media-type">{{ currentSession()!.mediaType | titlecase }} Trivia Challenge</p>
           @if (currentSession()!.genre) {
             <p class="genre">Genre: {{ currentSession()!.genre | titlecase }}</p>

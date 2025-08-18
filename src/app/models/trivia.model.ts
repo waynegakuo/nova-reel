@@ -23,9 +23,13 @@ export interface TriviaGameSession {
   userId: string;
   mediaId?: number;
   mediaType: 'movie' | 'tv';
-  mediaTitle: string;
-  posterPath?: string; // Poster image path from TMDB
   genre?: string; // For genre-based trivia
+  mediaInfo: {
+    title: string;
+    year?: string;
+    posterPath?: string;
+    overview?: string;
+  }; // Media information from TMDB
   questions: TriviaQuestion[];
   answers: TriviaAnswer[];
   status: 'pending' | 'in-progress' | 'completed' | 'abandoned';
@@ -58,9 +62,12 @@ export interface TriviaGameRequest {
 export interface TriviaGenerationResponse {
   sessionId: string;
   questions: TriviaQuestion[];
-  mediaTitle: string;
-  mediaYear?: string;
-  posterPath?: string;
+  mediaInfo: {
+    title: string;
+    year?: string;
+    posterPath?: string;
+    overview?: string;
+  };
   estimatedDuration: number; // Estimated time in minutes
 }
 
