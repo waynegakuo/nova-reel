@@ -60,63 +60,152 @@
       <div class="history-list">
         @for (session of triviaHistory(); track session.id) {
           <div class="history-item" [class]="'performance-' + getPerformanceLevel(getScorePercentage(session))">
-            <div class="media-poster" (click)="viewMediaDetails(session)">
-              <img
-                [src]="getPosterUrl(session.mediaInfo.posterPath || null)"
-                [alt]="session.mediaInfo.title || 'Movie poster'"
-                class="poster-image"
-              >
+            <div class="history-content">
+              <div class="media-poster-session-container">
+                <div class="media-poster" (click)="viewMediaDetails(session)">
+                  <img
+                    [src]="getPosterUrl(session.mediaInfo.posterPath || null)"
+                    [alt]="session.mediaInfo.title || 'Movie poster'"
+                    class="poster-image"
+                  >
+                </div>
+
+                <div class="session-details">
+                  <div class="media-info">
+                    <h3 class="media-title" (click)="viewMediaDetails(session)">
+                      {{ session.mediaInfo.title }}
+                      @if (session.mediaInfo.year) {
+                        <span class="media-year">({{ session.mediaInfo.year }})</span>
+                      }
+                    </h3>
+                    <span class="media-type">{{ session.mediaType === 'movie' ? 'Movie' : 'TV Show' }}</span>
+                  </div>
+
+                  <div class="score-info">
+                    <div class="score-circle" [class]="'score-' + getPerformanceLevel(getScorePercentage(session))">
+                      <span class="score-percentage">{{ getScorePercentage(session) }}%</span>
+                    </div>
+                    <div class="score-details">
+                      <span class="score-text">{{ session.score }}/{{ session.maxScore }}</span>
+                      <span class="performance-text">{{ getPerformanceLevelText(getPerformanceLevel(getScorePercentage(session))) }}</span>
+                    </div>
+                  </div>
+
+                  <div class="game-stats">
+                    <div class="stat-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                      </svg>
+                      <span>{{ formatDuration(session.totalTimeSpent) }}</span>
+                    </div>
+                    <div class="stat-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                      </svg>
+                      <span>{{ session.questions.length || 0 }} questions</span>
+                    </div>
+                  </div>
+
+                  <div class="session-date">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>{{ formatDate(session.completedAt) }}</span>
+                  </div>
+
+                  <!-- Accordion toggle button -->
+                  <div class="accordion-toggle">
+                    <button
+                      class="toggle-btn"
+                      (click)="toggleSessionExpansion(session.id)"
+                      [attr.aria-expanded]="isSessionExpanded(session.id)"
+                    >
+                      <span>{{ isSessionExpanded(session.id) ? 'Hide' : 'View' }} Questions</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        [class.rotated]="isSessionExpanded(session.id)"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="session-details">
-              <div class="media-info">
-                <h3 class="media-title" (click)="viewMediaDetails(session)">
-                  {{ session.mediaInfo.title }}
-                  @if (session.mediaInfo.year) {
-                    <span class="media-year">({{ session.mediaInfo.year }})</span>
+            <!-- Accordion content - Questions details (now below both poster and session details) -->
+            @if (isSessionExpanded(session.id)) {
+              <div class="questions-accordion">
+                <div class="questions-header">
+                  <h4>Questions & Answers</h4>
+                </div>
+                <div class="questions-list">
+                  @for (question of session.questions; track question.id; let i = $index) {
+                    <div class="question-item" [class.correct]="isAnswerCorrect(session, question.id)" [class.incorrect]="!isAnswerCorrect(session, question.id)">
+                      <div class="question-header">
+                        <div class="question-number">Q{{ i + 1 }}</div>
+                        <div class="question-result">
+                          @if (isAnswerCorrect(session, question.id)) {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="correct-icon">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          } @else {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="incorrect-icon">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="question-content">
+                        <p class="question-text">{{ question.question }}</p>
+
+                        <div class="answer-details">
+                          <div class="user-answer">
+                            <span class="answer-label">Your Answer:</span>
+                            <span class="answer-text" [class.correct]="isAnswerCorrect(session, question.id)" [class.incorrect]="!isAnswerCorrect(session, question.id)">
+                              {{ getSelectedAnswerText(session, question) }}
+                            </span>
+                          </div>
+
+                          @if (!isAnswerCorrect(session, question.id)) {
+                            <div class="correct-answer">
+                              <span class="answer-label">Correct Answer:</span>
+                              <span class="answer-text correct">{{ getCorrectAnswerText(question) }}</span>
+                            </div>
+                          }
+
+                          @if (question.explanation) {
+                            <div class="explanation">
+                              <span class="explanation-label">Explanation:</span>
+                              <p class="explanation-text">{{ question.explanation }}</p>
+                            </div>
+                          }
+                        </div>
+
+                        <div class="question-meta">
+                          <span class="difficulty">{{ question.difficulty | titlecase }}</span>
+                          <span class="category">{{ question.category | titlecase }}</span>
+                        </div>
+                      </div>
+                    </div>
                   }
-                </h3>
-                <span class="media-type">{{ session.mediaType === 'movie' ? 'Movie' : 'TV Show' }}</span>
-              </div>
-
-              <div class="game-info">
-                <div class="score-info">
-                  <div class="score-circle" [class]="'score-' + getPerformanceLevel(getScorePercentage(session))">
-                    <span class="score-percentage">{{ getScorePercentage(session) }}%</span>
-                  </div>
-                  <div class="score-details">
-                    <span class="score-text">{{ session.score }}/{{ session.maxScore }}</span>
-                    <span class="performance-text">{{ getPerformanceLevelText(getPerformanceLevel(getScorePercentage(session))) }}</span>
-                  </div>
-                </div>
-
-                <div class="game-stats">
-                  <div class="stat-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12,6 12,12 16,14"></polyline>
-                    </svg>
-                    <span>{{ formatDuration(session.totalTimeSpent) }}</span>
-                  </div>
-                  <div class="stat-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                    </svg>
-                    <span>{{ session.questions.length || 0 }} questions</span>
-                  </div>
                 </div>
               </div>
-
-              <div class="session-date">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span>{{ formatDate(session.completedAt) }}</span>
-              </div>
-            </div>
+            }
           </div>
         }
       </div>

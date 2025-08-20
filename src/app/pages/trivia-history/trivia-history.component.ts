@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TriviaService } from '../../services/trivia/trivia.service';
 import { AuthService } from '../../services/auth/auth.service';
-import { TriviaGameSession } from '../../models/trivia.model';
+import { TriviaGameSession, TriviaAnswer, TriviaQuestion } from '../../models/trivia.model';
 
 @Component({
   selector: 'app-trivia-history',
@@ -20,6 +20,7 @@ export class TriviaHistoryComponent implements OnInit {
   triviaHistory = signal<TriviaGameSession[]>([]);
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
+  expandedSessions = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     // Check if user is authenticated
@@ -142,7 +143,7 @@ export class TriviaHistoryComponent implements OnInit {
     if (!seconds || seconds < 0) return '0s';
 
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = Math.floor(seconds % 60);
 
     if (minutes > 0) {
       return `${minutes}m ${remainingSeconds}s`;
@@ -155,5 +156,64 @@ export class TriviaHistoryComponent implements OnInit {
    */
   retryLoading(): void {
     this.loadTriviaHistory();
+  }
+
+  /**
+   * Toggle accordion expansion for a trivia session
+   */
+  toggleSessionExpansion(sessionId: string): void {
+    const expanded = this.expandedSessions();
+    const newExpanded = new Set(expanded);
+
+    if (newExpanded.has(sessionId)) {
+      newExpanded.delete(sessionId);
+    } else {
+      newExpanded.add(sessionId);
+    }
+
+    this.expandedSessions.set(newExpanded);
+  }
+
+  /**
+   * Check if a session is expanded
+   */
+  isSessionExpanded(sessionId: string): boolean {
+    return this.expandedSessions().has(sessionId);
+  }
+
+  /**
+   * Get the user's answer for a specific question
+   */
+  getUserAnswer(session: TriviaGameSession, questionId: string): TriviaAnswer | undefined {
+    return session.answers.find(answer => answer.questionId === questionId);
+  }
+
+  /**
+   * Check if the user's answer was correct
+   */
+  isAnswerCorrect(session: TriviaGameSession, questionId: string): boolean {
+    const userAnswer = this.getUserAnswer(session, questionId);
+    return userAnswer ? userAnswer.isCorrect : false;
+  }
+
+  /**
+   * Get the selected answer text for a question
+   */
+  getSelectedAnswerText(session: TriviaGameSession, question: TriviaQuestion): string {
+    const userAnswer = this.getUserAnswer(session, question.id);
+    if (userAnswer && userAnswer.selectedAnswer >= 0 && userAnswer.selectedAnswer < question.options.length) {
+      return question.options[userAnswer.selectedAnswer];
+    }
+    return 'No answer selected';
+  }
+
+  /**
+   * Get the correct answer text for a question
+   */
+  getCorrectAnswerText(question: TriviaQuestion): string {
+    if (question.correctAnswer >= 0 && question.correctAnswer < question.options.length) {
+      return question.options[question.correctAnswer];
+    }
+    return 'Unknown';
   }
 }

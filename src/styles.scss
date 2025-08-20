@@ -659,6 +659,99 @@ p, span, a, button, input, textarea, .body-text {
 .text-yellow-500 { color: #ffc107; }
 .text-red-500 { color: #dc3545; }
 
+// Score circle for performance displays
+.score-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 0.9rem;
+
+  &.score-excellent { background-color: #28a745; }
+  &.score-good { background-color: #17a2b8; }
+  &.score-average { background-color: #ffc107; color: #212529; }
+  &.score-needs-improvement { background-color: #dc3545; }
+}
+
+// Media type badge
+.media-type {
+  display: inline-block;
+  background-color: variables.$primary-color;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: variables.$border-radius-sm;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+// Accordion toggle button
+.accordion-toggle {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(variables.$primary-color, 0.1);
+
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: rgba(variables.$primary-color, 0.05);
+    border: 1px solid rgba(variables.$primary-color, 0.2);
+    border-radius: variables.$border-radius-sm;
+    color: variables.$primary-color;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: rgba(variables.$primary-color, 0.1);
+      border-color: rgba(variables.$primary-color, 0.3);
+    }
+
+    svg {
+      transition: transform 0.3s;
+      flex-shrink: 0;
+
+      &.rotated {
+        transform: rotate(180deg);
+      }
+    }
+  }
+}
+
+// Page header common style
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    color: variables.$text-color-light;
+    margin-bottom: 0.5rem;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.8rem;
+    }
+  }
+
+  .page-subtitle {
+    font-size: 1.2rem;
+    color: variables.$text-secondary-light;
+    margin: 0;
+  }
+}
+
 // Stats and Results Styles
 .stats-grid {
   display: grid;
