@@ -204,6 +204,33 @@
                     </div>
                   }
                 </div>
+
+                <!-- Bottom Hide Questions button -->
+                <div class="accordion-bottom-toggle">
+                  <div class="accordion-toggle">
+                    <button
+                      class="toggle-btn"
+                      (click)="toggleSessionExpansion(session.id)"
+                      [attr.aria-expanded]="isSessionExpanded(session.id)"
+                    >
+                      <span>Hide Questions</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="rotated"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             }
           </div>
