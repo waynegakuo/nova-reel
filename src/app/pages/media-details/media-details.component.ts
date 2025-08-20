@@ -2,7 +2,9 @@ import {Component, OnInit, inject, signal, OnDestroy, effect} from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaService } from '../../services/media/media.service';
+import { TriviaService } from '../../services/trivia/trivia.service';
 import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew } from '../../models/media-details.model';
+import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {Subject, takeUntil} from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
@@ -18,6 +20,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   router = inject(Router); // Made public for template access
   private mediaService = inject(MediaService);
+  private triviaService = inject(TriviaService);
   private sanitizer = inject(DomSanitizer);
   private authService = inject(AuthService);
 
@@ -425,6 +428,41 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         type: 'error'
       });
     }
+  }
+
+  /**
+   * Starts a trivia challenge for the current media item
+   */
+  startTrivia(): void {
+    // Clear any existing notification
+    this.notification.set(null);
+
+    // Check if user is authenticated
+    if (!this.isAuthenticated()) {
+      this.notification.set({
+        message: 'Please sign in to play trivia challenges',
+        type: 'error'
+      });
+      return;
+    }
+
+    // Prepare trivia request
+    const triviaRequest: TriviaGameRequest = {
+      mediaId: this.mediaId(),
+      mediaType: this.mediaType() === 'tvshow' ? 'tv' : 'movie',
+      questionCount: 5,
+      difficulty: 'mixed'
+    };
+
+    // Navigate to trivia with query parameters
+    this.router.navigate(['/trivia'], {
+      queryParams: {
+        mediaType: triviaRequest.mediaType,
+        mediaId: triviaRequest.mediaId,
+        questionCount: triviaRequest.questionCount,
+        difficulty: triviaRequest.difficulty
+      }
+    });
   }
 
   ngOnDestroy(): void {

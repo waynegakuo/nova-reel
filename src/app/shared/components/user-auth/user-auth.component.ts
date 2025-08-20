@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -12,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class UserAuthComponent implements OnDestroy {
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
@@ -106,6 +108,14 @@ export class UserAuthComponent implements OnDestroy {
    */
   getUserEmail(): string | null {
     return this.authService.getUserEmail();
+  }
+
+  /**
+   * Navigate to trivia history page
+   */
+  navigateToTriviaHistory(): void {
+    this.closeDropdown();
+    this.router.navigate(['/trivia-history']);
   }
 
   /**

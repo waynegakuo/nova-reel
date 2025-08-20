@@ -1,0 +1,250 @@
+<div class="trivia-game-container">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Generating your personalized trivia...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h3>Oops! Something went wrong</h3>
+      <p class="error-message">{{ error() }}</p>
+      <button class="btn btn-primary" (click)="goHome()">Back to Home</button>
+    </div>
+  }
+
+  <!-- Game Setup State -->
+  @if (gameState() === 'setup' && currentSession() && !isLoading() && !error()) {
+    <div class="setup-container">
+      <div class="media-info">
+        @if (currentSession()!.mediaInfo.posterPath) {
+          <img
+            [src]="'https://image.tmdb.org/t/p/w300' + currentSession()!.mediaInfo.posterPath"
+            [alt]="currentSession()!.mediaInfo.title"
+            class="media-poster"
+          />
+        }
+        <div class="media-details">
+          <h2>{{ currentSession()!.mediaInfo.title }}</h2>
+          <p class="media-type">{{ currentSession()!.mediaType | titlecase }} Trivia Challenge</p>
+          @if (currentSession()!.genre) {
+            <p class="genre">Genre: {{ currentSession()!.genre | titlecase }}</p>
+          }
+        </div>
+      </div>
+
+      <div class="game-info">
+        <div class="info-card">
+          <span class="info-label">Questions</span>
+          <span class="info-value">{{ currentSession()!.questions.length }}</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label">Time per question</span>
+          <span class="info-value">30 seconds</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label">Difficulty</span>
+          <span class="info-value">Mixed</span>
+        </div>
+      </div>
+
+      <div class="start-actions">
+        <button class="btn btn-primary btn-large" (click)="startGame()">
+          Start Trivia Challenge
+        </button>
+        <button class="btn btn-secondary" (click)="goHome()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Playing State -->
+  @if (gameState() === 'playing' && currentQuestion() && currentSession()) {
+    <div class="playing-container">
+      <!-- Progress and Timer Header -->
+      <div class="game-header">
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="progress()"
+            ></div>
+          </div>
+          <span class="progress-text">
+            {{ currentQuestionIndex() + 1 }} of {{ currentSession()!.questions.length }}
+          </span>
+        </div>
+
+        <div class="timer-container">
+          <div class="timer" [class]="getTimerColor()">
+            <span class="timer-icon">⏱️</span>
+            <span class="timer-text">{{ timeRemaining() }}</span>
+          </div>
+        </div>
+
+        <button class="btn btn-danger btn-small" (click)="abandonGame()">
+          Quit
+        </button>
+      </div>
+
+      <!-- Question Section -->
+      <div class="question-container">
+        <div class="question-header">
+          <span class="question-category">{{ currentQuestion()!.category | titlecase }}</span>
+          <span class="question-difficulty difficulty-{{ currentQuestion()!.difficulty }}">
+            {{ currentQuestion()!.difficulty | titlecase }}
+          </span>
+        </div>
+
+        <h3 class="question-text">{{ currentQuestion()!.question }}</h3>
+
+        <!-- Answer Options -->
+        <div class="answers-grid">
+          @for (option of currentQuestion()!.options; track $index) {
+            <button
+              class="answer-option"
+              [class]="getAnswerClass($index)"
+              [disabled]="isLoading()"
+              (click)="selectAnswer($index)"
+            >
+              <span class="answer-letter">{{ ['A', 'B', 'C', 'D'][$index] }}</span>
+              <span class="answer-text">{{ option }}</span>
+            </button>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <div class="submit-container">
+          <button
+            class="btn btn-primary btn-large"
+            [disabled]="!canSubmitAnswer()"
+            (click)="submitAnswer()"
+          >
+            @if (isLastQuestion()) {
+              Complete Trivia
+            } @else {
+              Submit Answer
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Score Display -->
+      <div class="score-display">
+        <span class="score-text">Score: {{ currentSession()!.score }}/{{ currentSession()!.maxScore }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Results State -->
+  @if (gameState() === 'results' && gameResult()) {
+    <div class="results-container">
+      <div class="results-header">
+        <h2>Trivia Complete!</h2>
+        <div class="final-score">
+          <span class="score-number">{{ gameResult()!.correctAnswers }}</span>
+          <span class="score-divider">/</span>
+          <span class="score-total">{{ gameResult()!.totalQuestions }}</span>
+        </div>
+        <div class="percentage" [class]="getPerformanceColor()">
+          {{ gameResult()!.percentage | number:'1.0-0' }}%
+        </div>
+      </div>
+
+      <div class="performance-message" [class]="getPerformanceColor()">
+        {{ getPerformanceMessage() }}
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Correct Answers</span>
+          <span class="stat-value">{{ gameResult()!.correctAnswers }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Accuracy</span>
+          <span class="stat-value">{{ gameResult()!.percentage | number:'1.0-0' }}%</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Avg. Time</span>
+          <span class="stat-value">{{ gameResult()!.averageTimePerQuestion | number:'1.0-0' }}s</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total Time</span>
+          <span class="stat-value">{{ formatTime(gameResult()!.session.totalTimeSpent) }}</span>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      @if (gameResult()!.achievements && gameResult()!.achievements!.length > 0) {
+        <div class="achievements-section">
+          <h4>Achievements Unlocked! 🏆</h4>
+          <div class="achievements-grid">
+            @for (achievement of gameResult()!.achievements; track achievement) {
+              <div class="achievement-badge">
+                {{ achievement }}
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Question Review -->
+      <div class="review-section">
+        <h4>Question Review</h4>
+        <div class="questions-review">
+          @for (question of gameResult()!.session.questions; track question.id; let i = $index) {
+            <div class="review-question"
+                 [class]="gameResult()!.session.answers[i] && gameResult()!.session.answers[i].isCorrect ? 'correct' : 'incorrect'">
+              <div class="review-header">
+                <span class="question-number">Q{{ i + 1 }}</span>
+                <span class="result-icon">
+                  {{ gameResult()!.session.answers[i] && gameResult()!.session.answers[i].isCorrect ? '✓' : '✗' }}
+                </span>
+              </div>
+              <p class="review-question-text">{{ question.question }}</p>
+              <div class="review-answers">
+                <div class="correct-answer">
+                  <strong>Correct:</strong> {{ question.options[question.correctAnswer] }}
+                </div>
+                @if (gameResult()!.session.answers[i] && !gameResult()!.session.answers[i].isCorrect) {
+                  <div class="your-answer">
+                    <strong>Your answer:</strong>
+                    @if (gameResult()!.session.answers[i].selectedAnswer >= 0) {
+                      {{ question.options[gameResult()!.session.answers[i].selectedAnswer] }}
+                    } @else {
+                      No answer (time up)
+                    }
+                  </div>
+                }
+                @if (question.explanation) {
+                  <div class="explanation">
+                    <strong>Explanation:</strong> {{ question.explanation }}
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="results-actions">
+        <button class="btn btn-primary" (click)="playAgain()">
+          Play Again
+        </button>
+        <button class="btn btn-secondary" (click)="goToMediaDetails()">
+          Back to Details Page
+        </button>
+        <button class="btn btn-secondary" (click)="goHome()">
+          Back to Home
+        </button>
+      </div>
+    </div>
+  }
+</div>
