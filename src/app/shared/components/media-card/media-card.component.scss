@@ -94,7 +94,7 @@
   flex-grow: 1;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   font-family: 'Source Sans 3', sans-serif;
 }
@@ -165,8 +165,56 @@
     -webkit-line-clamp: 2;
   }
 
-  .media-actions button {
-    padding: 6px 10px;
-    font-size: 0.9rem;
+  .media-actions {
+    gap: 4px;
+
+    button {
+      padding: 4px 6px;
+      font-size: 0.75rem;
+      min-width: auto;
+      flex: 1;
+
+      svg {
+        margin-right: 2px;
+        width: 12px;
+        height: 12px;
+      }
+    }
+
+    // When showing remove button (favorites view), make buttons even more compact
+    .btn-remove-favorite + .btn-share,
+    .btn-details:has(+ .btn-remove-favorite) {
+      padding: 3px 4px;
+      font-size: 0.7rem;
+    }
+  }
+}
+
+// Extra small mobile devices
+@media (max-width: 480px) {
+  .media-card {
+    width: 220px;
+    height: 380px;
+  }
+
+  .media-actions {
+    gap: 2px;
+
+    button {
+      padding: 3px 4px;
+      font-size: 0.7rem;
+
+      svg {
+        margin-right: 1px;
+        width: 10px;
+        height: 10px;
+      }
+    }
+
+    // Hide text on extra small screens, show only icons
+    .btn-share span:not(svg),
+    .btn-remove-favorite span:not(svg) {
+      display: none;
+    }
   }
 }
