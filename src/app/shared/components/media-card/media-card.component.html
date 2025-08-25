@@ -1,6 +1,6 @@
 <div class="media-card">
   <div class="media-card-image">
-    <img [src]="getImageUrl(item.poster_path)" [alt]="getTitle()">
+    <img (click)="onViewDetails()" [src]="getImageUrl(item.poster_path)" [alt]="getTitle()">
     <div class="media-badge">{{ isMovie() ? 'Movie' : 'TV Show' }}</div>
     @if(item.vote_average > 0) {
       <div class="media-rating">
