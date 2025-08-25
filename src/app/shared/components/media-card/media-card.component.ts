@@ -16,7 +16,7 @@ export class MediaCardComponent {
   private mediaService = inject(MediaService);
 
   @Input() item!: Movie | TvShow;
-  @Input() type: 'movie' | 'tvshow' = 'movie';
+  @Input() type: 'movie' | 'tvshow' | undefined = 'movie';
   @Input() showRemoveFromFavorites: boolean = false;
 
   @Output() share = new EventEmitter<{ item: Movie | TvShow, type: string }>();

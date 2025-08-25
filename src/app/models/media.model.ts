@@ -9,7 +9,7 @@ export interface MediaBase {
   poster_path: string;
   vote_average: number;
   vote_count: number;
-  mediaType: 'movie' | 'tvshow';
+  mediaType?: 'movie' | 'tvshow';
 }
 
 export interface Movie extends MediaBase {
