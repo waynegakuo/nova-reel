@@ -56,8 +56,6 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
       const type = params.get('type');
       const id = params.get('id');
 
-      console.log('Type:', type);
-
       if (!type || !id) {
         this.error.set('Invalid URL parameters');
         this.isLoading.set(false);
