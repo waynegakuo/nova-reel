@@ -96,7 +96,8 @@ export class TriviaHistoryComponent implements OnInit {
    */
   viewMediaDetails(session: TriviaGameSession): void {
     if (session.mediaId) {
-      this.router.navigate(['/details', session.mediaType, session.mediaId]);
+      const routeType = session.mediaType === 'tv' ? 'tvshow' : session.mediaType;
+      this.router.navigate(['/details', routeType, session.mediaId]);
     }
   }
 

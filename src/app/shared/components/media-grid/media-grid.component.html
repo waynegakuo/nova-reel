@@ -5,7 +5,7 @@
     @for (item of items; track item.id) {
       <app-media-card
         [item]="item"
-        [type]="type"
+        [type]="item.mediaType"
         [showRemoveFromFavorites]="showRemoveFromFavorites"
         (share)="onShare($event)"
         (removeFromFavorites)="onRemoveFromFavorites($event)">
