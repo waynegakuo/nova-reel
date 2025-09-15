@@ -66,4 +66,14 @@ export class WatchlistComponent implements OnInit {
       alert('Link copied to clipboard!');
     }
   }
+
+  onRemoveFromWatchlist(mediaId: number): void {
+    this.mediaService.removeFromWatchlist(mediaId).then(() => {
+      // Reload watchlist to reflect changes
+      this.loadWatchlist();
+    }).catch(error => {
+      console.error('Error removing from watchlist:', error);
+      // Could add a toast notification here if needed
+    });
+  }
 }

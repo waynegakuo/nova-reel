@@ -33,7 +33,9 @@
               <app-media-card
                 [item]="item"
                 [type]="item.mediaType"
-                (share)="onShare($event)">
+                [showRemoveFromWatchlist]="true"
+                (share)="onShare($event)"
+                (removeFromWatchlist)="onRemoveFromWatchlist($event)">
               </app-media-card>
             }
           </div>

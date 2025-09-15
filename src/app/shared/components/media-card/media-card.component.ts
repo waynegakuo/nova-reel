@@ -18,8 +18,10 @@ export class MediaCardComponent {
   @Input() item!: Movie | TvShow;
   @Input() type: 'movie' | 'tvshow' | undefined = 'movie';
   @Input() showRemoveFromFavorites: boolean = false;
+  @Input() showRemoveFromWatchlist: boolean = false;
   @Output() share = new EventEmitter<{ item: Movie | TvShow, type: string }>();
   @Output() removeFromFavorites = new EventEmitter<number>();
+  @Output() removeFromWatchlist = new EventEmitter<number>();
 
   // Helper method to determine if the item is a movie
   isMovie(): boolean {
@@ -62,6 +64,11 @@ export class MediaCardComponent {
   // Method to handle remove from favorites
   onRemoveFromFavorites(): void {
     this.removeFromFavorites.emit(this.item.id);
+  }
+
+  // Method to handle remove from watchlist
+  onRemoveFromWatchlist(): void {
+    this.removeFromWatchlist.emit(this.item.id);
   }
 
 
