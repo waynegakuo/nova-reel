@@ -26,7 +26,6 @@ export class ForYouComponent {
 
   @Output() loadAiRecommendations = new EventEmitter<boolean>();
   @Output() shareMedia = new EventEmitter<any>();
-  @Output() addToWatchlist = new EventEmitter<any>();
 
   onRefreshRecommendations(): void {
     this.loadAiRecommendations.emit(true);
@@ -36,16 +35,4 @@ export class ForYouComponent {
     this.shareMedia.emit(event);
   }
 
-  onAddToWatchlist(event: any): void {
-    // Call MediaService.addToWatchlist directly
-    this.mediaService.addToWatchlist(event.item as MovieDetails | TvShowDetails, event.type as 'movie' | 'tvshow')
-      .then(() => {
-        console.log('Successfully added to watchlist');
-      })
-      .catch((error) => {
-        console.error('Error adding to watchlist:', error);
-      });
-    // Keep emitting for backward compatibility
-    this.addToWatchlist.emit(event);
-  }
 }

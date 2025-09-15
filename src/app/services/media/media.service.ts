@@ -467,15 +467,18 @@ export class MediaService {
    * Adds a movie or TV show to the user's watchlist collection in Firestore
    * @param mediaItem - The movie or TV show details to add to watchlist
    * @param mediaType - The type of media ('movie' or 'tvshow')
+   * @param showToast - Whether to show toast notifications (default: true)
    * @returns Promise that resolves when the operation is complete
    * @throws Error if the user is not authenticated
    */
-  async addToWatchlist(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tvshow'): Promise<void> {
+  async addToWatchlist(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tvshow', showToast: boolean = true): Promise<void> {
     try {
       // Check if user is authenticated
       const userId = this.authService.getUserId();
       if (!userId) {
-        this.toastService.error('You must be signed in to add items to your watchlist');
+        if (showToast) {
+          this.toastService.error('You must be signed in to add items to your watchlist');
+        }
         return Promise.reject(new Error('User must be authenticated to add to watchlist'));
       }
 
@@ -493,7 +496,9 @@ export class MediaService {
         const title = mediaType === 'movie'
           ? (mediaItem as MovieDetails).title
           : (mediaItem as TvShowDetails).name;
-        this.toastService.warning(`"${title}" is already in your watchlist`);
+        if (showToast) {
+          this.toastService.warning(`"${title}" is already in your watchlist`);
+        }
         return Promise.resolve();
       }
 
@@ -511,10 +516,14 @@ export class MediaService {
       const title = mediaType === 'movie'
         ? (mediaItem as MovieDetails).title
         : (mediaItem as TvShowDetails).name;
-      this.toastService.success(`"${title}" added to watchlist`);
+      if (showToast) {
+        this.toastService.success(`"${title}" added to watchlist`);
+      }
     } catch (error) {
       console.error('Error adding to watchlist:', error);
-      this.toastService.error('Failed to add item to watchlist');
+      if (showToast) {
+        this.toastService.error('Failed to add item to watchlist');
+      }
       throw error;
     }
   }
@@ -553,15 +562,18 @@ export class MediaService {
   /**
    * Removes a media item from the user's watchlist collection
    * @param mediaId - The ID of the media item to remove
+   * @param showToast - Whether to show toast notifications (default: true)
    * @returns Promise that resolves when the operation is complete
    * @throws Error if the user is not authenticated
    */
-  async removeFromWatchlist(mediaId: number): Promise<void> {
+  async removeFromWatchlist(mediaId: number, showToast: boolean = true): Promise<void> {
     try {
       // Check if user is authenticated
       const userId = this.authService.getUserId();
       if (!userId) {
-        this.toastService.error('You must be signed in to remove items from your watchlist');
+        if (showToast) {
+          this.toastService.error('You must be signed in to remove items from your watchlist');
+        }
         return Promise.reject(new Error('User must be authenticated to remove from watchlist'));
       }
 
@@ -582,10 +594,14 @@ export class MediaService {
       await deleteDoc(docRef);
 
       // Show success notification
-      this.toastService.success(`"${title}" removed from watchlist`);
+      if (showToast) {
+        this.toastService.success(`"${title}" removed from watchlist`);
+      }
     } catch (error) {
       console.error('Error removing from watchlist:', error);
-      this.toastService.error('Failed to remove item from watchlist');
+      if (showToast) {
+        this.toastService.error('Failed to remove item from watchlist');
+      }
       throw error;
     }
   }

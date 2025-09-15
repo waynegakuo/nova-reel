@@ -35,6 +35,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   showTrailer = signal<boolean>(false);
   notification = signal<{message: string, type: 'success' | 'error'} | null>(null);
   isFavorited = signal<boolean>(false);
+  isInWatchlist = signal<boolean>(false);
 
   // Authentication signals
   isAuthenticated = signal<boolean>(false);
@@ -85,6 +86,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.error.set(null);
     this.isFavorited.set(false); // Reset favorite status
+    this.isInWatchlist.set(false); // Reset watchlist status
 
     if (this.mediaType() === 'movie') {
       this.mediaService.getMovieDetails(this.mediaId()).pipe(takeUntil(this.destroy$)).subscribe({
@@ -92,8 +94,9 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           this.movieDetails.set(details);
           this.isLoading.set(false);
 
-          // Check if this movie is in favorites
+          // Check if this movie is in favorites and watchlist
           this.checkFavoriteStatus();
+          this.checkWatchlistStatus();
         },
         error: (err) => {
           console.error('Error fetching movie details:', err);
@@ -107,8 +110,9 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           this.tvShowDetails.set(details);
           this.isLoading.set(false);
 
-          // Check if this TV show is in favorites
+          // Check if this TV show is in favorites and watchlist
           this.checkFavoriteStatus();
+          this.checkWatchlistStatus();
         },
         error: (err) => {
           console.error('Error fetching TV show details:', err);
@@ -132,6 +136,24 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           console.error('Error checking favorite status:', err);
           // Default to not favorited in case of error
           this.isFavorited.set(false);
+        }
+      });
+    }
+  }
+
+  /**
+   * Checks if the current media item is in watchlist
+   */
+  private checkWatchlistStatus(): void {
+    if (this.mediaId() > 0) {
+      this.mediaService.checkWatchlistStatus(this.mediaId()).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (isInWatchlist) => {
+          this.isInWatchlist.set(isInWatchlist);
+        },
+        error: (err) => {
+          console.error('Error checking watchlist status:', err);
+          // Default to not in watchlist in case of error
+          this.isInWatchlist.set(false);
         }
       });
     }
@@ -423,6 +445,116 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error in toggleFavorite:', error);
+      this.notification.set({
+        message: 'An unexpected error occurred. Please try again.',
+        type: 'error'
+      });
+    }
+  }
+
+  /**
+   * Toggles the watchlist status of the current media item
+   * @param mediaType - The type of media ('movie' or 'tvshow')
+   */
+  toggleWatchlist(mediaType: 'movie' | 'tvshow'): void {
+    // Clear any existing notification
+    this.notification.set(null);
+
+    // Check if user is authenticated
+    if (!this.isAuthenticated()) {
+      this.notification.set({
+        message: 'Please sign in to add items to your watchlist',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      if (this.isInWatchlist()) {
+        // Remove from watchlist
+        this.mediaService.removeFromWatchlist(this.mediaId(), false)
+          .then(() => {
+            // Update watchlist status
+            this.isInWatchlist.set(false);
+
+            // Show success notification
+            const mediaName = mediaType === 'movie'
+              ? this.movieDetails()?.title
+              : this.tvShowDetails()?.name;
+
+            this.notification.set({
+              message: `${mediaName} has been removed from your watchlist`,
+              type: 'success'
+            });
+
+            // Clear notification after 3 seconds
+            setTimeout(() => this.notification.set(null), 3000);
+          })
+          .catch(error => {
+            console.error('Error removing from watchlist:', error);
+            this.notification.set({
+              message: 'Failed to remove from watchlist. Please try again.',
+              type: 'error'
+            });
+          });
+      } else {
+        // Add to watchlist
+        if (mediaType === 'movie' && this.movieDetails()) {
+          // Add movie to watchlist
+          this.mediaService.addToWatchlist(this.movieDetails()!, 'movie', false)
+            .then(() => {
+              // Update watchlist status
+              this.isInWatchlist.set(true);
+
+              // Show success notification
+              this.notification.set({
+                message: `${this.movieDetails()!.title} has been added to your watchlist`,
+                type: 'success'
+              });
+
+              // Clear notification after 3 seconds
+              setTimeout(() => this.notification.set(null), 3000);
+            })
+            .catch(error => {
+              console.error('Error adding movie to watchlist:', error);
+              this.notification.set({
+                message: 'Failed to add movie to watchlist. Please try again.',
+                type: 'error'
+              });
+            });
+        } else if (mediaType === 'tvshow' && this.tvShowDetails()) {
+          // Add TV show to watchlist
+          this.mediaService.addToWatchlist(this.tvShowDetails()!, 'tvshow', false)
+            .then(() => {
+              // Update watchlist status
+              this.isInWatchlist.set(true);
+
+              // Show success notification
+              this.notification.set({
+                message: `${this.tvShowDetails()!.name} has been added to your watchlist`,
+                type: 'success'
+              });
+
+              // Clear notification after 3 seconds
+              setTimeout(() => this.notification.set(null), 3000);
+            })
+            .catch(error => {
+              console.error('Error adding TV show to watchlist:', error);
+              this.notification.set({
+                message: 'Failed to add TV show to watchlist. Please try again.',
+                type: 'error'
+              });
+            });
+        } else {
+          // No valid media details available
+          this.notification.set({
+            message: 'Unable to add to watchlist. Media details not available.',
+            type: 'error'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error in toggleWatchlist:', error);
       this.notification.set({
         message: 'An unexpected error occurred. Please try again.',
         type: 'error'

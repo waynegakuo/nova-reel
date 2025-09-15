@@ -47,15 +47,6 @@ export class WatchlistComponent implements OnInit {
     });
   }
 
-  onRemoveFromWatchlist(mediaId: number) {
-    this.mediaService.removeFromWatchlist(mediaId).then(() => {
-      console.log('Removed from watchlist successfully');
-      // Reload watchlist
-      this.loadWatchlist();
-    }).catch((error) => {
-      console.error('Error removing from watchlist:', error);
-    });
-  }
 
   onShare(event: { item: Movie | TvShow, type: string }) {
     const title = 'type' in event.item && event.item.type === 'tvshow'
