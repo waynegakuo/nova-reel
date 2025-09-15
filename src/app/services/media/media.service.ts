@@ -1,13 +1,14 @@
 import {inject, Injectable} from '@angular/core';
 import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
-import {MovieDetails, TvShowDetails, Favorite} from '../../models/media-details.model';
+import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
 import {HttpClient} from '@angular/common/http';
 import {FirebaseApp} from '@angular/fire/app';
 import {getFunctions, httpsCallable} from '@angular/fire/functions';
 import {Firestore, collection, doc, setDoc, getDoc, deleteDoc, getDocs, query, orderBy, where} from '@angular/fire/firestore';
 import {AuthService} from '../auth/auth.service';
+import {ToastService} from '../toast/toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class MediaService {
   firebaseApp = inject(FirebaseApp);
   firestore = inject(Firestore);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
   private functions;
 
   constructor() {
@@ -457,6 +459,173 @@ export class MediaService {
       );
     } catch (error) {
       console.error('Error fetching favorites:', error);
+      return of([]);
+    }
+  }
+
+  /**
+   * Adds a movie or TV show to the user's watchlist collection in Firestore
+   * @param mediaItem - The movie or TV show details to add to watchlist
+   * @param mediaType - The type of media ('movie' or 'tvshow')
+   * @returns Promise that resolves when the operation is complete
+   * @throws Error if the user is not authenticated
+   */
+  async addToWatchlist(mediaItem: MovieDetails | TvShowDetails, mediaType: 'movie' | 'tvshow'): Promise<void> {
+    try {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        this.toastService.error('You must be signed in to add items to your watchlist');
+        return Promise.reject(new Error('User must be authenticated to add to watchlist'));
+      }
+
+      // Create a reference to the user's watchlist collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const watchlistCollection = collection(userDocRef, 'watchlist');
+
+      // Create a document with the media item data and type
+      // We use the media item's ID as the document ID to prevent duplicates
+      const docRef = doc(watchlistCollection, mediaItem.id.toString());
+
+      // Check if item already exists in watchlist
+      const existingDoc = await getDoc(docRef);
+      if (existingDoc.exists()) {
+        const title = mediaType === 'movie'
+          ? (mediaItem as MovieDetails).title
+          : (mediaItem as TvShowDetails).name;
+        this.toastService.warning(`"${title}" is already in your watchlist`);
+        return Promise.resolve();
+      }
+
+      // Prepare the data to store
+      const watchlistData = {
+        ...mediaItem,
+        mediaType: mediaType, // Add the media type to distinguish between movies and TV shows
+        addedAt: new Date().toISOString(), // Add timestamp for potential sorting/filtering
+      };
+
+      // Add the document to the collection
+      await setDoc(docRef, watchlistData);
+
+      // Show success notification
+      const title = mediaType === 'movie'
+        ? (mediaItem as MovieDetails).title
+        : (mediaItem as TvShowDetails).name;
+      this.toastService.success(`"${title}" added to watchlist`);
+    } catch (error) {
+      console.error('Error adding to watchlist:', error);
+      this.toastService.error('Failed to add item to watchlist');
+      throw error;
+    }
+  }
+
+  /**
+   * Checks if a media item is in the user's watchlist collection
+   * @param mediaId - The ID of the media item to check
+   * @returns Observable that emits true if the item is in watchlist, false otherwise
+   */
+  checkWatchlistStatus(mediaId: number): Observable<boolean> {
+    try {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        // If not authenticated, the item cannot be in watchlist
+        return of(false);
+      }
+
+      // Create a reference to the document in the user's watchlist collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const watchlistCollection = collection(userDocRef, 'watchlist');
+      const docRef = doc(watchlistCollection, mediaId.toString());
+
+      // Check if the document exists
+      return from(getDoc(docRef)).pipe(
+        switchMap(docSnap => {
+          return of(docSnap.exists());
+        })
+      );
+    } catch (error) {
+      console.error('Error checking watchlist status:', error);
+      return of(false);
+    }
+  }
+
+  /**
+   * Removes a media item from the user's watchlist collection
+   * @param mediaId - The ID of the media item to remove
+   * @returns Promise that resolves when the operation is complete
+   * @throws Error if the user is not authenticated
+   */
+  async removeFromWatchlist(mediaId: number): Promise<void> {
+    try {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        this.toastService.error('You must be signed in to remove items from your watchlist');
+        return Promise.reject(new Error('User must be authenticated to remove from watchlist'));
+      }
+
+      // Create a reference to the document in the user's watchlist collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const watchlistCollection = collection(userDocRef, 'watchlist');
+      const docRef = doc(watchlistCollection, mediaId.toString());
+
+      // Get the document data before deletion to show the title in the notification
+      const docSnap = await getDoc(docRef);
+      let title = 'Item';
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        title = data['title'] || data['name'] || 'Item';
+      }
+
+      // Delete the document from the collection
+      await deleteDoc(docRef);
+
+      // Show success notification
+      this.toastService.success(`"${title}" removed from watchlist`);
+    } catch (error) {
+      console.error('Error removing from watchlist:', error);
+      this.toastService.error('Failed to remove item from watchlist');
+      throw error;
+    }
+  }
+
+  /**
+   * Fetches all watchlist items from the user's watchlist collection in Firestore
+   * @returns Observable that emits an array of watchlist items (MovieDetails or TvShowDetails with additional fields)
+   */
+  getWatchlist(): Observable<((MovieDetails | TvShowDetails) & Watchlist)[]> {
+    try {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        // If not authenticated, return an empty array
+        return of([]);
+      }
+
+      // Create a reference to the user's watchlist collection
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const watchlistCollection = collection(userDocRef, 'watchlist');
+
+      // Create a query ordered by addedAt (most recent first)
+      const watchlistQuery = query(watchlistCollection, orderBy('addedAt', 'desc'));
+
+      // Execute the query and transform the results
+      return from(getDocs(watchlistQuery)).pipe(
+        map(querySnapshot => {
+          const watchlist: ((MovieDetails | TvShowDetails) & Watchlist)[] = [];
+
+          querySnapshot.forEach(doc => {
+            // Get the document data
+            const data = doc.data() as ((MovieDetails | TvShowDetails) & Watchlist);
+            watchlist.push(data);
+          });
+
+          return watchlist;
+        })
+      );
+    } catch (error) {
+      console.error('Error fetching watchlist:', error);
       return of([]);
     }
   }
