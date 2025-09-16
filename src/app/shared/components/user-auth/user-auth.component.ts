@@ -119,6 +119,14 @@ export class UserAuthComponent implements OnDestroy {
   }
 
   /**
+   * Navigate to watchlist page
+   */
+  navigateToWatchlist(): void {
+    this.closeDropdown();
+    this.router.navigate(['/watchlist']);
+  }
+
+  /**
    * Lifecycle hook that is called when the component is destroyed
    * Completes the destroy$ Subject to unsubscribe from all subscriptions
    */

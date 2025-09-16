@@ -147,6 +147,15 @@
       background-color: #c82333;
     }
   }
+
+  .btn-remove-watchlist {
+    background-color: #dc3545;
+    color: white;
+
+    &:hover {
+      background-color: #c82333;
+    }
+  }
 }
 
 // Responsive styles
@@ -181,9 +190,11 @@
       }
     }
 
-    // When showing remove button (favorites view), make buttons even more compact
+    // When showing remove button (favorites or watchlist view), make buttons even more compact
     .btn-remove-favorite + .btn-share,
-    .btn-details:has(+ .btn-remove-favorite) {
+    .btn-remove-watchlist + .btn-share,
+    .btn-details:has(+ .btn-remove-favorite),
+    .btn-details:has(+ .btn-remove-watchlist) {
       padding: 3px 4px;
       font-size: 0.7rem;
     }
@@ -213,7 +224,8 @@
 
     // Hide text on extra small screens, show only icons
     .btn-share span:not(svg),
-    .btn-remove-favorite span:not(svg) {
+    .btn-remove-favorite span:not(svg),
+    .btn-remove-watchlist span:not(svg) {
       display: none;
     }
   }

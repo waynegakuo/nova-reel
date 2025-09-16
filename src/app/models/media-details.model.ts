@@ -10,6 +10,14 @@ export interface Favorite {
   // Other properties will come from MovieDetails or TvShowDetails
 }
 
+// Watchlist interface for items stored in Firestore
+export interface Watchlist {
+  mediaType: 'movie' | 'tvshow';
+  addedAt: string;
+  id: number;
+  // Other properties will come from MovieDetails or TvShowDetails
+}
+
 export interface Genre {
   id: number;
   name: string;

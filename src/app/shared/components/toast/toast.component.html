@@ -1,0 +1,13 @@
+<div class="toast-container">
+  @for (toast of toasts$ | async; track toast.id) {
+    <div class="toast" [class]="'toast-' + toast.type">
+      <div class="toast-content">
+        <span class="toast-icon">{{ getToastIcon(toast.type) }}</span>
+        <span class="toast-message">{{ toast.message }}</span>
+      </div>
+      <button class="toast-close" (click)="onRemoveToast(toast.id)" type="button">
+        <span>&times;</span>
+      </button>
+    </div>
+  }
+</div>

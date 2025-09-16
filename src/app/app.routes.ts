@@ -16,5 +16,13 @@ export const routes: Routes = [
   {
     path: 'trivia-history',
     loadComponent: () => import('./pages/trivia-history/trivia-history.component').then(m => m.TriviaHistoryComponent)
+  },
+  {
+    path: 'watchlist',
+    loadComponent: () => import('./pages/watchlist/watchlist.component').then(m => m.WatchlistComponent)
+  },
+  {
+    path: 'shared-watchlist',
+    loadComponent: () => import('./pages/shared-watchlist/shared-watchlist.component').then(m => m.SharedWatchlistComponent)
   }
 ];
