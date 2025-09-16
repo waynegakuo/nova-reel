@@ -67,6 +67,46 @@ export class WatchlistComponent implements OnInit {
     }
   }
 
+  onShareWatchlist(watchlist: ((MovieDetails | TvShowDetails) & Watchlist)[]): void {
+    // Create a simplified version of the watchlist for sharing
+    const shareableWatchlist = watchlist.map(item => ({
+      id: item.id,
+      title: 'title' in item ? item.title : item.name,
+      mediaType: item.mediaType,
+      poster_path: item.poster_path,
+      overview: item.overview,
+      release_date: 'release_date' in item ? item.release_date : item.first_air_date,
+      vote_average: item.vote_average
+    }));
+
+    // Encode the watchlist data for URL sharing
+    const encodedWatchlist = btoa(JSON.stringify(shareableWatchlist));
+    const shareUrl = `${window.location.origin}/shared-watchlist?data=${encodedWatchlist}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'Check out my Nova Reel watchlist!',
+        text: `I've shared my watchlist with ${watchlist.length} movie${watchlist.length !== 1 ? 's' : ''} and TV shows. Take a look!`,
+        url: shareUrl
+      }).catch(error => {
+        console.error('Error sharing:', error);
+        this.fallbackShare(shareUrl);
+      });
+    } else {
+      this.fallbackShare(shareUrl);
+    }
+  }
+
+  private fallbackShare(url: string): void {
+    // Fallback for browsers that don't support Web Share API
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Watchlist link copied to clipboard!');
+    }).catch(() => {
+      // If clipboard API fails, show the URL in a prompt
+      prompt('Copy this link to share your watchlist:', url);
+    });
+  }
+
   onRemoveFromWatchlist(mediaId: number): void {
     this.mediaService.removeFromWatchlist(mediaId).then(() => {
       // Reload watchlist to reflect changes

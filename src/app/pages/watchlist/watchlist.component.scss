@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as variables;
+@use 'sass:color';
 
 .watchlist-container {
   max-width: 1200px;
@@ -6,9 +7,9 @@
   padding: 2rem;
 
   .page-header {
-    @include variables.section-heading;
     text-align: center;
     margin: 2rem 0 3rem 0;
+    @include variables.section-heading;
 
     h1 {
       font-size: 2.5rem;
@@ -125,6 +126,14 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     border-left: 4px solid variables.$primary-color;
 
+    .stats-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
     .stats-text {
       color: variables.$text-secondary-light;
       font-size: 1rem;
@@ -132,6 +141,38 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    .share-watchlist-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background-color: variables.$primary-color;
+      color: white;
+      border: none;
+      border-radius: variables.$border-radius-sm;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(variables.$primary-color, 0.3);
+
+      &:hover {
+        background-color: color.adjust(variables.$primary-color, $lightness: -8%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(variables.$primary-color, 0.4);
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(variables.$primary-color, 0.3);
+      }
+
+      .share-icon {
+        font-size: 1rem;
+        line-height: 1;
+      }
     }
   }
 
@@ -171,6 +212,14 @@
 
       .stats-text {
         color: variables.$text-secondary-dark;
+      }
+
+      .share-watchlist-btn {
+        background-color: variables.$primary-color;
+
+        &:hover {
+          background-color: color.adjust(variables.$primary-color, $lightness: 8%);
+        }
       }
     }
 

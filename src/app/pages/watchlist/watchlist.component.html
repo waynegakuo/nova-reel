@@ -25,7 +25,13 @@
           </div>
         } @else {
           <div class="watchlist-stats">
-            <p class="stats-text">{{ watchlist.length }} item{{ watchlist.length !== 1 ? 's' : '' }} in your watchlist</p>
+            <div class="stats-content">
+              <p class="stats-text">{{ watchlist.length }} item{{ watchlist.length !== 1 ? 's' : '' }} in your watchlist</p>
+              <button class="share-watchlist-btn" (click)="onShareWatchlist(watchlist)" title="Share your watchlist">
+                <span class="share-icon">🔗</span>
+                Share Watchlist
+              </button>
+            </div>
           </div>
 
           <div class="watchlist-grid">
