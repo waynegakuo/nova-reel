@@ -1,25 +1,70 @@
+<div align="center">
+
 # 🎬 Nova Reel
 
-Nova Reel is an Angular-based application for browsing, discovering, and getting personalized recommendations for movies and TV shows. It leverages Google's Genkit AI platform to provide intelligent recommendations based on user favorites.
+### *AI-Powered Movie & TV Show Recommendations*
 
-## 📱 About the App
+[![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)](https://firebase.google.com/)
+[![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.io/)
+[![Google AI](https://img.shields.io/badge/Google%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-Nova Reel helps film and TV enthusiasts discover new content to watch through a modern, responsive web interface. The application combines data from The Movie Database (TMDB) with Google's Genkit AI to create a powerful recommendation engine that learns from user preferences.
+---
+
+Nova Reel is a modern, AI-powered Angular application that revolutionizes how you discover movies and TV shows. Built with Google's Genkit AI platform, it provides intelligent, personalized recommendations that understand your preferences and help you find your next favorite watch.
+
+</div>
+
+## 🌟 About the App
+
+Nova Reel empowers film and TV enthusiasts to discover new content through an intuitive, responsive web interface. By combining comprehensive data from The Movie Database (TMDB) with cutting-edge Google Genkit AI technology, it creates a sophisticated recommendation engine that learns and adapts to your viewing preferences.
 
 ### ✨ Key Features
 
+<table>
+<tr>
+<td width="50%">
+
+**📱 Core Features**
 - 🔥 Browse trending movies and TV shows
-- 🔍 Filter content by categories (Popular, Top Rated, Now Playing, etc.)
-- 🔎 Search for specific titles with real-time results and pagination
-- ℹ️ View detailed information about movies and TV shows
-- ⭐ Save favorites for quick access and personalized experience
-- 🤖 **Smart Recommendations**: Get AI-powered recommendations using natural language queries
-- 🎯 **For You**: Personalized recommendations based on your viewing history and favorites
-- 🎬 **Guess the Movie**: Interactive game to identify movies and TV shows from screenshots using AI
-- 🧠 Advanced AI features powered by Google's Genkit and Gemini 2.5 Pro
-- 📱 Fully responsive design optimized for all devices
-- 🎨 Modern UI with intuitive tab-based navigation
-- ⚡ Real-time loading states and smooth animations
+- 🔍 Advanced filtering by categories
+- 🔎 Real-time search with pagination
+- ℹ️ Detailed movie and TV show information
+- ⭐ Personal favorites management
+
+</td>
+<td width="50%">
+
+**🤖 AI-Powered Features**
+- 🤖 **Smart Recommendations**: Natural language queries
+- 🎯 **For You**: Personalized suggestions
+- 🎬 **Guess the Movie**: Screenshot identification
+- 🧠 **Trivia Challenge**: AI-generated questions
+- 💫 Powered by Gemini 2.5 Pro
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**🎨 User Experience**
+- 📱 Fully responsive design
+- 🎨 Modern, intuitive interface
+- 🗂️ Tab-based navigation
+- ⚡ Real-time loading states
+
+</td>
+<td width="50%">
+
+**🔧 Technical Features**
+- 🔐 Firebase Authentication
+- 🗄️ Firestore database
+- ☁️ Serverless functions
+- 🌐 TMDB API integration
+
+</td>
+</tr>
+</table>
 
 ## 🏗️ Architecture
 
@@ -82,13 +127,15 @@ The "Guess the Movie" feature uses Genkit's image analysis capabilities to ident
    - 🔄 Use the TMDB API to confirm the identification and retrieve additional details
 3. **📱 Result Display**: The frontend displays the identified movie or TV show, along with confidence score, overview, and poster
 
-## 🛠️ Setup and Installation
+---
 
-### Try it out in Firebase Studio 🧪
+## 🚀 Getting Started
 
-For the easiest setup experience, use Firebase Studio:
+### 🧪 Quick Start with Firebase Studio
 
-1. Click the button below to launch the project in Firebase Studio:
+**The fastest way to get Nova Reel running:**
+
+<div align="center">
 
 <a href="https://studio.firebase.google.com/import?url=https%3A%2F%2Fgithub.com%2Fwaynegakuo%2Fnova-reel">
   <picture>
@@ -105,8 +152,14 @@ For the easiest setup experience, use Firebase Studio:
   </picture>
 </a>
 
-2. Once the project loads in Firebase Studio, open the Terminal tab
-3. Install the project dependencies by running these commands one by one:
+*Click above to launch Nova Reel in Firebase Studio*
+
+</div>
+
+**After launching:**
+
+1. **📂 Open Terminal** - Navigate to the Terminal tab in Firebase Studio
+2. **📦 Install Dependencies** - Run these commands one by one:
    ```bash
    npm install
    cd functions
@@ -114,22 +167,32 @@ For the easiest setup experience, use Firebase Studio:
    cd ..
    ```
 
-## 🔥 Firebase Project Setup & Configuration
+---
 
-Now that you have the code ready, let's set up Firebase and the required APIs:
+## ⚙️ Configuration Guide
 
-### Step 1: Create a Firebase Project 🏗️
+> **💡 Complete Setup Guide** - Follow these steps to configure Firebase and required APIs for Nova Reel.
 
-1. **Open the Firebase Console:** Go to [Firebase Console](https://console.firebase.google.com/)
-2. **Create a new project:**
-   - Click "Add project"
-   - Enter a project name (e.g., "nova-reel-app")
-   - Follow the setup wizard (you can disable Google Analytics if not needed)
-3. **⚠️ Important - Upgrade to Blaze Plan:**
-   - In your Firebase project, go to the "Usage and billing" tab
-   - Click "Modify plan" and select "Blaze (Pay as you go)"
-   - This is required for Cloud Functions and AI features
-   - Don't worry - the free tier is generous for development and testing
+
+## 🏗️ Step 1: Create Firebase Project</b>
+
+### Firebase Console Setup
+
+1. **🌐 Open Firebase Console**
+   - Navigate to [Firebase Console](https://console.firebase.google.com/)
+
+2. **➕ Create New Project**
+   - Click "Create a new Firebase project"
+   - Enter project name: `nova-reel-app` (or your preferred name)
+   - Google Analytics is optional, so no need to enable it
+
+3. **💳 Upgrade to Blaze Plan** ⚠️ **Required for AI Features**
+   - Locate billing section in bottom-left sidebar
+   - Click "Upgrade" next to Spark plan
+   - Select "Pay as you Go - Blaze Plan"
+   - Choose "Google Cloud Platform Trial Billing Account" 
+   - Set budget alert (e.g., $2 USD)
+   - Click "Link Cloud Billing Account"
 
 ### Step 2: Enable Required APIs ☁️
 
@@ -138,6 +201,7 @@ Your Firebase project needs certain Google Cloud APIs enabled:
 1. **Go to Google Cloud Console:**
    - Visit the [Google Cloud Console](https://console.cloud.google.com/)
    - Make sure your Firebase project is selected in the project dropdown
+   - Click on "Dashboard" to see the project's overview page
 2. **Enable the Secret Manager API:**
    - In the left sidebar, go to "APIs & Services" > "Library"
    - Search for "Secret Manager API"
@@ -158,26 +222,16 @@ Your Firebase project needs certain Google Cloud APIs enabled:
    ```bash
    firebase login
    ```
-   This will open your browser for authentication.
-
-3. **Initialize Firebase in your project:**
-   ```bash
-   firebase init
-   ```
-
-4. **Configure Firebase services** when prompted:
-   - **Select services:** Choose "Functions" and "Firestore" (use space to select, enter to confirm)
-   - **Project selection:** Choose "Use an existing project" and select your Firebase project
-   - **Language for Functions:** Select "TypeScript" 
-   - **ESLint:** Choose "No" (you can always enable it later if needed) 
-   - **Install dependencies:** Choose "Yes"
-   - **Firestore Rules:** Accept the default `firestore.rules` file
-   - **Firestore Indexes:** Accept the default `firestore.indexes.json` file
-   - **⚠️ Important:** When asked to overwrite existing files, select "No" to preserve the project code
+   
+3. In the terminal, you will be prompted to enter to visit a URL to authenticate using an authorization code. 
+4. Open the URL, select the same Google account you used to create the Firebase project. 
+5. Click the "Yes, I just ran this command" button. 
+6. The second step shows you a session code that should tally with the one seen back in your project's terminal. Click "Yes". 
+7. In Step 3, copy the code and paste it into the terminal.
 
 ### Step 4: Link Your Firebase Project 🔄
 
-After initializing Firebase, you need to make sure your project is linked correctly:
+You need to make sure your project is linked correctly:
 
 **Method 1: Using Firebase CLI (Recommended)**
 
@@ -203,7 +257,22 @@ If the CLI method doesn't work, you can edit the `.firebaserc` file manually:
 
 > **💡 Tip:** You can verify your project is linked correctly by running `firebase projects:list` to see your available projects.
 
-### Step 5: Configure Firebase Web App 🔥
+### Step 5: Configure Firebase Services
+   ```bash
+   firebase init
+   ```
+Configure Firebase services when prompted:
+   - **Select services:** Choose "Functions" and "Firestore" (use space to select, enter to confirm)
+   - **Select a location for your Firestore database:** Choose a region closer to your users
+   - **Firestore Rules:** Accept the default `firestore.rules` file
+   - **Firestore Indexes:** Accept the default `firestore.indexes.json` file
+   - **Initialize or overwrite:** When asked to either initialize or overwrite the codebase, select "Overwrite"
+   - **Language for Functions:** Select "TypeScript"
+   - **ESLint:** Choose "No" (you can always enable it later if needed)
+   - **⚠️ Important:** When asked to overwrite existing files, select "No" to preserve the project code
+   - **Install dependencies:** Choose "Yes"
+
+### Step 6: Configure Firebase Web App 🔥
 
 Now you need to register a web app in Firebase and get the configuration:
 
@@ -212,11 +281,12 @@ Now you need to register a web app in Firebase and get the configuration:
    - Click the gear icon (⚙️) next to "Project Overview" → "Project settings"
    - Scroll to "Your apps" section
    - If you don't have a web app yet, click "Add app" → Web icon (`</>`)
-   - Give your app a name (e.g., "Nova Reel Web App") and click "Register app"
+   - Give your app a name (e.g., "Nova Reel Web App")
+   - Check the Firebase Hosting box
+   - Click "Register app"
 
 2. **Get your Firebase configuration:**
-   - In the "SDK setup and configuration" section, select "Config"
-   - Copy the configuration object (it looks like this):
+   - In the "Add Firebase SDK" step, copy the configuration object (it looks like this):
    ```javascript
    {
      apiKey: "your-api-key-here",
@@ -259,10 +329,35 @@ Now you need to register a web app in Firebase and get the configuration:
      }
    };
    ```
+   Click "Continue to console" to continue.
+
+## Firebase Authentication Setup
+
+### Step 7: Enable Authentication
+- Click the "Build" dropdown in the sidebar
+- Select "Authentication"
+- Click "Get started"
+- Select "Google"
+- Toggle the "Enable" switch
+- Provide a support email address
+- Click "Save"
+
+##  Firebase Firestore Database
+
+### Step 8: Enable Firestore Database
+- Click the "Build" dropdown in the sidebar
+- Select "Firestore Database"
+- Click "Create database"
+- Select "Standard Edition"
+- You can leave the database ID as "default"
+- Select the closest location to your users
+- Click "Next"
+- Select "Start in test mode"
+- Click "Create"
 
 ## 🔐 API Keys Setup
 
-### Step 6: Get TMDB API Key 🎬
+### Step 9: Get TMDB API Key 🎬
 
 Nova Reel uses The Movie Database (TMDB) API to fetch movie and TV show data:
 
@@ -281,14 +376,14 @@ Nova Reel uses The Movie Database (TMDB) API to fetch movie and TV show data:
    - Copy your **API Read Access Token** (this is your Bearer Token)
    - It starts with "eyJ..." and is quite long
 
-### Step 7: Set Up API Keys as Firebase Secrets 🔑
+### Step 10: Set Up API Keys as Firebase Secrets 🔑
 
 1. **Set TMDB API Key:**
    ```bash
    cd functions
    firebase functions:secrets:set TMDB_API_BEARER_TOKEN
    ```
-   When prompted, paste your TMDB Bearer Token.
+   When prompted, paste your TMDB Bearer Token. The input is masked so you won't see the pasted token but it will be there. Just paste ONCE!
 
 2. **Set Gemini API Key:**
    ```bash
@@ -296,23 +391,18 @@ Nova Reel uses The Movie Database (TMDB) API to fetch movie and TV show data:
    ```
    When prompted, paste your Gemini API key.
    
-   > **📝 How to get Gemini API Key:** Go to [Google AI Studio](https://aistudio.google.com/app/apikey), create an API key, and copy it.
-
-3. **Return to project root:**
-   ```bash
-   cd ..
-   ```
+   > **📝 How to get Gemini API Key:** Go to [Google AI Studio](https://aistudio.google.com/app/apikey), create an API key by attaching to a project, and copy it. The input is masked, so you won't see the pasted key, but it will be there. Just paste ONCE!
 
 4. **Create local environment file (for development):**
    ```bash
-   cd functions
    echo "GEMINI_API_KEY=your_actual_gemini_api_key_here" > .env
    cd ..
    ```
+   Replace `your_actual_gemini_api_key_here` with your actual Gemini API key.
 
 ## 🚀 Deployment and Running
 
-### Step 8: Deploy and Run Your Application
+### Step 11: Deploy and Run Your Application
 
 1. **Deploy Firebase Functions:**
    ```bash
@@ -322,9 +412,10 @@ Nova Reel uses The Movie Database (TMDB) API to fetch movie and TV show data:
 
 2. **Run the application locally:**
    ```bash
+   cd ..
    ng serve
    ```
-   Your app will be available at `http://localhost:4200`
+   Your app will be available at `http://localhost:4200`. However, on Firebase Studio, hold Ctrl+Click on the localhost URL to open it in a new tab.
 
 3. **Build for production (optional):**
    ```bash
@@ -470,19 +561,25 @@ async getAiRecommendationsData(count: number = 5): Promise<AiRecommendationRespo
 
 The recommendations are displayed in the "For You" tab of the landing page, along with the AI's reasoning for the recommendations.
 
-## 📝 Usage
+---
 
-### 🎬 Main Navigation Tabs
+## 📖 User Guide
 
-Nova Reel features an intuitive tab-based interface with the following sections:
+### 🧭 Navigation Overview
 
-1. **🎥 Movies**: Browse trending, popular, top-rated, now playing, and upcoming movies
-2. **📺 TV Shows**: Explore popular, top-rated, on-the-air, and airing today TV shows
-3. **⭐ Favorites**: Quick access to your saved movies and TV shows
-4. **🎯 For You**: Personalized recommendations based on your viewing history and favorites
-5. **🤖 Smart Recommendations**: AI-powered recommendations using natural language queries
-6. **🎬 Guess the Movie**: Interactive game to identify movies/TV shows from screenshots
-7. **🧠 Trivia Challenge**: Test your knowledge with timed trivia questions about any movie or TV show
+<div align="center">
+
+| Tab | Feature | Description |
+|-----|---------|-------------|
+| 🎥 | **Movies** | Browse trending, popular, top-rated & upcoming |
+| 📺 | **TV Shows** | Explore popular, top-rated & currently airing |
+| ⭐ | **Favorites** | Quick access to your saved content |
+| 🎯 | **For You** | Personalized AI recommendations |
+| 🤖 | **Smart Recs** | Natural language query recommendations |
+| 🎬 | **Guess Movie** | Screenshot identification game |
+| 🧠 | **Trivia** | Timed knowledge challenges |
+
+</div>
 
 ### 🔧 How to Use Each Feature
 
@@ -523,33 +620,73 @@ Nova Reel features an intuitive tab-based interface with the following sections:
 - View your final results and statistics when the game is complete
 - Challenge yourself again or try trivia for different movies and shows
 
-## 💻 Development
+---
 
-### 🏃‍♂️ Running the Development Server
+## 🛠️ Development
 
-```
+<table>
+<tr>
+<td width="50%">
+
+### 🏃‍♂️ **Development Server**
+```bash
 ng serve
 ```
+*Starts local dev server at `http://localhost:4200`*
 
-### 🏗️ Building for Production
-
-```
+### 🏗️ **Production Build**
+```bash
 ng build
 ```
+*Creates optimized build in `dist/` folder*
 
-### 🧪 Running Tests
+</td>
+<td width="50%">
 
-```
+### 🧪 **Run Tests**
+```bash
 ng test
 ```
+*Executes unit tests via Karma*
 
-## 📚 Additional Resources
+### 🚀 **Deploy to Firebase**
+```bash
+firebase deploy
+```
+*Deploys both functions and hosting*
 
-- 📖 [Genkit Documentation](https://genkit.dev/)
-- 🔥 [Firebase Documentation](https://firebase.google.com/docs)
-- 🅰️ [Angular Documentation](https://angular.dev/overview)
-- 🎬 [TMDB API Documentation](https://developer.themoviedb.org/docs/getting-started)
+</td>
+</tr>
+</table>
+
+---
+
+## 📚 Resources & Documentation
+
+<div align="center">
+
+### 🔗 **Quick Links**
+
+[![Genkit Docs](https://img.shields.io/badge/Genkit-Documentation-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://genkit.dev/)
+[![Firebase Docs](https://img.shields.io/badge/Firebase-Documentation-039BE5?style=for-the-badge&logo=firebase&logoColor=white)](https://firebase.google.com/docs)
+
+[![Angular Docs](https://img.shields.io/badge/Angular-Documentation-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.dev/overview)
+[![TMDB API](https://img.shields.io/badge/TMDB-API%20Docs-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)](https://developer.themoviedb.org/docs/getting-started)
+
+</div>
+
+---
+
+<div align="center">
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+**MIT License** - See the [LICENSE](LICENSE) file for details.
+
+---
+
+### 🌟 **Star this project if you found it helpful!**
+
+*Made with ❤️ using Angular, Firebase, Genkit and Gemini*
+
+</div>
