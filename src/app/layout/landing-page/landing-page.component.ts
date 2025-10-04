@@ -246,7 +246,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     } else if (tab === 'For You') {
       // Clear natural language query for favorites-based recommendations
       this.naturalLanguageQuery.set('');
-      this.loadAiRecommendations(false, false); // Don't force refresh, don't use natural language
+      this.loadAiRecommendations(false, false, true, 'For You'); // Don't force refresh, don't use natural language, target For You tab
     } else if (tab === 'Smart Recommendations') {
       // Smart Recommendations tab doesn't auto-load - it's user-driven
       // Just ensure we have a clean state if switching from another tab
@@ -266,16 +266,20 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    * @param forceRefresh - Whether to force a refresh of the cache (default: false)
    * @param useNaturalLanguage - Whether to use natural language query (default: true for Smart Recommendations tab)
    * @param preserveQuery - Whether to preserve the existing natural language query (default: true)
+   * @param targetTab - The target tab for which to load recommendations (default: current active tab)
    */
-  loadAiRecommendations(forceRefresh: boolean = false, useNaturalLanguage: boolean = true, preserveQuery: boolean = true): void {
+  loadAiRecommendations(forceRefresh: boolean = false, useNaturalLanguage: boolean = true, preserveQuery: boolean = true, targetTab?: string): void {
     this.isLoading.set(true);
     this.loadingMessagesService.startLoadingMessages();
     this.error.set(null);
 
+    // Capture the target tab at the start to avoid race conditions
+    const tabForRecommendations = targetTab || this.activeTab();
+
     // Determine which natural language query to use
     let queryToUse: string | undefined = undefined;
 
-    if (useNaturalLanguage && this.activeTab() !== 'For You') {
+    if (useNaturalLanguage && tabForRecommendations !== 'For You') {
       const currentQuery = this.naturalLanguageQuery().trim();
       if (currentQuery && preserveQuery) {
         // Use the existing query if we're preserving it and it exists
@@ -292,11 +296,11 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          // Set the appropriate properties based on the active tab
-          if (this.activeTab() === 'For You') {
+          // Set the appropriate properties based on the target tab (captured at start)
+          if (tabForRecommendations === 'For You') {
             this.forYouRecommendations.set(data.recommendations);
             this.forYouRecommendationReasoning.set(data.reasoning ?? null);
-          } else if (this.activeTab() === 'Smart Recommendations') {
+          } else if (tabForRecommendations === 'Smart Recommendations') {
             this.smartRecommendations.set(data.recommendations);
             this.smartRecommendationReasoning.set(data.reasoning ?? null);
           }
@@ -328,15 +332,17 @@ export class LandingPageComponent implements OnInit, OnDestroy {
    */
   onNaturalLanguageQuery(query: string): void {
     this.naturalLanguageQuery.set(query);
-    this.loadAiRecommendations(true); // Force refresh with new query
+    this.loadAiRecommendations(true, true, true, 'Smart Recommendations'); // Force refresh with new query for Smart Recommendations tab
   }
 
   /**
-   * Clears the natural language query and reloads favorites-based recommendations
+   * Clears the natural language query and clears smart recommendations
    */
   clearNaturalLanguageQuery(): void {
     this.naturalLanguageQuery.set('');
-    this.loadAiRecommendations(true, true, false); // Force refresh, use natural language, don't preserve query
+    // Clear the recommendations and reasoning instead of making an API call
+    this.smartRecommendations.set([]);
+    this.smartRecommendationReasoning.set(null);
   }
 
   /**

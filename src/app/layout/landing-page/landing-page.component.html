@@ -106,7 +106,7 @@
           [selectedHistoryEntry]="selectedHistoryEntry()"
           [naturalLanguageQuery]="naturalLanguageQuery()"
           [historyService]="historyService"
-          (loadAiRecommendations)="loadAiRecommendations($event)"
+          (loadAiRecommendations)="loadAiRecommendations($event, true, true, 'Smart Recommendations')"
           (shareMedia)="onShareMedia($event)"
           (naturalLanguageQueryChange)="naturalLanguageQuery.set($event)"
           (onNaturalLanguageQuery)="onNaturalLanguageQuery($event)"
@@ -124,7 +124,7 @@
           [forYouRecommendationReasoning]="forYouRecommendationReasoning()"
           [isLoading]="isLoading()"
           [error]="error()"
-          (loadAiRecommendations)="loadAiRecommendations($event)"
+          (loadAiRecommendations)="loadAiRecommendations($event, false, true, 'For You')"
           (shareMedia)="onShareMedia($event)">
         </app-for-you>
       }
