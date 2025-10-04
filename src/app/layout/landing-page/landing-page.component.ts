@@ -336,11 +336,13 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clears the natural language query and reloads favorites-based recommendations
+   * Clears the natural language query and clears smart recommendations
    */
   clearNaturalLanguageQuery(): void {
     this.naturalLanguageQuery.set('');
-    this.loadAiRecommendations(true, true, false, 'Smart Recommendations'); // Force refresh, use natural language, don't preserve query, target Smart Recommendations tab
+    // Clear the recommendations and reasoning instead of making an API call
+    this.smartRecommendations.set([]);
+    this.smartRecommendationReasoning.set(null);
   }
 
   /**
