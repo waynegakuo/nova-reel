@@ -86,7 +86,9 @@ The "Guess the Movie" feature uses Genkit's image analysis capabilities to ident
 
 ### Try it out in Firebase Studio 🧪
 
-Click this button to launch the project in Firebase Studio and follow the steps below to get started.
+For the easiest setup experience, use Firebase Studio:
+
+1. Click the button below to launch the project in Firebase Studio:
 
 <a href="https://studio.firebase.google.com/import?url=https%3A%2F%2Fgithub.com%2Fwaynegakuo%2Fnova-reel">
   <picture>
@@ -103,78 +105,94 @@ Click this button to launch the project in Firebase Studio and follow the steps 
   </picture>
 </a>
 
-### 🔧 Environment Setup
-1. In the now created Firebase Studio project, open up the Terminal.
-2. 📦 Install dependencies:
-   ```
+2. Once the project loads in Firebase Studio, open the Terminal tab
+3. Install the project dependencies by running these commands one by one:
+   ```bash
    npm install
    cd functions
    npm install
    cd ..
    ```
 
-### 🔥 Firebase Project Setup & TMDB API Key
+## 🔥 Firebase Project Setup & Configuration
 
-#### 🏗️ Create a Firebase Project:
+Now that you have the code ready, let's set up Firebase and the required APIs:
 
-1. Go to [Firebase Console](https://console.firebase.google.com/).
-2. Click "Add project" and follow the prompts to create your project.
-3. ⚠️ **Important:** Upgrade your project to the Blaze (pay-as-you-go) plan. Cloud Functions and Vertex AI (which Genkit uses) require a billing-enabled project. Don't worry, free tiers are generous for testing.
+### Step 1: Create a Firebase Project 🏗️
 
-#### ☁️ Enable Essential Google Cloud APIs:
+1. **Open the Firebase Console:** Go to [Firebase Console](https://console.firebase.google.com/)
+2. **Create a new project:**
+   - Click "Add project"
+   - Enter a project name (e.g., "nova-reel-app")
+   - Follow the setup wizard (you can disable Google Analytics if not needed)
+3. **⚠️ Important - Upgrade to Blaze Plan:**
+   - In your Firebase project, go to the "Usage and billing" tab
+   - Click "Modify plan" and select "Blaze (Pay as you go)"
+   - This is required for Cloud Functions and AI features
+   - Don't worry - the free tier is generous for development and testing
 
-Enable Essential Google Cloud APIs
+### Step 2: Enable Required APIs ☁️
 
-Your Firebase project uses Google Cloud behind the scenes. For secure secret management, the Secret Manager API must be enabled. Other necessary APIs (like Cloud Functions, Cloud Build, Cloud Run, Vertex AI) are usually enabled automatically by Firebase when you deploy functions or use AI features.
+Your Firebase project needs certain Google Cloud APIs enabled:
 
-- Go to the Google Cloud Console for your Firebase project.
-- In the navigation menu, go to APIs & Services > Enabled APIs & Services.
-- Click on +Enable APIs and services.
-- Search for and enable the Secret Manager API.
+1. **Go to Google Cloud Console:**
+   - Visit the [Google Cloud Console](https://console.cloud.google.com/)
+   - Make sure your Firebase project is selected in the project dropdown
+2. **Enable the Secret Manager API:**
+   - In the left sidebar, go to "APIs & Services" > "Library"
+   - Search for "Secret Manager API"
+   - Click on it and press "Enable"
+   
+> **Note:** Other APIs (Cloud Functions, Vertex AI, etc.) are automatically enabled when you deploy Firebase Functions.
 
-#### 🛠️ Install Firebase CLI:
+### Step 3: Install and Setup Firebase CLI 🛠️
 
-> **Note for Firebase Studio users:** Skip step 2 (npm install command) and go directly to step 3 (firebase login).
+> **📝 Note for Firebase Studio users:** Skip the CLI installation step and go directly to logging in.
 
-1. Open your terminal/command prompt.
-2. Install the Firebase CLI globally:
-   ```
+1. **Install Firebase CLI** (skip if using Firebase Studio):
+   ```bash
    npm install -g firebase-tools
    ```
-3. Log in to Firebase:
-   ```
+
+2. **Log in to Firebase:**
+   ```bash
    firebase login
    ```
+   This will open your browser for authentication.
 
-#### 🚀 Initialize Firebase in Your Project:
-
-1. Navigate to your project's root directory (you should already be there after cloning the repository).
-2. Initialize Firebase:
-   ```
+3. **Initialize Firebase in your project:**
+   ```bash
    firebase init
    ```
-3. Select "Functions" and "Firestore" when prompted.
-4. Choose your existing Firebase project to link to.
-5. Select TypeScript for functions (highly recommended).
-6. For Firestore, accept the default rules file (you can change it later).
-7. Do NOT overwrite existing files if prompted.
 
-#### 🔄 Update the .firebaserc File:
+4. **Configure Firebase services** when prompted:
+   - **Select services:** Choose "Functions" and "Firestore" (use space to select, enter to confirm)
+   - **Project selection:** Choose "Use an existing project" and select your Firebase project
+   - **Language for Functions:** Select "TypeScript" 
+   - **ESLint:** Choose "No" (you can always enable it later if needed) 
+   - **Install dependencies:** Choose "Yes"
+   - **Firestore Rules:** Accept the default `firestore.rules` file
+   - **Firestore Indexes:** Accept the default `firestore.indexes.json` file
+   - **⚠️ Important:** When asked to overwrite existing files, select "No" to preserve the project code
 
-You can update the .firebaserc file in two ways:
+### Step 4: Link Your Firebase Project 🔄
 
-**Option 1: Using Firebase CLI (Recommended)**
+After initializing Firebase, you need to make sure your project is linked correctly:
 
-Run the following command to set your Firebase project ID:
-```
+**Method 1: Using Firebase CLI (Recommended)**
+
+Set your Firebase project as the default:
+```bash
 firebase use YOUR_PROJECT_ID
 ```
-Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you created. This command will automatically update your .firebaserc file.
+> Replace `YOUR_PROJECT_ID` with your actual Firebase project ID (you can find this in the Firebase Console URL or project settings).
 
-**Option 2: Manual Editing**
+**Method 2: Manual Configuration**
 
-1. Open the `.firebaserc` file in your project root directory.
-2. Replace the default project name with your Firebase project ID:
+If the CLI method doesn't work, you can edit the `.firebaserc` file manually:
+
+1. Open `.firebaserc` in your project root directory
+2. Update it to match your project ID:
    ```json
    {
      "projects": {
@@ -182,101 +200,139 @@ Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you create
      }
    }
    ```
-   Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you created.
 
-#### 🔥 Add Firebase Configuration to Your Project:
+> **💡 Tip:** You can verify your project is linked correctly by running `firebase projects:list` to see your available projects.
 
-1. Go to your Firebase project in the [Firebase Console](https://console.firebase.google.com/).
-2. Click on the gear icon (⚙️) next to "Project Overview" and select "Project settings".
-3. Scroll down to the "Your apps" section and select your web app (or create one if you haven't already).
-4. Under the "SDK setup and configuration" section, select "Config" to view your Firebase configuration object.
-5. Copy the configuration object that looks like this:
+### Step 5: Configure Firebase Web App 🔥
+
+Now you need to register a web app in Firebase and get the configuration:
+
+1. **Register your web app:**
+   - Go to [Firebase Console](https://console.firebase.google.com/) and select your project
+   - Click the gear icon (⚙️) next to "Project Overview" → "Project settings"
+   - Scroll to "Your apps" section
+   - If you don't have a web app yet, click "Add app" → Web icon (`</>`)
+   - Give your app a name (e.g., "Nova Reel Web App") and click "Register app"
+
+2. **Get your Firebase configuration:**
+   - In the "SDK setup and configuration" section, select "Config"
+   - Copy the configuration object (it looks like this):
    ```javascript
    {
-     apiKey: "YOUR_API_KEY",
-     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-     projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_PROJECT_ID.appspot.com",
-     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-     appId: "YOUR_APP_ID",
-     measurementId: "YOUR_MEASUREMENT_ID"
+     apiKey: "your-api-key-here",
+     authDomain: "your-project.firebaseapp.com",
+     projectId: "your-project-id",
+     storageBucket: "your-project.appspot.com",
+     messagingSenderId: "123456789",
+     appId: "your-app-id",
+     measurementId: "your-measurement-id"
    }
    ```
-6. Open the environment files in your project:
-   - For production: `src/environments/environment.ts`
-   - For development: `src/environments/environment.development.ts`
-7. Replace the existing `firebaseConfig` object with your own Firebase configuration:
+
+3. **Update your environment files:**
+   
+   Open both environment files and replace the `firebaseConfig` object with your own:
+   
+   **For `src/environments/environment.ts` (production):**
    ```typescript
    export const environment = {
-     production: true, // or false for environment.development.ts
+     production: true,
      firebaseConfig: {
-       apiKey: "YOUR_API_KEY",
-       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-       projectId: "YOUR_PROJECT_ID",
-       storageBucket: "YOUR_PROJECT_ID.appspot.com",
-       messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-       appId: "YOUR_APP_ID",
-       measurementId: "YOUR_MEASUREMENT_ID"
+       // Paste your Firebase config here
+       apiKey: "your-api-key-here",
+       authDomain: "your-project.firebaseapp.com",
+       projectId: "your-project-id",
+       storageBucket: "your-project.appspot.com",
+       messagingSenderId: "123456789",
+       appId: "your-app-id",
+       measurementId: "your-measurement-id"
+     }
+   };
+   ```
+   
+   **For `src/environments/environment.development.ts` (development):**
+   ```typescript
+   export const environment = {
+     production: false,
+     firebaseConfig: {
+       // Same Firebase config as above
      }
    };
    ```
 
-#### 🎬 Get TMDB API Key:
+## 🔐 API Keys Setup
 
-1. Go to [TMDB](https://www.themoviedb.org/).
-2. Sign up or log in.
-3. Go to your user profile (click your avatar) -> Settings -> API.
-4. Request a new API key (Developer/v3).
-5. Note down your API Read Access Token (Bearer Token). It starts with "eyJ...".
+### Step 6: Get TMDB API Key 🎬
 
-#### 🔐 Set TMDB API Key as Firebase Secret:
+Nova Reel uses The Movie Database (TMDB) API to fetch movie and TV show data:
 
-1. Back in the Firebase Studio project, Navigate to your `functions` directory:
-   ```
+1. **Create TMDB Account:**
+   - Go to [TMDB](https://www.themoviedb.org/)
+   - Sign up for a new account or log in if you already have one
+
+2. **Request API Access:**
+   - Click your profile avatar → Settings → API
+   - Click "Request an API Key" → "Developer"
+   - Fill out the application form (you can mention this is for learning/personal use)
+   - Accept the terms of use
+
+3. **Get Your Bearer Token:**
+   - Once approved, go back to Settings → API
+   - Copy your **API Read Access Token** (this is your Bearer Token)
+   - It starts with "eyJ..." and is quite long
+
+### Step 7: Set Up API Keys as Firebase Secrets 🔑
+
+1. **Set TMDB API Key:**
+   ```bash
    cd functions
-   ```
-2. Set the TMDB API key as a Firebase secret:
-   ```
    firebase functions:secrets:set TMDB_API_BEARER_TOKEN
    ```
-3. Paste your TMDB Bearer Token when prompted.
-4. Return to the project root:
-   ```
-   cd ..
-   ```
+   When prompted, paste your TMDB Bearer Token.
 
-### 🔑 API Keys and Deployment
-
-1. 🔑 Set up your API keys:
-   
-   a. Create a `.env` file in the `functions` directory with your Gemini API key (for local development):
-   ```
-   cd functions
-   echo "GEMINI_API_KEY=your_gemini_api_key" > .env
-   cd ..
-   ```
-   
-   b. Set up the Gemini API key as a Firebase secret (for production deployment):
-   ```
+2. **Set Gemini API Key:**
+   ```bash
    firebase functions:secrets:set GEMINI_API_KEY
    ```
+   When prompted, paste your Gemini API key.
    
-   > **Note:** When running this command, you'll be prompted to enter the actual secret value. The GEMINI_API_KEY is needed both as an environment variable (for local development) and as a Firebase secret (for production deployment).
+   > **📝 How to get Gemini API Key:** Go to [Google AI Studio](https://aistudio.google.com/app/apikey), create an API key, and copy it.
 
-3. 🔥 Configure Firebase:
-   ```
-   firebase use your-project-id
+3. **Return to project root:**
+   ```bash
+   cd ..
    ```
 
-4. 🚀 Deploy Firebase Functions:
+4. **Create local environment file (for development):**
+   ```bash
+   cd functions
+   echo "GEMINI_API_KEY=your_actual_gemini_api_key_here" > .env
+   cd ..
    ```
+
+## 🚀 Deployment and Running
+
+### Step 8: Deploy and Run Your Application
+
+1. **Deploy Firebase Functions:**
+   ```bash
    firebase deploy --only functions
    ```
+   This will deploy your backend functions to Firebase.
 
-5. 🏃‍♂️ Run the application locally:
-   ```
+2. **Run the application locally:**
+   ```bash
    ng serve
    ```
+   Your app will be available at `http://localhost:4200`
+
+3. **Build for production (optional):**
+   ```bash
+   ng build
+   firebase deploy --only hosting
+   ```
+
+> **🎉 Congratulations!** Your Nova Reel app should now be running with full AI-powered movie recommendations!
 
 ## 🧠 Building an AI Recommendation Engine with Genkit
 
