@@ -103,26 +103,8 @@ Click this button to launch the project in Firebase Studio and follow the steps 
   </picture>
 </a>
 
-> **Note for Firebase Studio users:** After running the app in Firebase Studio, skip to [Environment Setup section #2](#install-dependencies) and follow the instructions from there.
-
-
-### 📋 Setting up Locally: Prerequisites
-
-- 📦 Node.js (v18 or later)
-- 🅰️ Angular CLI (v19 or later)
-- 🔥 Firebase CLI
-- ☁️ A Firebase project with Firestore and Functions enabled
-- 🎬 TMDB API key
-- 🧠 Gemini API key
-
 ### 🔧 Environment Setup
-
-1. 📥 Clone the repository:
-   ```
-   git clone <repository-url>
-   cd nova-reel
-   ```
-
+1. In the now created Firebase Studio project, open up the Terminal.
 2. 📦 Install dependencies:
    ```
    npm install
@@ -249,7 +231,7 @@ Replace `YOUR_PROJECT_ID` with the project ID of the Firebase project you create
 
 #### 🔐 Set TMDB API Key as Firebase Secret:
 
-1. Navigate to your functions directory:
+1. Back in the Firebase Studio project, Navigate to your `functions` directory:
    ```
    cd functions
    ```
