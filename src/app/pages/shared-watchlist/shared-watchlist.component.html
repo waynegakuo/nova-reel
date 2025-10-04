@@ -1,0 +1,45 @@
+<div class="shared-watchlist-container">
+  <div class="page-header">
+    <h1>Shared Watchlist</h1>
+    <p class="page-description">A watchlist shared with you</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading shared watchlist...</p>
+    </div>
+  } @else if (hasError) {
+    <div class="error-container">
+      <div class="error-icon">❌</div>
+      <h2>Unable to Load Watchlist</h2>
+      <p>{{ errorMessage }}</p>
+      <p>Please check that you have the correct link and try again.</p>
+    </div>
+  } @else {
+    <div class="shared-watchlist-content">
+      @if (sharedWatchlist.length === 0) {
+        <div class="empty-watchlist">
+          <div class="empty-icon">📋</div>
+          <h2>Empty watchlist</h2>
+          <p>This shared watchlist doesn't contain any items.</p>
+        </div>
+      } @else {
+        <div class="watchlist-stats">
+          <p class="stats-text">{{ sharedWatchlist.length }} item{{ sharedWatchlist.length !== 1 ? 's' : '' }} in this shared watchlist</p>
+        </div>
+
+        <div class="watchlist-grid">
+          @for (item of sharedWatchlist; track item.id) {
+            <app-media-card
+              [item]="$any(item)"
+              [type]="item.mediaType"
+              [showRemoveFromWatchlist]="false"
+              (share)="onShare($event)">
+            </app-media-card>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

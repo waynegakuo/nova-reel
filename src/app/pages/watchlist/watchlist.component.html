@@ -1,0 +1,58 @@
+<div class="watchlist-container">
+  <div class="page-header hero-gradient fade-in-up">
+    <h1 class="pulse-animation">My Watchlist</h1>
+    <p class="page-description">Movies and TV shows you want to watch</p>
+  </div>
+
+  @if (!isAuthenticated) {
+    <div class="auth-message striking-card fade-in-up">
+      <div class="content">
+        <h2>Sign In Required</h2>
+        <p>Please sign in to view and manage your watchlist.</p>
+      </div>
+    </div>
+  } @else if (isLoading) {
+    <div class="loading-container fade-in-up">
+      <div class="loading-spinner pulse-animation"></div>
+      <p>Loading your watchlist...</p>
+    </div>
+  } @else {
+    <div class="watchlist-content">
+      @if (watchlist$ | async; as watchlist) {
+        @if (watchlist.length === 0) {
+          <div class="empty-watchlist striking-empty-state fade-in-up">
+            <div class="content">
+              <div class="empty-icon pulse-animation">📋</div>
+              <h2>Your watchlist is empty</h2>
+              <p>Start adding movies and TV shows to your watchlist to keep track of what you want to watch!</p>
+            </div>
+          </div>
+        } @else {
+          <div class="watchlist-stats striking-card fade-in-up">
+            <div class="stats-content">
+              <p class="stats-text">{{ watchlist.length }} item{{ watchlist.length !== 1 ? 's' : '' }} in your watchlist</p>
+              <button class="share-watchlist-btn enhanced-button" (click)="onShareWatchlist(watchlist)" title="Share your watchlist">
+                <span class="share-icon">🔗</span>
+                Share Watchlist
+              </button>
+            </div>
+          </div>
+
+          <div class="watchlist-grid fade-in-up">
+            @for (item of watchlist; track item.id; let i = $index) {
+              <div class="fade-in-up stagger-animation">
+                <app-media-card
+                  [item]="item"
+                  [type]="item.mediaType"
+                  [showRemoveFromWatchlist]="true"
+                  (share)="onShare($event)"
+                  (removeFromWatchlist)="onRemoveFromWatchlist($event)">
+                </app-media-card>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+</div>
