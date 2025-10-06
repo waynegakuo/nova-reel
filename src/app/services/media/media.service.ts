@@ -683,6 +683,55 @@ export class MediaService {
   }
 
   /**
+   * Saves "For You" AI recommendations to Firestore
+   * @param userId - The user's ID
+   * @param recommendations - The AI recommendations to save
+   * @returns Promise that resolves when the save is complete
+   */
+  private async saveForYouRecommendationsToFirestore(userId: string, recommendations: AiRecommendationResponse): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'forYouAIRecommendations', userId);
+      await setDoc(docRef, {
+        ...recommendations,
+        timestamp: new Date(),
+        userId: userId
+      });
+      console.log('Successfully saved For You recommendations to Firestore');
+    } catch (error) {
+      console.error('Error saving For You recommendations to Firestore:', error);
+      // Don't throw error - this is a background operation
+    }
+  }
+
+  /**
+   * Retrieves "For You" AI recommendations from Firestore
+   * @param userId - The user's ID
+   * @returns Promise that resolves with cached recommendations or null if not found
+   */
+  private async getForYouRecommendationsFromFirestore(userId: string): Promise<AiRecommendationResponse | null> {
+    try {
+      const docRef = doc(this.firestore, 'forYouAIRecommendations', userId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // Check if the data is not too old (optional: you can add timestamp validation here)
+        console.log('Successfully retrieved For You recommendations from Firestore');
+        return {
+          recommendations: data['recommendations'],
+          reasoning: data['reasoning']
+        };
+      } else {
+        console.log('No cached For You recommendations found in Firestore');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error retrieving For You recommendations from Firestore:', error);
+      return null;
+    }
+  }
+
+  /**
    * Fetches AI-powered recommendations with caching
    * @param forceRefresh - Whether to force a refresh of the cache
    * @param count - Number of recommendations to request (default: 5)
@@ -706,7 +755,12 @@ export class MediaService {
       });
     }
 
-    // For favorites-based recommendations, use caching
+    // For favorites-based "For You" recommendations, use Firestore caching
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      return throwError(() => new Error('User must be authenticated to get AI recommendations'));
+    }
+
     // Force refresh if requested
     if (forceRefresh) {
       this.refreshAiRecommendationsCache();
@@ -716,16 +770,44 @@ export class MediaService {
       this.aiRecommendationsCache = this.refreshAiRecommendationsCache$.pipe(
         // Only proceed when refresh is triggered
         switchMap(() => {
-          // Use the Firebase Function to get the data
           return new Observable<AiRecommendationResponse>(observer => {
-            this.getAiRecommendationsData(count)
-              .then((response) => {
-                observer.next(response);
-                observer.complete();
+            // First, try to get cached recommendations from Firestore
+            this.getForYouRecommendationsFromFirestore(userId)
+              .then((cachedRecommendations) => {
+                if (cachedRecommendations && !forceRefresh) {
+                  // Return cached data from Firestore
+                  console.log('Using cached For You recommendations from Firestore');
+                  observer.next(cachedRecommendations);
+                  observer.complete();
+                } else {
+                  // No cached data or forced refresh - fetch from AI
+                  console.log('Fetching fresh For You recommendations from AI');
+                  this.getAiRecommendationsData(count)
+                    .then((response) => {
+                      // Save the new recommendations to Firestore for future use
+                      this.saveForYouRecommendationsToFirestore(userId, response);
+                      observer.next(response);
+                      observer.complete();
+                    })
+                    .catch(error => {
+                      console.error('Error fetching AI recommendations:', error);
+                      observer.error(error);
+                    });
+                }
               })
               .catch(error => {
-                console.error('Error fetching AI recommendations:', error);
-                observer.error(error);
+                console.error('Error checking Firestore cache, falling back to AI:', error);
+                // If Firestore fails, fall back to AI call
+                this.getAiRecommendationsData(count)
+                  .then((response) => {
+                    this.saveForYouRecommendationsToFirestore(userId, response);
+                    observer.next(response);
+                    observer.complete();
+                  })
+                  .catch(aiError => {
+                    console.error('Error fetching AI recommendations:', aiError);
+                    observer.error(aiError);
+                  });
               });
           }).pipe(
             // Cache the result for 30 minutes (1800000ms) and share it with all subscribers
