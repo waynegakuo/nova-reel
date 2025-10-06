@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MediaCardComponent } from '../../shared/components/media-card/media-card.component';
 import { TruncatedTextComponent } from '../../shared/components/truncated-text/truncated-text.component';
 import { AiRecommendation } from '../../models/ai-recommendations.model';
 import { MediaService } from '../../services/media/media.service';
 import { MovieDetails, TvShowDetails } from '../../models/media-details.model';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-for-you',
@@ -16,8 +17,9 @@ import { MovieDetails, TvShowDetails } from '../../models/media-details.model';
   templateUrl: './for-you.component.html',
   styleUrl: './for-you.component.scss'
 })
-export class ForYouComponent {
+export class ForYouComponent implements OnInit, OnDestroy {
   private mediaService = inject(MediaService);
+  private destroy$ = new Subject<void>();
 
   @Input() forYouRecommendations: AiRecommendation[] = [];
   @Input() forYouRecommendationReasoning: string | null = null;
@@ -26,6 +28,21 @@ export class ForYouComponent {
 
   @Output() loadAiRecommendations = new EventEmitter<boolean>();
   @Output() shareMedia = new EventEmitter<any>();
+  @Output() applyNewRecommendations = new EventEmitter<AiRecommendation[]>();
+
+  // New recommendations notification system
+  showNewRecommendationsButton = false;
+  newRecommendationsCount = 0;
+
+  ngOnInit(): void {
+    // Subscribe to new recommendations notifications
+    this.mediaService.newRecommendationsAvailable
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(newRecommendations => {
+        this.newRecommendationsCount = newRecommendations.length;
+        this.showNewRecommendationsButton = true;
+      });
+  }
 
   onRefreshRecommendations(): void {
     this.loadAiRecommendations.emit(true);
@@ -33,6 +50,20 @@ export class ForYouComponent {
 
   onShareMedia(event: any): void {
     this.shareMedia.emit(event);
+  }
+
+  onApplyNewRecommendations(): void {
+    const updatedRecommendations = this.mediaService.applyNewRecommendations(this.forYouRecommendations);
+    this.applyNewRecommendations.emit(updatedRecommendations);
+
+    // Hide the notification button
+    this.showNewRecommendationsButton = false;
+    this.newRecommendationsCount = 0;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 }

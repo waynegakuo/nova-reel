@@ -522,4 +522,21 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Handles applying new recommendations from the ForYouComponent
+   * @param newRecommendations - The updated recommendations array
+   */
+  onApplyNewRecommendations(newRecommendations: AiRecommendation[]): void {
+    // Update the For You recommendations with smooth transition
+    this.forYouRecommendations.set(newRecommendations);
+
+    // Optionally update the reasoning if available from the service
+    const pendingRecommendations = this.mediaService.getPendingNewRecommendations();
+    if (pendingRecommendations.length > 0) {
+      // The reasoning would be part of the full response, but we're only getting recommendations here
+      // The reasoning will remain the same until a full refresh
+      console.log('Applied new recommendations successfully');
+    }
+  }
+
 }

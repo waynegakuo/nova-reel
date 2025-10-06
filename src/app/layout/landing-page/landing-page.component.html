@@ -125,7 +125,8 @@
           [isLoading]="isLoading()"
           [error]="error()"
           (loadAiRecommendations)="loadAiRecommendations($event, false, true, 'For You')"
-          (shareMedia)="onShareMedia($event)">
+          (shareMedia)="onShareMedia($event)"
+          (applyNewRecommendations)="onApplyNewRecommendations($event)">
         </app-for-you>
       }
 

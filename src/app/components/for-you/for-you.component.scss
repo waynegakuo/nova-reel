@@ -1,4 +1,4 @@
-@use '../../../styles/variables' as variables;
+@use '../../../styles/variables' as *;
 
 // For You component styles
 .recommendations-container {
@@ -8,33 +8,33 @@
 }
 
 .recommendations-placeholder {
-  @include variables.flex-center;
+  @include flex-center;
   flex-direction: column;
   height: 300px;
   background-color: rgba(0, 0, 0, 0.05);
-  border-radius: variables.$border-radius-md;
+  border-radius: $border-radius-md;
 
   p {
-    color: variables.$text-secondary-light;
+    color: $text-secondary-light;
     font-size: 1.2rem;
     margin: 0.5rem 0;
   }
 }
 
 .recommendation-reasoning {
-  background-color: rgba(variables.$primary-color, 0.1);
+  background-color: rgba($primary-color, 0.1);
   padding: 1.5rem;
-  border-radius: variables.$border-radius-md;
+  border-radius: $border-radius-md;
   margin-bottom: 1rem;
 
   h3 {
-    color: variables.$primary-color;
+    color: $primary-color;
     margin-bottom: 0.5rem;
     font-size: 1.2rem;
   }
 
   p {
-    color: variables.$text-color-light;
+    color: $text-color-light;
     line-height: 1.5;
   }
 }
@@ -44,6 +44,67 @@
   justify-content: center;
   margin-top: 1.5rem;
   // Use global .btn .btn-primary classes
+}
+
+.new-recommendations-notification {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  animation: slideInFromTop 0.5s ease-out;
+
+  .new-recommendations-btn {
+    background: linear-gradient(135deg, $success-color, #32CD32);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba($success-color, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: pulse 2s infinite;
+
+    .material-icons {
+      font-size: 1.2rem;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba($success-color, 0.4);
+      background: linear-gradient(135deg, #32CD32, $success-color);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4px 15px rgba($success-color, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba($success-color, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba($success-color, 0.3);
+  }
 }
 
 .media-grid {

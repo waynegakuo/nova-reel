@@ -22,6 +22,19 @@
         <p>Add some favorites to get recommendations based on your viewing history!</p>
       </div>
     } @else {
+      <!-- New Recommendations Notification Button -->
+      @if (showNewRecommendationsButton) {
+        <div class="new-recommendations-notification">
+          <button
+            class="btn btn-success new-recommendations-btn"
+            (click)="onApplyNewRecommendations()"
+          >
+            <span class="material-icons">new_releases</span>
+            New Recommendations ({{ newRecommendationsCount }})
+          </button>
+        </div>
+      }
+
       @if (forYouRecommendationReasoning) {
         <div class="recommendation-reasoning">
           <h3>Why we think you'll like these:</h3>

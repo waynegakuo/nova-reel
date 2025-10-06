@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError} from 'rxjs';
+import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError, Subject} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
@@ -43,6 +43,10 @@ export class MediaService {
   private refreshAiRecommendationsCache$ = new BehaviorSubject<boolean>(true);
   private refreshSearchCache$ = new BehaviorSubject<boolean>(true);
   private refreshGuessMovieCache$ = new BehaviorSubject<boolean>(true);
+
+  // New recommendations notification system
+  private newRecommendationsAvailable$ = new Subject<AiRecommendation[]>();
+  private pendingNewRecommendations: AiRecommendation[] = [];
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
@@ -779,6 +783,11 @@ export class MediaService {
                   console.log('Using cached For You recommendations from Firestore');
                   observer.next(cachedRecommendations);
                   observer.complete();
+
+                  // Start background fetching for new recommendations
+                  setTimeout(() => {
+                    this.fetchBackgroundRecommendations(userId, cachedRecommendations.recommendations, count);
+                  }, 100); // Small delay to ensure cached data is displayed first
                 } else {
                   // No cached data or forced refresh - fetch from AI
                   console.log('Fetching fresh For You recommendations from AI');
@@ -829,6 +838,95 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshAiRecommendationsCache$.next(true);
+  }
+
+  /**
+   * Observable for new recommendations notifications
+   */
+  get newRecommendationsAvailable(): Observable<AiRecommendation[]> {
+    return this.newRecommendationsAvailable$.asObservable();
+  }
+
+  /**
+   * Gets pending new recommendations
+   */
+  getPendingNewRecommendations(): AiRecommendation[] {
+    return this.pendingNewRecommendations;
+  }
+
+  /**
+   * Applies new recommendations by merging unique ones with existing recommendations
+   * @param currentRecommendations - Current recommendations displayed in UI
+   * @returns Updated recommendations array (max 5 items)
+   */
+  applyNewRecommendations(currentRecommendations: AiRecommendation[]): AiRecommendation[] {
+    if (this.pendingNewRecommendations.length === 0) {
+      return currentRecommendations;
+    }
+
+    // Find unique recommendations (not already in current list)
+    const uniqueNewRecommendations = this.pendingNewRecommendations.filter(newRec =>
+      !currentRecommendations.some(currentRec => currentRec.tmdbId === newRec.tmdbId)
+    );
+
+    if (uniqueNewRecommendations.length === 0) {
+      // No unique recommendations found
+      this.pendingNewRecommendations = [];
+      return currentRecommendations;
+    }
+
+    // Merge new unique recommendations with current ones, maintaining max 5 items
+    const merged = [...uniqueNewRecommendations, ...currentRecommendations];
+    const result = merged.slice(0, 5);
+
+    // Clear pending recommendations
+    this.pendingNewRecommendations = [];
+
+    return result;
+  }
+
+  /**
+   * Compares two recommendation arrays and returns unique recommendations from the new array
+   * @param currentRecommendations - Current recommendations
+   * @param newRecommendations - New recommendations to compare
+   * @returns Array of unique recommendations from newRecommendations
+   */
+  private findUniqueRecommendations(currentRecommendations: AiRecommendation[], newRecommendations: AiRecommendation[]): AiRecommendation[] {
+    return newRecommendations.filter(newRec =>
+      !currentRecommendations.some(currentRec => currentRec.tmdbId === newRec.tmdbId)
+    );
+  }
+
+  /**
+   * Fetches fresh recommendations in the background and checks for new unique items
+   * @param userId - User ID
+   * @param currentRecommendations - Current recommendations displayed in UI
+   * @param count - Number of recommendations to fetch
+   */
+  private fetchBackgroundRecommendations(userId: string, currentRecommendations: AiRecommendation[], count: number = 5): void {
+    console.log('Fetching background recommendations for new updates...');
+
+    this.getAiRecommendationsData(count)
+      .then((response) => {
+        // Compare with current recommendations to find unique ones
+        const uniqueRecommendations = this.findUniqueRecommendations(currentRecommendations, response.recommendations);
+
+        if (uniqueRecommendations.length > 0) {
+          console.log(`Found ${uniqueRecommendations.length} new unique recommendations`);
+          // Store pending recommendations
+          this.pendingNewRecommendations = response.recommendations;
+          // Notify subscribers about new recommendations
+          this.newRecommendationsAvailable$.next(uniqueRecommendations);
+          // Update Firestore cache with latest recommendations
+          this.saveForYouRecommendationsToFirestore(userId, response);
+        } else {
+          console.log('No new unique recommendations found');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching background recommendations:', error);
+        // Silently fail for background operations
+      });
   }
 
   /**
