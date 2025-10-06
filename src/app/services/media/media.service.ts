@@ -47,6 +47,7 @@ export class MediaService {
   // New recommendations notification system
   private newRecommendationsAvailable$ = new Subject<AiRecommendation[]>();
   private pendingNewRecommendations: AiRecommendation[] = [];
+  private pendingNewReasoning: string = '';
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
@@ -857,11 +858,11 @@ export class MediaService {
   /**
    * Applies new recommendations by merging unique ones with existing recommendations
    * @param currentRecommendations - Current recommendations displayed in UI
-   * @returns Updated recommendations array (max 5 items)
+   * @returns Object containing updated recommendations array (max 5 items) and new reasoning
    */
-  applyNewRecommendations(currentRecommendations: AiRecommendation[]): AiRecommendation[] {
+  applyNewRecommendations(currentRecommendations: AiRecommendation[]): { recommendations: AiRecommendation[], reasoning: string } {
     if (this.pendingNewRecommendations.length === 0) {
-      return currentRecommendations;
+      return { recommendations: currentRecommendations, reasoning: '' };
     }
 
     // Find unique recommendations (not already in current list)
@@ -872,17 +873,22 @@ export class MediaService {
     if (uniqueNewRecommendations.length === 0) {
       // No unique recommendations found
       this.pendingNewRecommendations = [];
-      return currentRecommendations;
+      this.pendingNewReasoning = '';
+      return { recommendations: currentRecommendations, reasoning: '' };
     }
 
     // Merge new unique recommendations with current ones, maintaining max 5 items
     const merged = [...uniqueNewRecommendations, ...currentRecommendations];
     const result = merged.slice(0, 5);
 
-    // Clear pending recommendations
-    this.pendingNewRecommendations = [];
+    // Get the new reasoning
+    const newReasoning = this.pendingNewReasoning;
 
-    return result;
+    // Clear pending recommendations and reasoning
+    this.pendingNewRecommendations = [];
+    this.pendingNewReasoning = '';
+
+    return { recommendations: result, reasoning: newReasoning };
   }
 
   /**
@@ -913,8 +919,9 @@ export class MediaService {
 
         if (uniqueRecommendations.length > 0) {
           console.log(`Found ${uniqueRecommendations.length} new unique recommendations`);
-          // Store pending recommendations
+          // Store pending recommendations and reasoning
           this.pendingNewRecommendations = response.recommendations;
+          this.pendingNewReasoning = response.reasoning || '';
           // Notify subscribers about new recommendations
           this.newRecommendationsAvailable$.next(uniqueRecommendations);
           // Update Firestore cache with latest recommendations

@@ -28,7 +28,7 @@ export class ForYouComponent implements OnInit, OnDestroy {
 
   @Output() loadAiRecommendations = new EventEmitter<boolean>();
   @Output() shareMedia = new EventEmitter<any>();
-  @Output() applyNewRecommendations = new EventEmitter<AiRecommendation[]>();
+  @Output() applyNewRecommendations = new EventEmitter<{ recommendations: AiRecommendation[], reasoning: string }>();
 
   // New recommendations notification system
   showNewRecommendationsButton = false;
@@ -53,8 +53,8 @@ export class ForYouComponent implements OnInit, OnDestroy {
   }
 
   onApplyNewRecommendations(): void {
-    const updatedRecommendations = this.mediaService.applyNewRecommendations(this.forYouRecommendations);
-    this.applyNewRecommendations.emit(updatedRecommendations);
+    const updatedData = this.mediaService.applyNewRecommendations(this.forYouRecommendations);
+    this.applyNewRecommendations.emit(updatedData);
 
     // Hide the notification button
     this.showNewRecommendationsButton = false;
