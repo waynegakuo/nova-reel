@@ -690,9 +690,23 @@ export class MediaService {
    * @returns Observable containing the AI recommendation response
    */
   getAiRecommendations(forceRefresh: boolean = false, count: number = 5, naturalLanguageQuery?: string): Observable<AiRecommendationResponse> {
-    // Create a cache key that includes the natural language query to differentiate cache entries
-    const cacheKey = naturalLanguageQuery ? `nl_${naturalLanguageQuery}_${count}` : `favorites_${count}`;
+    // For natural language queries, always make a fresh call without caching
+    // since queries are likely to be unique and we don't want cache conflicts
+    if (naturalLanguageQuery) {
+      return new Observable<AiRecommendationResponse>(observer => {
+        this.getAiRecommendationsData(count, naturalLanguageQuery)
+          .then((response) => {
+            observer.next(response);
+            observer.complete();
+          })
+          .catch(error => {
+            console.error('Error fetching natural language AI recommendations:', error);
+            observer.error(error);
+          });
+      });
+    }
 
+    // For favorites-based recommendations, use caching
     // Force refresh if requested
     if (forceRefresh) {
       this.refreshAiRecommendationsCache();
@@ -702,39 +716,22 @@ export class MediaService {
       this.aiRecommendationsCache = this.refreshAiRecommendationsCache$.pipe(
         // Only proceed when refresh is triggered
         switchMap(() => {
-          // For natural language queries, we'll use a simpler approach without persistent caching
-          // since queries are likely to be unique
-          if (naturalLanguageQuery) {
-            return new Observable<AiRecommendationResponse>(observer => {
-              this.getAiRecommendationsData(count, naturalLanguageQuery)
-                .then((response) => {
-                  observer.next(response);
-                  observer.complete();
-                })
-                .catch(error => {
-                  console.error('Error fetching natural language AI recommendations:', error);
-                  observer.error(error);
-                });
-            });
-          }
-          else {
-            // Use the Firebase Function to get the data
-            return new Observable<AiRecommendationResponse>(observer => {
-              this.getAiRecommendationsData(count)
-                .then((response) => {
-                  observer.next(response);
-                  observer.complete();
-                })
-                .catch(error => {
-                  console.error('Error fetching AI recommendations:', error);
-                  observer.error(error);
-                });
-            }).pipe(
-              // Cache the result for 30 minutes (1800000ms) and share it with all subscribers
-              // Buffer size of 1 means we only keep the latest value
-              shareReplay({ bufferSize: 1, refCount: false, windowTime: 1800000 })
-            );
-          }
+          // Use the Firebase Function to get the data
+          return new Observable<AiRecommendationResponse>(observer => {
+            this.getAiRecommendationsData(count)
+              .then((response) => {
+                observer.next(response);
+                observer.complete();
+              })
+              .catch(error => {
+                console.error('Error fetching AI recommendations:', error);
+                observer.error(error);
+              });
+          }).pipe(
+            // Cache the result for 30 minutes (1800000ms) and share it with all subscribers
+            // Buffer size of 1 means we only keep the latest value
+            shareReplay({ bufferSize: 1, refCount: false, windowTime: 1800000 })
+          );
         })
       );
     }
