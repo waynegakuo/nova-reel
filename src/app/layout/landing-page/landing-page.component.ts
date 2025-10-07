@@ -522,4 +522,21 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Handles applying new recommendations from the ForYouComponent
+   * @param updatedData - Object containing updated recommendations array and new reasoning
+   */
+  onApplyNewRecommendations(updatedData: { recommendations: AiRecommendation[], reasoning: string }): void {
+    // Update the For You recommendations with smooth transition
+    this.forYouRecommendations.set(updatedData.recommendations);
+
+    // Update the reasoning if new reasoning is provided
+    if (updatedData.reasoning) {
+      this.forYouRecommendationReasoning.set(updatedData.reasoning);
+      console.log('Applied new recommendations and updated reasoning successfully');
+    } else {
+      console.log('Applied new recommendations successfully');
+    }
+  }
+
 }

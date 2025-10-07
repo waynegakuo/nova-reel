@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError} from 'rxjs';
+import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError, Subject} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
@@ -43,6 +43,11 @@ export class MediaService {
   private refreshAiRecommendationsCache$ = new BehaviorSubject<boolean>(true);
   private refreshSearchCache$ = new BehaviorSubject<boolean>(true);
   private refreshGuessMovieCache$ = new BehaviorSubject<boolean>(true);
+
+  // New recommendations notification system
+  private newRecommendationsAvailable$ = new Subject<AiRecommendation[]>();
+  private pendingNewRecommendations: AiRecommendation[] = [];
+  private pendingNewReasoning: string = '';
 
   /**
    * Fetches data from TMDB API through Firebase Cloud Function
@@ -683,6 +688,55 @@ export class MediaService {
   }
 
   /**
+   * Saves "For You" AI recommendations to Firestore
+   * @param userId - The user's ID
+   * @param recommendations - The AI recommendations to save
+   * @returns Promise that resolves when the save is complete
+   */
+  private async saveForYouRecommendationsToFirestore(userId: string, recommendations: AiRecommendationResponse): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'forYouAIRecommendations', userId);
+      await setDoc(docRef, {
+        ...recommendations,
+        timestamp: new Date(),
+        userId: userId
+      });
+      console.log('Successfully saved For You recommendations to Firestore');
+    } catch (error) {
+      console.error('Error saving For You recommendations to Firestore:', error);
+      // Don't throw error - this is a background operation
+    }
+  }
+
+  /**
+   * Retrieves "For You" AI recommendations from Firestore
+   * @param userId - The user's ID
+   * @returns Promise that resolves with cached recommendations or null if not found
+   */
+  private async getForYouRecommendationsFromFirestore(userId: string): Promise<AiRecommendationResponse | null> {
+    try {
+      const docRef = doc(this.firestore, 'forYouAIRecommendations', userId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // Check if the data is not too old (optional: you can add timestamp validation here)
+        console.log('Successfully retrieved For You recommendations from Firestore');
+        return {
+          recommendations: data['recommendations'],
+          reasoning: data['reasoning']
+        };
+      } else {
+        console.log('No cached For You recommendations found in Firestore');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error retrieving For You recommendations from Firestore:', error);
+      return null;
+    }
+  }
+
+  /**
    * Fetches AI-powered recommendations with caching
    * @param forceRefresh - Whether to force a refresh of the cache
    * @param count - Number of recommendations to request (default: 5)
@@ -706,7 +760,12 @@ export class MediaService {
       });
     }
 
-    // For favorites-based recommendations, use caching
+    // For favorites-based "For You" recommendations, use Firestore caching
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      return throwError(() => new Error('User must be authenticated to get AI recommendations'));
+    }
+
     // Force refresh if requested
     if (forceRefresh) {
       this.refreshAiRecommendationsCache();
@@ -716,16 +775,49 @@ export class MediaService {
       this.aiRecommendationsCache = this.refreshAiRecommendationsCache$.pipe(
         // Only proceed when refresh is triggered
         switchMap(() => {
-          // Use the Firebase Function to get the data
           return new Observable<AiRecommendationResponse>(observer => {
-            this.getAiRecommendationsData(count)
-              .then((response) => {
-                observer.next(response);
-                observer.complete();
+            // First, try to get cached recommendations from Firestore
+            this.getForYouRecommendationsFromFirestore(userId)
+              .then((cachedRecommendations) => {
+                if (cachedRecommendations && !forceRefresh) {
+                  // Return cached data from Firestore
+                  console.log('Using cached For You recommendations from Firestore');
+                  observer.next(cachedRecommendations);
+                  observer.complete();
+
+                  // Start background fetching for new recommendations
+                  setTimeout(() => {
+                    this.fetchBackgroundRecommendations(userId, cachedRecommendations.recommendations, count);
+                  }, 100); // Small delay to ensure cached data is displayed first
+                } else {
+                  // No cached data or forced refresh - fetch from AI
+                  console.log('Fetching fresh For You recommendations from AI');
+                  this.getAiRecommendationsData(count)
+                    .then((response) => {
+                      // Save the new recommendations to Firestore for future use
+                      this.saveForYouRecommendationsToFirestore(userId, response);
+                      observer.next(response);
+                      observer.complete();
+                    })
+                    .catch(error => {
+                      console.error('Error fetching AI recommendations:', error);
+                      observer.error(error);
+                    });
+                }
               })
               .catch(error => {
-                console.error('Error fetching AI recommendations:', error);
-                observer.error(error);
+                console.error('Error checking Firestore cache, falling back to AI:', error);
+                // If Firestore fails, fall back to AI call
+                this.getAiRecommendationsData(count)
+                  .then((response) => {
+                    this.saveForYouRecommendationsToFirestore(userId, response);
+                    observer.next(response);
+                    observer.complete();
+                  })
+                  .catch(aiError => {
+                    console.error('Error fetching AI recommendations:', aiError);
+                    observer.error(aiError);
+                  });
               });
           }).pipe(
             // Cache the result for 30 minutes (1800000ms) and share it with all subscribers
@@ -747,6 +839,101 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshAiRecommendationsCache$.next(true);
+  }
+
+  /**
+   * Observable for new recommendations notifications
+   */
+  get newRecommendationsAvailable(): Observable<AiRecommendation[]> {
+    return this.newRecommendationsAvailable$.asObservable();
+  }
+
+  /**
+   * Gets pending new recommendations
+   */
+  getPendingNewRecommendations(): AiRecommendation[] {
+    return this.pendingNewRecommendations;
+  }
+
+  /**
+   * Applies new recommendations by merging unique ones with existing recommendations
+   * @param currentRecommendations - Current recommendations displayed in UI
+   * @returns Object containing updated recommendations array (max 5 items) and new reasoning
+   */
+  applyNewRecommendations(currentRecommendations: AiRecommendation[]): { recommendations: AiRecommendation[], reasoning: string } {
+    if (this.pendingNewRecommendations.length === 0) {
+      return { recommendations: currentRecommendations, reasoning: '' };
+    }
+
+    // Find unique recommendations (not already in current list)
+    const uniqueNewRecommendations = this.pendingNewRecommendations.filter(newRec =>
+      !currentRecommendations.some(currentRec => currentRec.tmdbId === newRec.tmdbId)
+    );
+
+    if (uniqueNewRecommendations.length === 0) {
+      // No unique recommendations found
+      this.pendingNewRecommendations = [];
+      this.pendingNewReasoning = '';
+      return { recommendations: currentRecommendations, reasoning: '' };
+    }
+
+    // Merge new unique recommendations with current ones, maintaining max 5 items
+    const merged = [...uniqueNewRecommendations, ...currentRecommendations];
+    const result = merged.slice(0, 5);
+
+    // Get the new reasoning
+    const newReasoning = this.pendingNewReasoning;
+
+    // Clear pending recommendations and reasoning
+    this.pendingNewRecommendations = [];
+    this.pendingNewReasoning = '';
+
+    return { recommendations: result, reasoning: newReasoning };
+  }
+
+  /**
+   * Compares two recommendation arrays and returns unique recommendations from the new array
+   * @param currentRecommendations - Current recommendations
+   * @param newRecommendations - New recommendations to compare
+   * @returns Array of unique recommendations from newRecommendations
+   */
+  private findUniqueRecommendations(currentRecommendations: AiRecommendation[], newRecommendations: AiRecommendation[]): AiRecommendation[] {
+    return newRecommendations.filter(newRec =>
+      !currentRecommendations.some(currentRec => currentRec.tmdbId === newRec.tmdbId)
+    );
+  }
+
+  /**
+   * Fetches fresh recommendations in the background and checks for new unique items
+   * @param userId - User ID
+   * @param currentRecommendations - Current recommendations displayed in UI
+   * @param count - Number of recommendations to fetch
+   */
+  private fetchBackgroundRecommendations(userId: string, currentRecommendations: AiRecommendation[], count: number = 5): void {
+    console.log('Fetching background recommendations for new updates...');
+
+    this.getAiRecommendationsData(count)
+      .then((response) => {
+        // Compare with current recommendations to find unique ones
+        const uniqueRecommendations = this.findUniqueRecommendations(currentRecommendations, response.recommendations);
+
+        if (uniqueRecommendations.length > 0) {
+          console.log(`Found ${uniqueRecommendations.length} new unique recommendations`);
+          // Store pending recommendations and reasoning
+          this.pendingNewRecommendations = response.recommendations;
+          this.pendingNewReasoning = response.reasoning || '';
+          // Notify subscribers about new recommendations
+          this.newRecommendationsAvailable$.next(uniqueRecommendations);
+          // Update Firestore cache with latest recommendations
+          this.saveForYouRecommendationsToFirestore(userId, response);
+        } else {
+          console.log('No new unique recommendations found');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching background recommendations:', error);
+        // Silently fail for background operations
+      });
   }
 
   /**
