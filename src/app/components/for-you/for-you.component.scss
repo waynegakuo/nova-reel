@@ -5,6 +5,98 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.loading-container {
+  @include flex-center;
+  flex-direction: column;
+  height: 300px;
+  transition: opacity 0.3s ease-in-out;
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba($primary-color, 0.3);
+    border-top: 3px solid $primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: $text-secondary-light;
+    font-size: 1.1rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+.error-container {
+  @include flex-center;
+  height: 200px;
+  background-color: rgba($primary-color, 0.1);
+  border-radius: $border-radius-md;
+  border: 1px solid rgba($primary-color, 0.3);
+  transition: all 0.3s ease-in-out;
+
+  p {
+    color: $primary-color;
+    font-size: 1.1rem;
+    text-align: center;
+    padding: 0 1rem;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// CSS Animation Classes
+.fade-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.fade-in-stagger {
+  .media-card-wrapper {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.6s ease-out forwards;
+
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{($i - 1) * 0.1s};
+      }
+    }
+  }
+}
+
+.slide-in-fade {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideInFromLeft 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .recommendations-placeholder {
@@ -112,4 +204,14 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
+  transition: all 0.3s ease-in-out;
+
+  .media-card-wrapper {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    will-change: transform, opacity;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+  }
 }
