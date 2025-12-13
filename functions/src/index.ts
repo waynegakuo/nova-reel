@@ -20,7 +20,7 @@ import {getFirestore} from 'firebase-admin/firestore'; // Import Firestore from 
 import { genkit } from 'genkit'; // This is the core Genkit library itself
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase'; // <-- NEW IMPORT
 import { z } from 'zod';
-import googleAI from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
 import { getStorage } from 'firebase-admin/storage';
 
 // Define your secret. This makes the secret available to your function.
@@ -39,7 +39,7 @@ const ai = genkit({
   plugins: [
     googleAI({apiKey: process.env.GEMINI_API_KEY }),
   ],
-  model: googleAI.model('gemini-2.5-flash'), // Specify your Gemini model
+  model: googleAI.model('gemini-3-pro-preview'), // Specify your Gemini model
 });
 
 genkitLogger.setLogLevel('debug'); // Or 'info', 'warn', 'error'
