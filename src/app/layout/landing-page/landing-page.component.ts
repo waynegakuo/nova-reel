@@ -18,6 +18,7 @@ import { FavoritesComponent } from '../../components/favorites/favorites.compone
 import { ForYouComponent } from '../../components/for-you/for-you.component';
 import { SmartRecommendationsComponent } from '../../components/smart-recommendations/smart-recommendations.component';
 import { GuessTheMovieComponent } from '../../components/guess-the-movie/guess-the-movie.component';
+import {Analytics, logEvent} from '@angular/fire/analytics';
 
 @Component({
   selector: 'app-landing-page',
@@ -84,6 +85,9 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Static tabs array (Recent History is now integrated within Smart Recommendations)
   novaTabs = signal<string[]>(['Movies', 'TV Shows', 'Favorites', 'For You', 'Smart Recommendations', 'Guess the Movie']);
 
+  // Analytics
+  fireAnalytics = inject(Analytics);
+
   // Tab configuration for new TabNavigationComponent
   get tabsConfig(): TabItem[] {
     return [
@@ -135,6 +139,8 @@ export class LandingPageComponent implements OnInit, OnDestroy {
         this.recommendationHistory.set(history);
         this.hasRecentHistory.set(history.length > 0);
       });
+
+    logEvent(this.fireAnalytics, 'landing_page_view');
   }
 
   ngOnDestroy(): void {
