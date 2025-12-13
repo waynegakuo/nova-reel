@@ -8,6 +8,7 @@ import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {Subject, takeUntil} from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
+import { Analytics, logEvent } from '@angular/fire/analytics';
 
 @Component({
   selector: 'app-media-details',
@@ -23,6 +24,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   private triviaService = inject(TriviaService);
   private sanitizer = inject(DomSanitizer);
   private authService = inject(AuthService);
+  private analytics = inject(Analytics);
 
   // Signals
   mediaType = signal<'movie' | 'tvshow'>('movie');
@@ -79,6 +81,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
       this.mediaType.set(type as 'movie' | 'tvshow');
       this.mediaId.set(mediaId);
       this.loadMediaDetails();
+      logEvent(this.analytics, 'view_media_details', { media_type: type, media_id: mediaId });
     });
   }
 
@@ -318,7 +321,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
    */
   playTrailer(key: string): void {
     if (!key) return;
-
+    logEvent(this.analytics, 'play_trailer', { media_type: this.mediaType(), media_id: this.mediaId(), video_key: key });
     // For a real implementation, you might want to use a modal dialog
     // For simplicity, we'll just open in a new window
     window.open(`https://www.youtube.com/watch?v=${key}`, '_blank');
@@ -328,6 +331,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
    * Shares the current media
    */
   shareMedia(): void {
+    logEvent(this.analytics, 'share_media_details', { media_type: this.mediaType(), media_id: this.mediaId() });
     // This would be implemented with the Web Share API in a real app
     alert('Sharing functionality would be implemented here');
   }
@@ -366,6 +370,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           .then(() => {
             // Update favorite status
             this.isFavorited.set(false);
+            logEvent(this.analytics, 'remove_from_favorites', { media_type: mediaType, media_id: this.mediaId() });
 
             // Show success notification
             const mediaName = mediaType === 'movie'
@@ -395,6 +400,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
             .then(() => {
               // Update favorite status
               this.isFavorited.set(true);
+              logEvent(this.analytics, 'add_to_favorites', { media_type: mediaType, media_id: this.mediaId() });
 
               // Show success notification
               this.notification.set({
@@ -418,6 +424,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
             .then(() => {
               // Update favorite status
               this.isFavorited.set(true);
+              logEvent(this.analytics, 'add_to_favorites', { media_type: mediaType, media_id: this.mediaId() });
 
               // Show success notification
               this.notification.set({
@@ -476,6 +483,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           .then(() => {
             // Update watchlist status
             this.isInWatchlist.set(false);
+            logEvent(this.analytics, 'remove_from_watchlist', { media_type: mediaType, media_id: this.mediaId() });
 
             // Show success notification
             const mediaName = mediaType === 'movie'
@@ -505,6 +513,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
             .then(() => {
               // Update watchlist status
               this.isInWatchlist.set(true);
+              logEvent(this.analytics, 'add_to_watchlist', { media_type: mediaType, media_id: this.mediaId() });
 
               // Show success notification
               this.notification.set({
@@ -528,6 +537,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
             .then(() => {
               // Update watchlist status
               this.isInWatchlist.set(true);
+              logEvent(this.analytics, 'add_to_watchlist', { media_type: mediaType, media_id: this.mediaId() });
 
               // Show success notification
               this.notification.set({
@@ -585,6 +595,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
       questionCount: 5,
       difficulty: 'mixed'
     };
+    logEvent(this.analytics, 'start_trivia', { media_type: triviaRequest.mediaType, media_id: triviaRequest.mediaId, difficulty: triviaRequest.difficulty });
 
     // Navigate to trivia with query parameters
     this.router.navigate(['/trivia'], {

@@ -7,6 +7,7 @@ import { RecommendationHistoryEntry } from '../../models/recommendation-history.
 import { RecommendationHistoryService } from '../../services/recommendation-history/recommendation-history.service';
 import { MediaService } from '../../services/media/media.service';
 import { MovieDetails, TvShowDetails } from '../../models/media-details.model';
+import { Analytics, logEvent } from '@angular/fire/analytics';
 
 @Component({
   selector: 'app-smart-recommendations',
@@ -20,6 +21,7 @@ import { MovieDetails, TvShowDetails } from '../../models/media-details.model';
 })
 export class SmartRecommendationsComponent {
   private mediaService = inject(MediaService);
+  private analytics = inject(Analytics);
 
   @Input() smartRecommendations: AiRecommendation[] = [];
   @Input() smartRecommendationReasoning: string | null = null;
@@ -43,10 +45,12 @@ export class SmartRecommendationsComponent {
 
   onRefreshRecommendations(): void {
     this.loadAiRecommendations.emit(true);
+    logEvent(this.analytics, 'refresh_smart_recommendations');
   }
 
   onShareMedia(event: any): void {
     this.shareMedia.emit(event);
+    logEvent(this.analytics, 'share_smart_recommendation', { media_type: event.type, media_id: event.item.id });
   }
 
   onAddToWatchlist(event: any): void {
@@ -54,6 +58,7 @@ export class SmartRecommendationsComponent {
     this.mediaService.addToWatchlist(event.item as MovieDetails | TvShowDetails, event.type as 'movie' | 'tvshow')
       .then(() => {
         console.log('Successfully added to watchlist');
+        logEvent(this.analytics, 'add_to_watchlist', { media_type: event.type, media_id: event.item.id });
       })
       .catch((error) => {
         console.error('Error adding to watchlist:', error);
@@ -69,30 +74,37 @@ export class SmartRecommendationsComponent {
 
   onGetRecommendations(): void {
     this.onNaturalLanguageQuery.emit(this.naturalLanguageQuery);
+    logEvent(this.analytics, 'get_smart_recommendations', { query: this.naturalLanguageQuery });
   }
 
   onClearQuery(): void {
     this.clearNaturalLanguageQuery.emit();
+    logEvent(this.analytics, 'clear_smart_recommendations_query');
   }
 
   onToggleHistory(): void {
     this.toggleHistoryView.emit();
+    logEvent(this.analytics, 'toggle_smart_recommendations_history', { show: !this.showHistory });
   }
 
   onLoadHistoryEntry(entry: RecommendationHistoryEntry): void {
     this.loadHistoryEntry.emit(entry);
+    logEvent(this.analytics, 'load_smart_recommendations_history_entry', { entry_id: entry.id });
   }
 
   onClearSelectedEntry(): void {
     this.clearSelectedHistoryEntry.emit();
+    logEvent(this.analytics, 'clear_selected_history_entry');
   }
 
   onRemoveHistoryEntry(event: Event, entryId: string): void {
     event.stopPropagation();
     this.historyService.removeHistoryEntry(entryId);
+    logEvent(this.analytics, 'remove_smart_recommendations_history_entry', { entry_id: entryId });
   }
 
   onClearAllHistory(): void {
     this.historyService.clearHistory();
+    logEvent(this.analytics, 'clear_all_smart_recommendations_history');
   }
 }

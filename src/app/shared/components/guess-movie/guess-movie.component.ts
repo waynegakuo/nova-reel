@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LoadingMessagesService } from '../../../services/loading-messages/loading-messages.service';
 import { MediaService } from '../../../services/media/media.service';
+import { Analytics, logEvent } from '@angular/fire/analytics';
 
 @Component({
   selector: 'app-guess-movie',
@@ -16,6 +17,7 @@ export class GuessMovieComponent {
   private http = inject(HttpClient);
   public loadingMessagesService = inject(LoadingMessagesService);
   private mediaService = inject(MediaService);
+  private analytics = inject(Analytics);
 
   // Signals for reactive state management
   isLoading = signal<boolean>(false);
@@ -44,6 +46,7 @@ export class GuessMovieComponent {
     // Validate file type
     if (!this.allowedFileTypes.includes(file.type)) {
       this.error.set('Please select a valid image file (JPEG, PNG, or WebP)');
+      logEvent(this.analytics, 'guess_movie_invalid_file_type', { file_type: file.type });
       this.resetFileInput();
       return;
     }
@@ -51,6 +54,7 @@ export class GuessMovieComponent {
     // Validate file size
     if (file.size > this.maxFileSize) {
       this.error.set(`File size exceeds the maximum limit of ${this.maxFileSize / (1024 * 1024)}MB`);
+      logEvent(this.analytics, 'guess_movie_file_size_exceeded', { file_size: file.size });
       this.resetFileInput();
       return;
     }
@@ -58,6 +62,7 @@ export class GuessMovieComponent {
     // Clear any previous errors
     this.error.set(null);
     this.selectedFile.set(file);
+    logEvent(this.analytics, 'guess_movie_file_selected', { file_type: file.type, file_size: file.size });
 
     // Create image preview
     const reader = new FileReader();
@@ -79,6 +84,7 @@ export class GuessMovieComponent {
     this.isLoading.set(true);
     this.error.set(null);
     this.guessResult.set(null);
+    logEvent(this.analytics, 'guess_movie_submit');
 
     // Convert the file to base64
     const reader = new FileReader();
@@ -96,17 +102,20 @@ export class GuessMovieComponent {
           next: (result) => {
             this.isLoading.set(false);
             this.guessResult.set(result);
+            logEvent(this.analytics, 'guess_movie_success', { result });
           },
           error: (error) => {
             this.isLoading.set(false);
             this.error.set(`Failed to analyze the image: ${error.message}`);
             console.error('Error analyzing image:', error);
+            logEvent(this.analytics, 'guess_movie_error', { error: error.message });
           }
         });
       } catch (err: any) {
         this.isLoading.set(false);
         this.error.set(`Error processing image: ${err.message}`);
         console.error('Error processing image:', err);
+        logEvent(this.analytics, 'guess_movie_processing_error', { error: err.message });
       }
     };
 
@@ -114,6 +123,7 @@ export class GuessMovieComponent {
       this.isLoading.set(false);
       this.error.set('Failed to read the image file.');
       console.error('Error reading file:', err);
+      logEvent(this.analytics, 'guess_movie_read_file_error');
     };
   }
 
@@ -126,6 +136,7 @@ export class GuessMovieComponent {
     this.guessResult.set(null);
     this.error.set(null);
     this.resetFileInput();
+    logEvent(this.analytics, 'guess_movie_reset');
   }
 
   /**
