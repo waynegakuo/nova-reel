@@ -11,7 +11,7 @@
 
 ---
 
-Nova Reel is a modern, AI-powered Angular application that revolutionizes how you discover movies and TV shows. Built with Google's Genkit AI platform, it provides intelligent, personalized recommendations that understand your preferences and help you find your next favorite watch.
+Nova Reel is a modern, AI-powered Angular application that revolutionizes how you discover movies and TV shows. Built with Google's Genkit AI framework, it provides intelligent, personalized recommendations that understand your preferences and help you find your next favorite watch.
 
 </div>
 
@@ -40,7 +40,7 @@ Nova Reel empowers film and TV enthusiasts to discover new content through an in
 - 🎯 **For You**: Personalized suggestions
 - 🎬 **Guess the Movie**: Screenshot identification
 - 🧠 **Trivia Challenge**: AI-generated questions
-- 💫 Powered by Gemini 2.5 Pro
+- 💫 Powered by Gemini 3 Pro
 
 </td>
 </tr>
@@ -80,13 +80,13 @@ Nova Reel is built with a modern tech stack that combines frontend and backend t
 ### ☁️ Backend
 
 - **⚡ Firebase Functions**: Serverless backend functions that handle API requests and AI processing
-- **🧠 Genkit**: Google's AI platform for building generative AI applications
-- **💫 Gemini 2.5 Pro**: The underlying AI model used for generating recommendations
+- **🧠 Genkit**: Google's open-source AI framework for building generative AI applications
+- **💫 Gemini 3 Pro**: The underlying AI model used for generating recommendations
 - **🎞️ TMDB API**: External API for fetching movie and TV show data
 
 ### 🤖 AI Features
 
-Nova Reel leverages Google's Genkit AI platform to provide intelligent features:
+Nova Reel leverages Google's Genkit AI framework to provide intelligent features:
 
 #### 🎯 AI Recommendation Engine
 
@@ -100,7 +100,7 @@ The Smart Recommendations feature allows users to describe what they want to wat
 2. **🧠 AI Processing**: The system uses Genkit to:
    - 🔍 Analyze the natural language query for mood, genre, target audience, and themes
    - 📊 Consider user's viewing history as additional context (if available)
-   - 💫 Use Gemini 2.5 Pro to generate highly targeted recommendations
+   - 💫 Use Gemini 3 Pro to generate highly targeted recommendations
    - 🎯 Provide detailed reasoning explaining why each recommendation matches the request
 3. **📱 Smart Display**: Results are shown in the dedicated "Smart Recommendations" tab with explanations
 
@@ -112,7 +112,7 @@ The traditional recommendation engine analyzes user favorites for personalized s
 2. **🧠 AI Processing**: When a user requests recommendations, the app calls a Firebase Function that uses Genkit to:
    - 📥 Fetch the user's favorites from Firestore
    - 🔄 Create a context from these favorites to inform the AI
-   - 💫 Use the Gemini 2.5 Pro model to generate personalized recommendations
+   - 💫 Use the Gemini 3 Pro model to generate personalized recommendations
    - 💡 Provide reasoning for the recommendations
 3. **📱 Recommendation Display**: The frontend displays these recommendations in the "For You" tab, along with the AI's reasoning
 
