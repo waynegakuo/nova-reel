@@ -118,6 +118,9 @@
           <p>{{ movieDetails()!.overview }}</p>
         </section>
 
+        <!-- AI Chat Section -->
+        <app-ai-review-chat [mediaId]="mediaId()" [mediaType]="'movie'"></app-ai-review-chat>
+
         <!-- Cast Section -->
         @if (movieDetails()!.credits && movieDetails()!.credits.cast.length > 0) {
           <section class="cast-section">
@@ -354,6 +357,9 @@
           <h2>Overview</h2>
           <p>{{ tvShowDetails()!.overview }}</p>
         </section>
+
+        <!-- AI Chat Section -->
+        <app-ai-review-chat [mediaId]="mediaId()" [mediaType]="'tv'"></app-ai-review-chat>
 
         <!-- Seasons Section -->
         @if (tvShowDetails()!.seasons && tvShowDetails()!.seasons.length > 0) {

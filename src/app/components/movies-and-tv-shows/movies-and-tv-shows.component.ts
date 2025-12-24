@@ -41,26 +41,36 @@ export class MoviesAndTvShowsComponent {
 
   onMovieCategoryChange(category: string): void {
     this.loadMovies.emit(category);
-    logEvent(this.analytics, 'change_movie_category', { category });
+    if (this.analytics) {
+      logEvent(this.analytics, 'change_movie_category', { category });
+    }
   }
 
   onTVShowCategoryChange(category: string): void {
     this.loadTVShows.emit(category);
-    logEvent(this.analytics, 'change_tv_show_category', { category });
+    if (this.analytics) {
+      logEvent(this.analytics, 'change_tv_show_category', { category });
+    }
   }
 
   onMoviePageChange(page: number): void {
     this.goToMoviePage.emit(page);
-    logEvent(this.analytics, 'change_movie_page', { page });
+    if (this.analytics) {
+      logEvent(this.analytics, 'change_movie_page', { page });
+    }
   }
 
   onTVShowPageChange(page: number): void {
     this.goToTVShowPage.emit(page);
-    logEvent(this.analytics, 'change_tv_show_page', { page });
+    if (this.analytics) {
+      logEvent(this.analytics, 'change_tv_show_page', { page });
+    }
   }
 
   onShareMedia(event: any): void {
     this.shareMedia.emit(event);
-    logEvent(this.analytics, 'share_media', { media_type: event.type, media_id: event.item.id });
+    if (this.analytics) {
+      logEvent(this.analytics, 'share_media', { media_type: event.type, media_id: event.item.id });
+    }
   }
 }

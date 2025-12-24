@@ -2,8 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, from, of, throwError } from 'rxjs';
 import { map, catchError, shareReplay } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { FirebaseApp } from '@angular/fire/app';
-import { getFunctions, httpsCallable } from '@angular/fire/functions';
+import { getFunctions, httpsCallable, Functions } from '@angular/fire/functions';
 import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, orderBy, where, updateDoc } from '@angular/fire/firestore';
 import { AuthService } from '../auth/auth.service';
 import {
@@ -22,10 +21,9 @@ import {
 })
 export class TriviaService {
   private http = inject(HttpClient);
-  private firebaseApp = inject(FirebaseApp);
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
-  private functions;
+  private functions = inject(Functions);
 
   // Current game session state
   private currentSessionSubject = new BehaviorSubject<TriviaGameSession | null>(null);
@@ -36,8 +34,6 @@ export class TriviaService {
   public userStats$ = this.userStatsSubject.asObservable();
 
   constructor() {
-    this.functions = getFunctions(this.firebaseApp, 'africa-south1');
-
     // Load user stats when service initializes
     const userId = this.authService.getUserId();
     if (userId) {
