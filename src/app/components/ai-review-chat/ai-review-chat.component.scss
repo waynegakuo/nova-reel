@@ -103,9 +103,34 @@
           max-width: 80%;
           padding: 0.8rem 1rem;
           border-radius: 12px;
+          font-family: "Source Sans 3", sans-serif;
           font-size: 0.95rem;
           line-height: 1.4;
           white-space: pre-wrap;
+
+          p {
+            margin: 0 0 0.5rem 0;
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+
+          ul, ol {
+            margin: 0.5rem 0;
+            padding-left: 1.2rem;
+
+            li {
+              margin-bottom: 0.3rem;
+              &:last-child {
+                margin-bottom: 0;
+              }
+            }
+          }
+
+          strong {
+            color: variables.$primary-color;
+            font-weight: 700;
+          }
 
           &.loading {
             display: flex;
@@ -169,7 +194,7 @@
         padding: 0.8rem 1rem;
         border-radius: variables.$border-radius-sm;
         outline: none;
-        font-family: inherit;
+        font-family: "Source Sans 3", sans-serif;
 
         &:focus {
           border-color: variables.$primary-color;

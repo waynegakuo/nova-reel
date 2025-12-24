@@ -1,11 +1,14 @@
-import { Component, input, signal, inject, ElementRef, ViewChild, afterNextRender } from '@angular/core';
+import { Component, input, signal, inject, ElementRef, ViewChild, afterNextRender, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MediaService } from '../../services/media/media.service';
+import { MarkdownUtils } from '../../utils/markdown-utils';
 
 interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+  formattedText?: SafeHtml;
 }
 
 @Component({
@@ -22,6 +25,7 @@ export class AiReviewChatComponent {
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
   private mediaService = inject(MediaService);
+  private sanitizer = inject(DomSanitizer);
 
   isChatOpen = signal(false);
   isLoading = signal(false);
@@ -66,13 +70,19 @@ export class AiReviewChatComponent {
         this.messages().slice(0, -1) // Send history excluding the last message
       );
 
-      const aiMessage: ChatMessage = { role: 'model', text: response.response };
+      const aiMessage: ChatMessage = {
+        role: 'model',
+        text: response.response,
+        formattedText: this.formatMarkdown(response.response)
+      };
       this.messages.update(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Chat error:', error);
+      const errorText = 'Sorry, I encountered an error. Please try again later.';
       const errorMessage: ChatMessage = {
         role: 'model',
-        text: 'Sorry, I encountered an error. Please try again later.'
+        text: errorText,
+        formattedText: this.formatMarkdown(errorText)
       };
       this.messages.update(prev => [...prev, errorMessage]);
     } finally {
@@ -88,5 +98,10 @@ export class AiReviewChatComponent {
         element.scrollTop = element.scrollHeight;
       }
     }, 100);
+  }
+
+  private formatMarkdown(text: string): SafeHtml {
+    const html = MarkdownUtils.formatMarkdown(text);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }

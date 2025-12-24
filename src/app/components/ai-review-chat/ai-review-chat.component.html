@@ -23,7 +23,11 @@
         @for (msg of messages(); track $index) {
           <div class="message" [class.user]="msg.role === 'user'" [class.ai]="msg.role === 'model'">
             <div class="message-bubble">
-              {{ msg.text }}
+              @if (msg.formattedText) {
+                <div [innerHTML]="msg.formattedText"></div>
+              } @else {
+                {{ msg.text }}
+              }
             </div>
           </div>
         }
