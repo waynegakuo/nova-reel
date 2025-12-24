@@ -4,8 +4,7 @@ import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
 import {HttpClient} from '@angular/common/http';
-import {FirebaseApp} from '@angular/fire/app';
-import {getFunctions, httpsCallable} from '@angular/fire/functions';
+import {getFunctions, httpsCallable, Functions} from '@angular/fire/functions';
 import {Firestore, collection, doc, setDoc, getDoc, deleteDoc, getDocs, query, orderBy, where} from '@angular/fire/firestore';
 import {AuthService} from '../auth/auth.service';
 import {ToastService} from '../toast/toast.service';
@@ -16,15 +15,12 @@ import {ToastService} from '../toast/toast.service';
 export class MediaService {
 
   http = inject(HttpClient);
-  firebaseApp = inject(FirebaseApp);
   firestore = inject(Firestore);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
-  private functions;
+  private functions = inject(Functions);
 
-  constructor() {
-    this.functions = getFunctions(this.firebaseApp, 'africa-south1');
-  }
+  constructor() { }
 
   // Cache storage for movies and TV shows
   private movieCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
@@ -934,6 +930,30 @@ export class MediaService {
         console.error('Error fetching background recommendations:', error);
         // Silently fail for background operations
       });
+  }
+
+  /**
+   * Calls the AI review chat Firebase Function
+   * @param mediaId - The ID of the movie or TV show
+   * @param mediaType - The type of media ('movie' or 'tv')
+   * @param message - The user's message
+   * @param chatHistory - Previous messages in the chat
+   * @returns Promise containing the AI's response
+   */
+  async getAiReviewChatResponse(mediaId: number, mediaType: 'movie' | 'tv', message: string, chatHistory: { role: 'user' | 'model', text: string }[] = []): Promise<{ response: string }> {
+    const callableAiReviewChat = httpsCallable(this.functions, 'aiReviewChat');
+    try {
+      const result = await callableAiReviewChat({
+        mediaId,
+        mediaType,
+        message,
+        chatHistory
+      });
+      return result.data as { response: string };
+    } catch (error: any) {
+      console.error('Error fetching AI review chat response:', error);
+      throw error;
+    }
   }
 
   /**

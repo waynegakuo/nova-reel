@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaService } from '../../services/media/media.service';
 import { TriviaService } from '../../services/trivia/trivia.service';
+import { AiReviewChatComponent } from '../../components/ai-review-chat/ai-review-chat.component';
 import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew } from '../../models/media-details.model';
 import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -13,7 +14,7 @@ import { Analytics, logEvent } from '@angular/fire/analytics';
 @Component({
   selector: 'app-media-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AiReviewChatComponent],
   templateUrl: './media-details.component.html',
   styleUrl: './media-details.component.scss'
 })
@@ -81,7 +82,9 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
       this.mediaType.set(type as 'movie' | 'tvshow');
       this.mediaId.set(mediaId);
       this.loadMediaDetails();
-      logEvent(this.analytics, 'view_media_details', { media_type: type, media_id: mediaId });
+      if (this.analytics) {
+        logEvent(this.analytics, 'view_media_details', { media_type: type, media_id: mediaId });
+      }
     });
   }
 

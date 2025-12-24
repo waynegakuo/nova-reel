@@ -1,5 +1,7 @@
-import { Component, Input, signal, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Input, signal, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { MarkdownUtils } from '../../../utils/markdown-utils';
 
 @Component({
   selector: 'app-truncated-text',
@@ -33,6 +35,30 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
       transition: all 0.3s ease;
       word-wrap: break-word;
       overflow-wrap: break-word;
+
+      p {
+        margin: 0 0 0.5rem 0;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      ul, ol {
+        margin: 0.5rem 0;
+        padding-left: 1.2rem;
+
+        li {
+          margin-bottom: 0.3rem;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      strong {
+        color: #007bff; // Using a blue color for bold text in reasoning
+        font-weight: 700;
+      }
     }
 
     .reasoning-text.truncated {
@@ -116,6 +142,7 @@ export class TruncatedTextComponent implements OnInit, OnDestroy {
   isExpanded = signal(false);
   isMobile = signal(false);
   private resizeListener?: () => void;
+  private sanitizer = inject(DomSanitizer);
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -137,8 +164,9 @@ export class TruncatedTextComponent implements OnInit, OnDestroy {
     this.isMobile.set(window.innerWidth <= 768);
   }
 
-  displayText() {
-    return this.text || '';
+  displayText(): SafeHtml {
+    const html = MarkdownUtils.formatMarkdown(this.text);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   shouldTruncate(): boolean {

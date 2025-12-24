@@ -131,11 +131,12 @@ export const getTmdbDataTool = ai.defineTool(
       endpoint: z.string().describe('TMDB API endpoint (e.g., "movie", "tv", "search/movie")'),
       id: z.number().optional().describe('ID for specific movie/TV show'),
       query: z.string().optional().describe('Search query string'),
+      queryParams: z.string().optional().describe('Additional query parameters (e.g., "append_to_response=credits")'),
     }),
     outputSchema: z.any().describe('JSON data from TMDB API response'),
   },
-  async ({ endpoint, id, query }) => {
-    const url = constructTmdbUrl(endpoint, { id, query });
+  async ({ endpoint, id, query, queryParams }) => {
+    const url = constructTmdbUrl(endpoint, { id, query, queryParams });
     return await executeTmdbRequest(url, 'getTmdbDataTool');
   }
 );
@@ -781,4 +782,97 @@ export const getTmdbData = onCall(
       return handleHttpError(error);
     }
   }
+);
+
+// --- AI Review Chat Flow ---
+
+const AiReviewChatInputSchema = z.object({
+  mediaId: z.number().describe('The ID of the movie or TV show.'),
+  mediaType: z.enum(['movie', 'tv']).describe('The type of media: "movie" or "tv".'),
+  message: z.string().describe('The user\'s message or question.'),
+  chatHistory: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    text: z.string(),
+  })).optional().describe('Previous messages in the chat.'),
+});
+
+const AiReviewChatOutputSchema = z.object({
+  response: z.string().describe('The AI\'s response to the user\'s message.'),
+});
+
+export const _aiReviewChatLogic = ai.defineFlow(
+  {
+    name: 'aiReviewChat',
+    inputSchema: AiReviewChatInputSchema,
+    outputSchema: AiReviewChatOutputSchema,
+  },
+  async (input) => {
+    const { mediaId, mediaType, message, chatHistory = [] } = input;
+
+    // 1. Fetch reviews for the media
+    const reviewsUrl = constructTmdbUrl(`${mediaType}/${mediaId}/reviews`);
+    const reviewsData: any = await executeTmdbRequest(reviewsUrl, 'aiReviewChat-fetchReviews');
+    const reviews = reviewsData.results || [];
+
+    // 2. Fetch media details for context
+    const detailsUrl = constructTmdbUrl(`${mediaType}/${mediaId}`);
+    const mediaDetails: any = await executeTmdbRequest(detailsUrl, 'aiReviewChat-fetchDetails');
+
+    // 3. Prepare the context from reviews
+    let reviewsContext = '';
+    if (reviews.length > 0) {
+      reviewsContext = reviews.map((r: any) => `Review by ${r.author}: ${r.content}`).join('\n\n');
+    } else {
+      reviewsContext = 'No reviews available for this title.';
+    }
+
+    // 4. Generate AI response
+    const { text } = await ai.generate({
+      messages: [
+        {
+          role: 'system',
+          content: [{ text: `
+            You are an AI movie assistant for the "Nova Reel" app. Your goal is to help users make an informed decision about whether to watch a movie or TV show based on its reviews.
+
+            Context:
+            Title: ${mediaDetails.title || mediaDetails.name}
+            Overview: ${mediaDetails.overview}
+            Media Type: ${mediaType}
+
+            Reviews:
+            ${reviewsContext}
+
+            Guidelines:
+            - Use the provided reviews to answer the user's questions.
+            - Be objective and summarize the general sentiment if asked.
+            - If the reviews don't contain enough information to answer a specific question, be honest and say so, but you can still use the overview for general context.
+            - Keep the tone helpful, engaging, and professional.
+            - Mention if reviews are polarizing or generally positive/negative.
+            - Do not reveal that you are an AI unless explicitly asked.
+          `}]
+        },
+        ...(chatHistory.map(h => ({
+          role: h.role === 'user' ? 'user' : 'model' as any,
+          content: [{ text: h.text }]
+        }))),
+        {
+          role: 'user',
+          content: [{ text: message }]
+        }
+      ]
+    });
+
+    return { response: text };
+  }
+);
+
+export const aiReviewChat = onCallGenkit(
+  {
+    secrets: [TMDB_BEARER_TOKEN, GEMINI_API_KEY],
+    region: 'africa-south1',
+    cors: true,
+    memory: '512MiB',
+    timeoutSeconds: 60,
+  },
+  _aiReviewChatLogic
 );

@@ -140,7 +140,9 @@ export class LandingPageComponent implements OnInit, OnDestroy {
         this.hasRecentHistory.set(history.length > 0);
       });
 
-    logEvent(this.fireAnalytics, 'landing_page_view');
+    if (this.fireAnalytics) {
+      logEvent(this.fireAnalytics, 'landing_page_view');
+    }
   }
 
   ngOnDestroy(): void {

@@ -45,7 +45,9 @@ export class SmartRecommendationsComponent {
 
   onRefreshRecommendations(): void {
     this.loadAiRecommendations.emit(true);
-    logEvent(this.analytics, 'refresh_smart_recommendations');
+    if (this.analytics) {
+      logEvent(this.analytics, 'refresh_smart_recommendations');
+    }
   }
 
   onShareMedia(event: any): void {
