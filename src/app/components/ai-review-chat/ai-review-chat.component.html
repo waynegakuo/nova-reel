@@ -1,72 +1,87 @@
 <div class="ai-chat-container">
-  <button class="btn btn-accent chat-toggle" (click)="toggleChat()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-    </svg>
-    {{ isChatOpen() ? 'Close AI Chat' : 'Chat with AI about Reviews' }}
+  <button class="btn btn-accent chat-toggle" (click)="toggleChat()" [class.open]="isChatOpen()" [title]="isChatOpen() ? 'Close AI Chat' : 'Chat with AI about Reviews'">
+    <div class="icon-wrapper" [class.animate-rotate-90]="isChatOpen()" [class.animate-rotate-back-0]="!isChatOpen() && messages().length > 0">
+      @if (!isChatOpen()) {
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      }
+    </div>
+    <span class="toggle-text">{{ isChatOpen() ? 'Close' : 'AI Reviews' }}</span>
   </button>
 
-  @if (isChatOpen()) {
-    <div class="chat-window">
-      <div class="chat-header">
+  <div class="chat-window" [class.animate-chat-open]="isChatOpen()" [class.animate-chat-close]="!isChatOpen() && messages().length > 0">
+    <div class="chat-header">
+      <div class="header-content">
         <h3>AI Review Assistant</h3>
         <p>Ask about what reviewers are saying</p>
       </div>
-
-      <div class="messages-container" #scrollContainer>
-        @if (messages().length === 0) {
-          <div class="welcome-message">
-            <p>Hi! I can help you decide if this is worth watching by analyzing user reviews. What would you like to know?</p>
-          </div>
-        }
-
-        @for (msg of messages(); track $index) {
-          <div class="message" [class.user]="msg.role === 'user'" [class.ai]="msg.role === 'model'">
-            <div class="message-bubble">
-              @if (msg.formattedText) {
-                <div [innerHTML]="msg.formattedText"></div>
-              } @else {
-                {{ msg.text }}
-              }
-            </div>
-          </div>
-        }
-
-        @if (isLoading()) {
-          <div class="message ai">
-            <div class="message-bubble loading">
-              <span class="dot"></span>
-              <span class="dot"></span>
-              <span class="dot"></span>
-            </div>
-          </div>
-        }
-      </div>
-
-      <div class="quick-prompts">
-        @for (prompt of quickPrompts; track prompt) {
-          <button class="prompt-btn" (click)="sendMessage(prompt)" [disabled]="isLoading()">
-            {{ prompt }}
-          </button>
-        }
-      </div>
-
-      <form class="input-area" (submit)="sendMessage(); $event.preventDefault()">
-        <input
-          type="text"
-          [ngModel]="userInput()"
-          (ngModelChange)="userInput.set($event)"
-          name="userInput"
-          placeholder="Type your question..."
-          [disabled]="isLoading()"
-        >
-        <button type="submit" class="send-btn" [disabled]="isLoading() || !userInput().trim()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </form>
+      <button class="close-window-btn" (click)="toggleChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
-  }
+
+    <div class="messages-container" #scrollContainer>
+      @if (messages().length === 0) {
+        <div class="welcome-message">
+          <p>Hi! I can help you decide if this is worth watching by analyzing user reviews. What would you like to know?</p>
+        </div>
+      }
+
+      @for (msg of messages(); track $index) {
+        <div class="message" [class.user]="msg.role === 'user'" [class.ai]="msg.role === 'model'">
+          <div class="message-bubble">
+            @if (msg.formattedText) {
+              <div [innerHTML]="msg.formattedText"></div>
+            } @else {
+              {{ msg.text }}
+            }
+          </div>
+        </div>
+      }
+
+      @if (isLoading()) {
+        <div class="message ai">
+          <div class="message-bubble loading">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="quick-prompts">
+      @for (prompt of quickPrompts; track prompt) {
+        <button class="prompt-btn" (click)="sendMessage(prompt)" [disabled]="isLoading()">
+          {{ prompt }}
+        </button>
+      }
+    </div>
+
+    <form class="input-area" (submit)="sendMessage(); $event.preventDefault()">
+      <input
+        type="text"
+        [ngModel]="userInput()"
+        (ngModelChange)="userInput.set($event)"
+        name="userInput"
+        placeholder="Type your question..."
+        [disabled]="isLoading()"
+      >
+      <button type="submit" class="send-btn" [disabled]="isLoading() || !userInput().trim()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </form>
+  </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, input, signal, inject, ElementRef, ViewChild, afterNextRender, SecurityContext } from '@angular/core';
+import { Component, input, signal, inject, ElementRef, ViewChild, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
