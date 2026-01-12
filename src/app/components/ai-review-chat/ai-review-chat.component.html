@@ -1,5 +1,5 @@
 <div class="ai-chat-container">
-  <button class="btn btn-accent chat-toggle" (click)="toggleChat()" [class.open]="isChatOpen()" [title]="isChatOpen() ? 'Close AI Chat' : 'Chat with AI about Reviews'">
+  <button class="btn btn-accent chat-toggle" (click)="toggleChat()" [class.open]="isChatOpen()" [title]="isChatOpen() ? 'Close Review Assistant' : 'Chat about Reviews'">
     <div class="icon-wrapper" [class.animate-rotate-90]="isChatOpen()" [class.animate-rotate-back-0]="!isChatOpen() && messages().length > 0">
       @if (!isChatOpen()) {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -12,13 +12,13 @@
         </svg>
       }
     </div>
-    <span class="toggle-text">{{ isChatOpen() ? 'Close' : 'AI Reviews' }}</span>
+    <span class="toggle-text">{{ isChatOpen() ? 'Close' : 'Review Assistant' }}</span>
   </button>
 
   <div class="chat-window" [class.animate-chat-open]="isChatOpen()" [class.animate-chat-close]="!isChatOpen() && messages().length > 0">
     <div class="chat-header">
       <div class="header-content">
-        <h3>AI Review Assistant</h3>
+        <h3>Review Assistant</h3>
         <p>Ask about what reviewers are saying</p>
       </div>
       <button class="close-window-btn" (click)="toggleChat()">
