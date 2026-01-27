@@ -1,4 +1,4 @@
-<div class="details-container dark-theme">
+<div class="details-container media-grids-global dark-theme">
   <!-- Notification -->
   @if (notification()) {
     <div class="notification" [class.success]="notification()!.type === 'success'" [class.error]="notification()!.type === 'error'">
@@ -29,7 +29,7 @@
       <div class="backdrop" [style.background-image]="'url(' + getImageUrl(movieDetails()!.backdrop_path, 'backdrop') + ')'">
         <div class="backdrop-overlay">
           <div class="container">
-            <div class="media-header">
+            <div class="media-header media-header-global">
               <div class="poster">
                 <img [src]="getImageUrl(movieDetails()!.poster_path, 'poster')" [alt]="movieDetails()!.title">
               </div>
@@ -113,14 +113,14 @@
 
       <div class="container">
         <!-- Overview Section -->
-        <section class="overview-section">
+        <section class="overview-section section-heading-global">
           <h2>Overview</h2>
           <p>{{ movieDetails()!.overview }}</p>
         </section>
 
         <!-- Watch Providers Section -->
         @if (watchProviders() && watchProviders()!.results && Object.keys(watchProviders()!.results).length > 0) {
-          <section class="watch-providers-section">
+          <section class="watch-providers-section watch-providers-global">
             <div class="section-header-with-action collapsible-header" (click)="toggleWatchProviders()" [class.expanded]="isWatchProvidersExpanded()">
               <div class="header-left">
                 <h2>Available On</h2>
@@ -202,7 +202,7 @@
 
         <!-- Cast Section -->
         @if (movieDetails()!.credits && movieDetails()!.credits.cast.length > 0) {
-          <section class="cast-section">
+          <section class="cast-section section-heading-global">
             <h2>Top Cast</h2>
             <div class="cast-grid">
               @for (actor of movieDetails()!.credits.cast.slice(0, 6); track actor.id) {
@@ -237,7 +237,7 @@
 
         <!-- Videos Section -->
         @if (movieDetails()!.videos && movieDetails()!.videos.results.length > 0) {
-          <section class="videos-section">
+          <section class="videos-section section-heading-global">
             <h2>Videos</h2>
             <div class="videos-grid">
               @for (video of movieDetails()!.videos.results.slice(0, 3); track video.id) {
@@ -263,7 +263,7 @@
 
         <!-- Similar Movies Section -->
         @if (movieDetails()!.similar && movieDetails()!.similar.results.length > 0) {
-          <section class="similar-section">
+          <section class="similar-section section-heading-global">
             <h2>Similar Movies</h2>
             <div class="similar-grid">
               @for (movie of movieDetails()!.similar.results.slice(0, 6); track movie.id) {
@@ -283,7 +283,7 @@
 
         <!-- Recommendations Section -->
         @if (movieDetails()!.recommendations && movieDetails()!.recommendations.results.length > 0) {
-          <section class="recommendations-section">
+          <section class="recommendations-section section-heading-global">
             <h2>Recommendations</h2>
             <div class="recommendations-grid">
               @for (movie of movieDetails()!.recommendations.results.slice(0, 6); track movie.id) {
@@ -302,7 +302,7 @@
         }
 
         <!-- Additional Information Section -->
-        <section class="additional-info-section">
+        <section class="additional-info-section section-heading-global">
           <h2>Additional Information</h2>
           <div class="info-grid">
             @if (movieDetails()!.budget > 0) {
@@ -348,7 +348,7 @@
       <div class="backdrop" [style.background-image]="'url(' + getImageUrl(tvShowDetails()!.backdrop_path, 'backdrop') + ')'">
         <div class="backdrop-overlay">
           <div class="container">
-            <div class="media-header">
+            <div class="media-header media-header-global">
               <div class="poster">
                 <img [src]="getImageUrl(tvShowDetails()!.poster_path, 'poster')" [alt]="tvShowDetails()!.name">
               </div>
@@ -432,14 +432,14 @@
 
       <div class="container">
         <!-- Overview Section -->
-        <section class="overview-section">
+        <section class="overview-section section-heading-global">
           <h2>Overview</h2>
           <p>{{ tvShowDetails()!.overview }}</p>
         </section>
 
         <!-- Watch Providers Section -->
         @if (watchProviders() && watchProviders()!.results && Object.keys(watchProviders()!.results).length > 0) {
-          <section class="watch-providers-section">
+          <section class="watch-providers-section watch-providers-global">
             <div class="section-header-with-action collapsible-header" (click)="toggleWatchProviders()" [class.expanded]="isWatchProvidersExpanded()">
               <div class="header-left">
                 <h2>Available On</h2>
@@ -521,7 +521,7 @@
 
         <!-- Seasons Section -->
         @if (tvShowDetails()!.seasons && tvShowDetails()!.seasons.length > 0) {
-          <section class="seasons-section">
+          <section class="seasons-section section-heading-global">
             <h2>Seasons</h2>
             <div class="seasons-grid">
               @for (season of tvShowDetails()!.seasons; track season.id) {
@@ -544,7 +544,7 @@
 
         <!-- Cast Section -->
         @if (tvShowDetails()!.credits && tvShowDetails()!.credits.cast.length > 0) {
-          <section class="cast-section">
+          <section class="cast-section section-heading-global">
             <h2>Top Cast</h2>
             <div class="cast-grid">
               @for (actor of tvShowDetails()!.credits.cast.slice(0, 6); track actor.id) {
@@ -583,7 +583,7 @@
 
         <!-- Videos Section -->
         @if (tvShowDetails()!.videos && tvShowDetails()!.videos.results.length > 0) {
-          <section class="videos-section">
+          <section class="videos-section section-heading-global">
             <h2>Videos</h2>
             <div class="videos-grid">
               @for (video of tvShowDetails()!.videos.results.slice(0, 3); track video.id) {
@@ -609,7 +609,7 @@
 
         <!-- Similar TV Shows Section -->
         @if (tvShowDetails()!.similar && tvShowDetails()!.similar.results.length > 0) {
-          <section class="similar-section">
+          <section class="similar-section section-heading-global">
             <h2>Similar TV Shows</h2>
             <div class="similar-grid">
               @for (tvShow of tvShowDetails()!.similar.results.slice(0, 6); track tvShow.id) {
@@ -629,7 +629,7 @@
 
         <!-- Recommendations Section -->
         @if (tvShowDetails()!.recommendations && tvShowDetails()!.recommendations.results.length > 0) {
-          <section class="recommendations-section">
+          <section class="recommendations-section section-heading-global">
             <h2>Recommendations</h2>
             <div class="recommendations-grid">
               @for (tvShow of tvShowDetails()!.recommendations.results.slice(0, 6); track tvShow.id) {
@@ -648,7 +648,7 @@
         }
 
         <!-- Additional Information Section -->
-        <section class="additional-info-section">
+        <section class="additional-info-section section-heading-global">
           <h2>Additional Information</h2>
           <div class="info-grid">
             @if (tvShowDetails()!.status) {
