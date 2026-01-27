@@ -2,6 +2,23 @@
   position: relative;
   display: flex;
   align-items: center;
+
+
+  .loading-spinner {
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    .material-icons {
+      font-size: 1.1rem;
+    }
+  }
 }
 
 // Error message

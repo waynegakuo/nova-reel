@@ -9,8 +9,8 @@
 
   <!-- Loading state -->
   @if (isAuthLoading()) {
-    <div class="auth-loading">
-      <div class="loading-spinner"></div>
+    <div class="loading-spinner">
+      <span class="material-icons animate-spin">sync</span>
     </div>
   } @else {
     @if (isAuthenticated()) {
