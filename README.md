@@ -76,6 +76,7 @@ Nova Reel is built with a modern tech stack that combines frontend and backend t
 - **🔐 Firebase Authentication**: For user authentication and management
 - **🗄️ Firebase Firestore**: For storing user favorites and preferences
 - **🔥 Angular Fire**: For integrating Firebase services with Angular
+- **🌐 Server-Side Rendering (SSR)**: Enhanced with [SSR-aware Authentication](./docs/ssr-auth-handling.md) to prevent UI flickering during hydration.
 
 ### ☁️ Backend
 
