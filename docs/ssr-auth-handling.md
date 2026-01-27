@@ -52,3 +52,6 @@ In the `UserAuthComponent`, we use the `isLoading` signal from `AuthService`.
 ## Implementation Details
 
 The core logic resides in `src/app/services/auth/auth.service.ts`. The UI implementation is in `src/app/shared/components/user-auth/user-auth.component.html`.
+
+#### Developer Note
+When working with authentication or any state that depends on browser-only APIs (like Firebase Auth's persistent session), always consider how the initial state will appear during SSR. Keeping a "loading" state active on the server is often better than showing an incorrect "logged out" state.
