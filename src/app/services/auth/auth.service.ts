@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import {Injectable, inject, signal, EnvironmentInjector, runInInjectionContext} from '@angular/core';
 import {
   Auth,
   GoogleAuthProvider,
@@ -15,6 +15,7 @@ import { switchMap } from 'rxjs/operators';
 })
 export class AuthService {
   private auth = inject(Auth);
+  private environmentInjector = inject(EnvironmentInjector);
 
   // Signal for the current user
   currentUser = signal<User | null>(null);
@@ -34,14 +35,16 @@ export class AuthService {
    * Initializes the authentication state listener
    */
   private initAuthState(): void {
-    onAuthStateChanged(this.auth, (user) => {
-      this.currentUser.set(user);
-      this.isAuthenticated.set(!!user);
-      this.isLoading.set(false);
-    }, (error) => {
-      console.error('Auth state change error:', error);
-      this.isLoading.set(false);
-    });
+    return runInInjectionContext(this.environmentInjector, () => {
+      onAuthStateChanged(this.auth, (user) => {
+        this.currentUser.set(user);
+        this.isAuthenticated.set(!!user);
+        this.isLoading.set(false);
+      }, (error) => {
+        console.error('Auth state change error:', error);
+        this.isLoading.set(false);
+      });
+    })
   }
 
   /**
@@ -49,12 +52,14 @@ export class AuthService {
    * @returns Promise that resolves with the user credentials
    */
   signInWithGoogle(): Observable<User> {
-    const provider = new GoogleAuthProvider();
-    return from(signInWithPopup(this.auth, provider)).pipe(
-      switchMap(result => {
-        return of(result.user);
-      })
-    );
+    return runInInjectionContext(this.environmentInjector, () => {
+      const provider = new GoogleAuthProvider();
+      return from(signInWithPopup(this.auth, provider)).pipe(
+        switchMap(result => {
+          return of(result.user);
+        })
+      );
+    })
   }
 
   /**
@@ -62,7 +67,9 @@ export class AuthService {
    * @returns Promise that resolves when sign out is complete
    */
   signOut(): Observable<void> {
-    return from(signOut(this.auth));
+    return runInInjectionContext(this.environmentInjector, () => {
+      return from(signOut(this.auth));
+    })
   }
 
   /**

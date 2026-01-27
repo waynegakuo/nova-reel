@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnDestroy } from '@angular/core';
+import {Component, inject, signal, OnDestroy, computed} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -24,8 +24,8 @@ export class UserAuthComponent implements OnDestroy {
   error = signal<string | null>(null);
 
   // Expose auth service signals to the template
-  isAuthenticated = this.authService.isAuthenticated;
-  isAuthLoading = this.authService.isLoading;
+  isAuthenticated = computed(() => this.authService.isAuthenticated());
+  isAuthLoading = computed(() => this.authService.isLoading());
 
   constructor() {}
 
