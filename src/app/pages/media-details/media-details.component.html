@@ -118,6 +118,92 @@
           <p>{{ movieDetails()!.overview }}</p>
         </section>
 
+        <!-- Watch Providers Section -->
+        @if (watchProviders() && watchProviders()!.results) {
+          <section class="watch-providers-section">
+            <div class="section-header-with-action collapsible-header" (click)="toggleWatchProviders()" [class.expanded]="isWatchProvidersExpanded()">
+              <div class="header-left">
+                <h2>Available On</h2>
+                @if (isWatchProvidersExpanded() && Object.keys(watchProviders()!.results).length > 0) {
+                  <div class="country-selector" (click)="$event.stopPropagation()">
+                    <label for="countrySelect">Region:</label>
+                    <select id="countrySelect" [value]="selectedCountry()" (change)="onCountryChange($event)">
+                      @for (countryCode of availableCountries(); track countryCode) {
+                        <option [value]="countryCode" [selected]="countryCode === selectedCountry()">{{ getCountryName(countryCode) }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+              </div>
+              <div class="header-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [style.transform]="isWatchProvidersExpanded() ? 'rotate(0deg)' : 'rotate(-90deg)'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <div class="providers-container" [class.collapsed]="!isWatchProvidersExpanded()">
+              @if (Object.keys(watchProviders()!.results).length === 0) {
+                <p class="no-providers">No streaming information available.</p>
+              } @else {
+                @if (selectedCountry() && watchProviders()!.results[selectedCountry()]) {
+                  <div class="country-providers">
+                    @if (watchProviders()!.results[selectedCountry()].flatrate ||
+                         watchProviders()!.results[selectedCountry()].rent ||
+                         watchProviders()!.results[selectedCountry()].buy) {
+
+                      @if (watchProviders()!.results[selectedCountry()].flatrate) {
+                        <div class="provider-type-group">
+                          <h3>Streaming</h3>
+                          <div class="providers-list">
+                            @for (provider of watchProviders()!.results[selectedCountry()].flatrate; track provider.provider_id) {
+                              <div class="provider-item" [title]="provider.provider_name">
+                                <img [src]="getImageUrl(provider.logo_path, 'logo')" [alt]="provider.provider_name">
+                                <span>{{ provider.provider_name }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (watchProviders()!.results[selectedCountry()].rent) {
+                        <div class="provider-type-group">
+                          <h3>Rent</h3>
+                          <div class="providers-list">
+                            @for (provider of watchProviders()!.results[selectedCountry()].rent; track provider.provider_id) {
+                              <div class="provider-item" [title]="provider.provider_name">
+                                <img [src]="getImageUrl(provider.logo_path, 'logo')" [alt]="provider.provider_name">
+                                <span>{{ provider.provider_name }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (watchProviders()!.results[selectedCountry()].buy) {
+                        <div class="provider-type-group">
+                          <h3>Buy</h3>
+                          <div class="providers-list">
+                            @for (provider of watchProviders()!.results[selectedCountry()].buy; track provider.provider_id) {
+                              <div class="provider-item" [title]="provider.provider_name">
+                                <img [src]="getImageUrl(provider.logo_path, 'logo')" [alt]="provider.provider_name">
+                                <span>{{ provider.provider_name }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                    } @else {
+                      <p class="no-providers">Not available in this region.</p>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </section>
+        }
+
         <!-- Cast Section -->
         @if (movieDetails()!.credits && movieDetails()!.credits.cast.length > 0) {
           <section class="cast-section">
@@ -354,6 +440,92 @@
           <h2>Overview</h2>
           <p>{{ tvShowDetails()!.overview }}</p>
         </section>
+
+        <!-- Watch Providers Section -->
+        @if (watchProviders() && watchProviders()!.results) {
+          <section class="watch-providers-section">
+            <div class="section-header-with-action collapsible-header" (click)="toggleWatchProviders()" [class.expanded]="isWatchProvidersExpanded()">
+              <div class="header-left">
+                <h2>Available On</h2>
+                @if (isWatchProvidersExpanded() && Object.keys(watchProviders()!.results).length > 0) {
+                  <div class="country-selector" (click)="$event.stopPropagation()">
+                    <label for="countrySelectTv">Region:</label>
+                    <select id="countrySelectTv" [value]="selectedCountry()" (change)="onCountryChange($event)">
+                      @for (countryCode of availableCountries(); track countryCode) {
+                        <option [value]="countryCode" [selected]="countryCode === selectedCountry()">{{ getCountryName(countryCode) }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+              </div>
+              <div class="header-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" [style.transform]="isWatchProvidersExpanded() ? 'rotate(0deg)' : 'rotate(-90deg)'">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <div class="providers-container" [class.collapsed]="!isWatchProvidersExpanded()">
+              @if (Object.keys(watchProviders()!.results).length === 0) {
+                <p class="no-providers">No streaming information available.</p>
+              } @else {
+                @if (selectedCountry() && watchProviders()!.results[selectedCountry()]) {
+                  <div class="country-providers">
+                    @if (watchProviders()!.results[selectedCountry()].flatrate ||
+                         watchProviders()!.results[selectedCountry()].rent ||
+                         watchProviders()!.results[selectedCountry()].buy) {
+
+                      @if (watchProviders()!.results[selectedCountry()].flatrate) {
+                        <div class="provider-type-group">
+                          <h3>Streaming</h3>
+                          <div class="providers-list">
+                            @for (provider of watchProviders()!.results[selectedCountry()].flatrate; track provider.provider_id) {
+                              <div class="provider-item" [title]="provider.provider_name">
+                                <img [src]="getImageUrl(provider.logo_path, 'logo')" [alt]="provider.provider_name">
+                                <span>{{ provider.provider_name }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (watchProviders()!.results[selectedCountry()].rent) {
+                        <div class="provider-type-group">
+                          <h3>Rent</h3>
+                          <div class="providers-list">
+                            @for (provider of watchProviders()!.results[selectedCountry()].rent; track provider.provider_id) {
+                              <div class="provider-item" [title]="provider.provider_name">
+                                <img [src]="getImageUrl(provider.logo_path, 'logo')" [alt]="provider.provider_name">
+                                <span>{{ provider.provider_name }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (watchProviders()!.results[selectedCountry()].buy) {
+                        <div class="provider-type-group">
+                          <h3>Buy</h3>
+                          <div class="providers-list">
+                            @for (provider of watchProviders()!.results[selectedCountry()].buy; track provider.provider_id) {
+                              <div class="provider-item" [title]="provider.provider_name">
+                                <img [src]="getImageUrl(provider.logo_path, 'logo')" [alt]="provider.provider_name">
+                                <span>{{ provider.provider_name }}</span>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                    } @else {
+                      <p class="no-providers">Not available in this region.</p>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </section>
+        }
 
         <!-- Seasons Section -->
         @if (tvShowDetails()!.seasons && tvShowDetails()!.seasons.length > 0) {

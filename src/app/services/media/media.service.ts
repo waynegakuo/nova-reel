@@ -2,6 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError, Subject} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
+import {WatchProvidersResponse} from '../../models/watch-providers.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
 import {HttpClient} from '@angular/common/http';
 import {getFunctions, httpsCallable, Functions} from '@angular/fire/functions';
@@ -326,6 +327,16 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshTVShowDetailsCache$.next(true);
+  }
+
+  /**
+   * Fetches watch providers for a movie or TV show
+   * @param mediaId - The ID of the movie or TV show
+   * @param mediaType - The type of media ('movie' or 'tv')
+   * @returns An Observable containing the watch providers data
+   */
+  getWatchProviders(mediaId: number, mediaType: 'movie' | 'tv'): Observable<WatchProvidersResponse> {
+    return from(this.getTmdbData(`${mediaType}/${mediaId}/watch/providers`) as Promise<WatchProvidersResponse>);
   }
 
   /**

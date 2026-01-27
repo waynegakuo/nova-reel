@@ -5,6 +5,7 @@ import { MediaService } from '../../services/media/media.service';
 import { TriviaService } from '../../services/trivia/trivia.service';
 import { AiReviewChatComponent } from '../../components/ai-review-chat/ai-review-chat.component';
 import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew } from '../../models/media-details.model';
+import { WatchProvidersResponse } from '../../models/watch-providers.model';
 import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {Subject, takeUntil} from 'rxjs';
@@ -39,9 +40,14 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   notification = signal<{message: string, type: 'success' | 'error'} | null>(null);
   isFavorited = signal<boolean>(false);
   isInWatchlist = signal<boolean>(false);
+  watchProviders = signal<WatchProvidersResponse | null>(null);
+  selectedCountry = signal<string>('');
+  availableCountries = signal<string[]>([]);
+  isWatchProvidersExpanded = signal<boolean>(true);
 
   // Authentication signals
   isAuthenticated = signal<boolean>(false);
+  Object = Object;
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
@@ -93,6 +99,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     this.error.set(null);
     this.isFavorited.set(false); // Reset favorite status
     this.isInWatchlist.set(false); // Reset watchlist status
+    this.watchProviders.set(null); // Reset watch providers
 
     if (this.mediaType() === 'movie') {
       this.mediaService.getMovieDetails(this.mediaId()).pipe(takeUntil(this.destroy$)).subscribe({
@@ -103,6 +110,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           // Check if this movie is in favorites and watchlist
           this.checkFavoriteStatus();
           this.checkWatchlistStatus();
+          this.loadWatchProviders();
         },
         error: (err) => {
           console.error('Error fetching movie details:', err);
@@ -119,6 +127,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
           // Check if this TV show is in favorites and watchlist
           this.checkFavoriteStatus();
           this.checkWatchlistStatus();
+          this.loadWatchProviders();
         },
         error: (err) => {
           console.error('Error fetching TV show details:', err);
@@ -127,6 +136,45 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  loadWatchProviders(): void {
+    const type = this.mediaType() === 'movie' ? 'movie' : 'tv';
+    this.mediaService.getWatchProviders(this.mediaId(), type)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (providers) => {
+          this.watchProviders.set(providers);
+          if (providers && providers.results) {
+            const countries = Object.keys(providers.results).sort((a, b) => {
+              // Prioritize KE, then alphabetically
+              if (a === 'KE') return -1;
+              if (b === 'KE') return 1;
+              return a.localeCompare(b);
+            });
+
+            this.availableCountries.set(countries);
+
+            if (countries.length > 0) {
+              // Set default country to KE if available, otherwise first available
+              const defaultCountry = countries.includes('KE') ? 'KE' : countries[0];
+              this.selectedCountry.set(defaultCountry);
+            }
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching watch providers:', err);
+        }
+      });
+  }
+
+  /**
+   * Handles country selection change
+   * @param event - The change event from the select element
+   */
+  onCountryChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.selectedCountry.set(select.value);
   }
 
   /**
@@ -168,10 +216,10 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   /**
    * Gets the full image URL for different image types
    * @param path - The image path
-   * @param type - The type of image (poster, backdrop, profile)
+   * @param type - The type of image (poster, backdrop, profile, logo)
    * @returns The full image URL
    */
-  getImageUrl(path: string | null, type: 'poster' | 'backdrop' | 'profile'): string {
+  getImageUrl(path: string | null, type: 'poster' | 'backdrop' | 'profile' | 'logo'): string {
     if (!path) {
       // Return fallback image based on type
       return type === 'profile'
@@ -198,6 +246,9 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         break;
       case 'profile':
         baseUrl += 'w185';
+        break;
+      case 'logo':
+        baseUrl += 'w92';
         break;
     }
 
@@ -249,22 +300,59 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   getLanguageName(code: string): string {
     if (!code) return 'Unknown';
 
-    // This is a simple mapping of common language codes
-    const languages: Record<string, string> = {
-      'en': 'English',
-      'es': 'Spanish',
-      'fr': 'French',
-      'de': 'German',
-      'it': 'Italian',
-      'ja': 'Japanese',
-      'ko': 'Korean',
-      'zh': 'Chinese',
-      'ru': 'Russian',
-      'pt': 'Portuguese',
-      'hi': 'Hindi'
-    };
+    try {
+      const displayNames = new Intl.DisplayNames(['en'], { type: 'language' });
+      return displayNames.of(code) || code;
+    } catch (e) {
+      // Fallback for common language codes if Intl fails or code is invalid
+      const languages: Record<string, string> = {
+        'en': 'English',
+        'es': 'Spanish',
+        'fr': 'French',
+        'de': 'German',
+        'it': 'Italian',
+        'ja': 'Japanese',
+        'ko': 'Korean',
+        'zh': 'Chinese',
+        'ru': 'Russian',
+        'pt': 'Portuguese',
+        'hi': 'Hindi'
+      };
+      return languages[code.toLowerCase()] || code;
+    }
+  }
 
-    return languages[code] || code;
+  /**
+   * Gets the country name from ISO code
+   * @param code - The ISO country code (e.g., 'US', 'GB')
+   * @returns The country name or the code itself
+   */
+  getCountryName(code: string): string {
+    if (!code) return '';
+
+    try {
+      const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+      return displayNames.of(code.toUpperCase()) || code;
+    } catch (e) {
+      // Fallback for common country codes if Intl fails or code is invalid
+      const countries: Record<string, string> = {
+        'US': 'United States',
+        'GB': 'United Kingdom',
+        'CA': 'Canada',
+        'AU': 'Australia',
+        'SG': 'Singapore',
+        'IN': 'India',
+        'DE': 'Germany',
+        'FR': 'France',
+        'JP': 'Japan',
+        'KR': 'South Korea',
+        'BR': 'Brazil',
+        'MX': 'Mexico',
+        'ES': 'Spain',
+        'IT': 'Italy'
+      };
+      return countries[code.toUpperCase()] || code;
+    }
   }
 
   /**
@@ -337,6 +425,13 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     logEvent(this.analytics, 'share_media_details', { media_type: this.mediaType(), media_id: this.mediaId() });
     // This would be implemented with the Web Share API in a real app
     alert('Sharing functionality would be implemented here');
+  }
+
+  /**
+   * Toggles the visibility of watch providers section
+   */
+  toggleWatchProviders(): void {
+    this.isWatchProvidersExpanded.update(v => !v);
   }
 
   /**
