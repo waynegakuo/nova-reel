@@ -1,4 +1,4 @@
-import {inject, Injectable} from '@angular/core';
+import {EnvironmentInjector, inject, Injectable, runInInjectionContext} from '@angular/core';
 import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError, Subject} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
 import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
@@ -20,6 +20,7 @@ export class MediaService {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private functions = inject(Functions);
+  private environmentInjector = inject(EnvironmentInjector);
 
   constructor() { }
 
@@ -57,21 +58,24 @@ export class MediaService {
    * @throws Error if the API request fails
    */
   async getTmdbData(endpoint: string, list?: string, page?: number, queryParams?: string, id?:number): Promise<unknown> {
-    const callableGetTmdbData = httpsCallable(this.functions, 'getTmdbData');
-    try {
-      const result = await callableGetTmdbData({
-        endpoint: endpoint,
-        list: list,
-        page: page,
-        queryParams: queryParams,
-        id: id
-      });
-      return result.data; // The data returned from your Cloud Function
-    } catch (error: any) {
-      console.error('Error fetching movie details from Cloud Function:', error);
-      // Handle the error appropriately in your Angular app
-      throw error;
-    }
+    return runInInjectionContext(this.environmentInjector, async() => {
+      const callableGetTmdbData = httpsCallable(this.functions, 'getTmdbData');
+      try {
+        const result = await callableGetTmdbData({
+          endpoint: endpoint,
+          list: list,
+          page: page,
+          queryParams: queryParams,
+          id: id
+        });
+        return result.data; // The data returned from your Cloud Function
+      } catch (error: any) {
+        console.error('Error fetching movie details from Cloud Function:', error);
+        // Handle the error appropriately in your Angular app
+        throw error;
+      }
+    })
+
   }
 
   /**
@@ -669,29 +673,31 @@ export class MediaService {
    * @throws Error if the user is not authenticated or if the API request fails
    */
   async getAiRecommendationsData(count: number = 5, naturalLanguageQuery?: string): Promise<AiRecommendationResponse> {
-    // Check if user is authenticated
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      throw new Error('User must be authenticated to get AI recommendations');
-    }
-
-    const callableGetRecommendations = httpsCallable(this.functions, 'getRecommendationsFlow');
-    try {
-      const requestData: any = {
-        userId: userId,
-        count: count
-      };
-
-      if (naturalLanguageQuery) {
-        requestData.naturalLanguageQuery = naturalLanguageQuery;
+    return runInInjectionContext(this.environmentInjector, async() => {
+      // Check if user is authenticated
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        throw new Error('User must be authenticated to get AI recommendations');
       }
 
-      const result = await callableGetRecommendations(requestData);
-      return result.data as AiRecommendationResponse;
-    } catch (error: any) {
-      console.error('Error fetching AI recommendations from Cloud Function:', error);
-      throw error;
-    }
+      const callableGetRecommendations = httpsCallable(this.functions, 'getRecommendationsFlow');
+      try {
+        const requestData: any = {
+          userId: userId,
+          count: count
+        };
+
+        if (naturalLanguageQuery) {
+          requestData.naturalLanguageQuery = naturalLanguageQuery;
+        }
+
+        const result = await callableGetRecommendations(requestData);
+        return result.data as AiRecommendationResponse;
+      } catch (error: any) {
+        console.error('Error fetching AI recommendations from Cloud Function:', error);
+        throw error;
+      }
+    })
   }
 
   /**
@@ -952,19 +958,22 @@ export class MediaService {
    * @returns Promise containing the AI's response
    */
   async getAiReviewChatResponse(mediaId: number, mediaType: 'movie' | 'tv', message: string, chatHistory: { role: 'user' | 'model', text: string }[] = []): Promise<{ response: string }> {
-    const callableAiReviewChat = httpsCallable(this.functions, 'aiReviewChat');
-    try {
-      const result = await callableAiReviewChat({
-        mediaId,
-        mediaType,
-        message,
-        chatHistory
-      });
-      return result.data as { response: string };
-    } catch (error: any) {
-      console.error('Error fetching AI review chat response:', error);
-      throw error;
-    }
+    return runInInjectionContext(this.environmentInjector, async() => {
+      const callableAiReviewChat = httpsCallable(this.functions, 'aiReviewChat');
+      try {
+        const result = await callableAiReviewChat({
+          mediaId,
+          mediaType,
+          message,
+          chatHistory
+        });
+        return result.data as { response: string };
+      } catch (error: any) {
+        console.error('Error fetching AI review chat response:', error);
+        throw error;
+      }
+    })
+
   }
 
   /**
@@ -1059,18 +1068,20 @@ export class MediaService {
    * @throws Error if the API request fails
    */
   async guessMovieFromScreenshot(file: string, contentType: string): Promise<any> {
-    const guessMovieFunction = httpsCallable(this.functions, 'guessMovieFromScreenshot');
+    return runInInjectionContext(this.environmentInjector, async() => {
+      const guessMovieFunction = httpsCallable(this.functions, 'guessMovieFromScreenshot');
 
-    try {
-      const result = await guessMovieFunction({
-        file: file,
-        contentType: contentType
-      });
-      return result.data;
-    } catch (error: any) {
-      console.error('Error analyzing image:', error);
-      throw error;
-    }
+      try {
+        const result = await guessMovieFunction({
+          file: file,
+          contentType: contentType
+        });
+        return result.data;
+      } catch (error: any) {
+        console.error('Error analyzing image:', error);
+        throw error;
+      }
+    })
   }
 
   /**
