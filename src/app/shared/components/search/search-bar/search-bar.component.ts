@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, tap } from 'rxjs';
 import { Analytics, logEvent } from '@angular/fire/analytics';
@@ -7,7 +7,7 @@ import { Analytics, logEvent } from '@angular/fire/analytics';
 @Component({
   selector: 'app-search-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss'
 })

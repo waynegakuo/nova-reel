@@ -1,12 +1,12 @@
 import {Component, Input, Output, EventEmitter, inject} from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MediaCardComponent } from '../media-card/media-card.component';
 import { Movie, TvShow } from '../../../models/media.model';
 
 @Component({
   selector: 'app-media-grid',
   standalone: true,
-  imports: [CommonModule, MediaCardComponent],
+  imports: [MediaCardComponent],
   templateUrl: './media-grid.component.html',
   styleUrl: './media-grid.component.scss'
 })

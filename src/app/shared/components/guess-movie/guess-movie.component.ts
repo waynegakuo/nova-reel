@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LoadingMessagesService } from '../../../services/loading-messages/loading-messages.service';
@@ -9,7 +9,7 @@ import { Analytics, logEvent } from '@angular/fire/analytics';
 @Component({
   selector: 'app-guess-movie',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './guess-movie.component.html',
   styleUrls: ['./guess-movie.component.scss']
 })

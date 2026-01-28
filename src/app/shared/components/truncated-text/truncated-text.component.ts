@@ -1,12 +1,12 @@
 import { Component, Input, signal, OnInit, OnDestroy, Inject, PLATFORM_ID, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MarkdownUtils } from '../../../utils/markdown-utils';
 
 @Component({
   selector: 'app-truncated-text',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="truncated-text-container">
       <p

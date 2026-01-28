@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MediaGridComponent } from '../../shared/components/media-grid/media-grid.component';
 import { Favorite, MovieDetails, TvShowDetails } from '../../models/media-details.model';
 import { MediaService } from '../../services/media/media.service';
@@ -8,9 +8,8 @@ import { Analytics, logEvent } from '@angular/fire/analytics';
 @Component({
   selector: 'app-favorites',
   imports: [
-    CommonModule,
     MediaGridComponent
-  ],
+],
   templateUrl: './favorites.component.html',
   styleUrl: './favorites.component.scss'
 })

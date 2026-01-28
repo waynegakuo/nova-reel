@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MediaCardComponent } from '../../shared/components/media-card/media-card.component';
 import { TruncatedTextComponent } from '../../shared/components/truncated-text/truncated-text.component';
 import { AiRecommendation } from '../../models/ai-recommendations.model';
@@ -12,10 +12,9 @@ import { Analytics, logEvent } from '@angular/fire/analytics';
 @Component({
   selector: 'app-smart-recommendations',
   imports: [
-    CommonModule,
     MediaCardComponent,
     TruncatedTextComponent
-  ],
+],
   templateUrl: './smart-recommendations.component.html',
   styleUrl: './smart-recommendations.component.scss'
 })
