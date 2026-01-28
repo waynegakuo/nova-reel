@@ -1,5 +1,5 @@
 import {Component, inject, signal, OnDestroy, computed} from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth/auth.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -7,7 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-user-auth',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './user-auth.component.html',
   styleUrl: './user-auth.component.scss'
 })

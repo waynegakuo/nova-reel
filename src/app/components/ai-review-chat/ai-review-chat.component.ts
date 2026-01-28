@@ -1,5 +1,5 @@
 import { Component, input, signal, inject, ElementRef, ViewChild, afterNextRender } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MediaService } from '../../services/media/media.service';
@@ -14,7 +14,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-ai-review-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './ai-review-chat.component.html',
   styleUrls: ['./ai-review-chat.component.scss']
 })

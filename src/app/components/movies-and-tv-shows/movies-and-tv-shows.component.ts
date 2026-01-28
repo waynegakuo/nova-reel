@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MediaGridComponent } from '../../shared/components/media-grid/media-grid.component';
 import { PaginationControlsComponent } from '../../shared/components/pagination-controls/pagination-controls.component';
 import { CategorySelectorComponent, CategoryItem } from '../../shared/components/category-selector/category-selector.component';
@@ -9,11 +9,10 @@ import { Analytics, logEvent } from '@angular/fire/analytics';
 @Component({
   selector: 'app-movies-and-tv-shows',
   imports: [
-    CommonModule,
     MediaGridComponent,
     PaginationControlsComponent,
     CategorySelectorComponent
-  ],
+],
   templateUrl: './movies-and-tv-shows.component.html',
   styleUrl: './movies-and-tv-shows.component.scss'
 })

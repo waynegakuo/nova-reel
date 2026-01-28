@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute } from '@angular/router';
 import { MediaCardComponent } from '../../shared/components/media-card/media-card.component';
 import { Movie, TvShow } from '../../models/media.model';
@@ -31,7 +31,7 @@ interface SharedWatchlistItem {
 
 @Component({
   selector: 'app-shared-watchlist',
-  imports: [CommonModule, MediaCardComponent],
+  imports: [MediaCardComponent],
   templateUrl: './shared-watchlist.component.html',
   styleUrl: './shared-watchlist.component.scss'
 })

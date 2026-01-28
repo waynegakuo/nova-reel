@@ -30,7 +30,8 @@ Nova Reel empowers film and TV enthusiasts to discover new content through an in
 - 🔍 Advanced filtering by categories
 - 🔎 Real-time search with pagination
 - ℹ️ Detailed movie and TV show information
-- ⭐ Personal favorites management
+- ⭐ Personal favorites & Watchlist management
+- 🔗 Watchlist sharing with unique links
 
 </td>
 <td width="50%">
@@ -40,6 +41,7 @@ Nova Reel empowers film and TV enthusiasts to discover new content through an in
 - 🎯 **For You**: Personalized suggestions
 - 🎬 **Guess the Movie**: Screenshot identification
 - 🧠 **Trivia Challenge**: AI-generated questions
+- 💬 **AI Review Chat**: Chat with AI about reviews
 - 💫 Powered by Gemini 3 Pro
 
 </td>
@@ -74,8 +76,9 @@ Nova Reel is built with a modern tech stack that combines frontend and backend t
 
 - **🅰️ Angular**: The frontend is built with Angular, using standalone components and signals for reactive state management
 - **🔐 Firebase Authentication**: For user authentication and management
-- **🗄️ Firebase Firestore**: For storing user favorites and preferences
+- **🗄️ Firebase Firestore**: For storing user favorites, watchlist, and trivia history
 - **🔥 Angular Fire**: For integrating Firebase services with Angular
+- **📺 Watch Providers**: Integrated TMDB watch providers for seeing where to stream content
 - **🌐 Server-Side Rendering (SSR)**: Enhanced with [SSR-aware Authentication](./docs/ssr-auth-handling.md) to prevent UI flickering during hydration.
 
 ### ☁️ Backend
@@ -127,6 +130,17 @@ The "Guess the Movie" feature uses Genkit's image analysis capabilities to ident
    - 🎯 Identify the most likely movie or TV show
    - 🔄 Use the TMDB API to confirm the identification and retrieve additional details
 3. **📱 Result Display**: The frontend displays the identified movie or TV show, along with confidence score, overview, and poster
+
+#### 💬 AI Review Chat
+
+The AI Review Chat allows users to have an interactive conversation about the reviews and general sentiment of a movie or TV show:
+
+1. **❓ Contextual Questions**: Users can ask specific questions like "Is it worth my time?" or "Summarize the reviews"
+2. **🧠 AI Analysis**: The system uses Genkit and Gemini to:
+   - 🔍 Analyze actual user reviews and metadata
+   - 🎭 Synthesize a helpful, conversational response
+   - 💬 Maintain chat history for follow-up questions
+3. **📱 Interactive Interface**: A slide-out chat interface available on every detail page
 
 ---
 
@@ -574,11 +588,12 @@ The recommendations are displayed in the "For You" tab of the landing page, alon
 |-----|---------|-------------|
 | 🎥 | **Movies** | Browse trending, popular, top-rated & upcoming |
 | 📺 | **TV Shows** | Explore popular, top-rated & currently airing |
+| 📋 | **Watchlist** | Manage and share your personal watchlist |
 | ⭐ | **Favorites** | Quick access to your saved content |
 | 🎯 | **For You** | Personalized AI recommendations |
 | 🤖 | **Smart Recs** | Natural language query recommendations |
 | 🎬 | **Guess Movie** | Screenshot identification game |
-| 🧠 | **Trivia** | Timed knowledge challenges |
+| 🧠 | **Trivia** | Timed knowledge challenges & history |
 
 </div>
 
@@ -590,10 +605,16 @@ The recommendations are displayed in the "For You" tab of the landing page, alon
 - Use the search bar to find specific titles with real-time results
 - Navigate through pages using the pagination controls
 
-#### ⭐ Managing Favorites
+#### ⭐ Managing Favorites & Watchlist
 - Click on any movie or TV show to view detailed information
-- Click the "Add to Favorites" button on any detail page
-- Access all your favorites in the dedicated "Favorites" tab
+- Click the "Add to Favorites" or "Add to Watchlist" button on any detail page
+- Access your favorites and watchlist in their respective tabs
+- Share your entire watchlist by clicking the "Share Watchlist" button in the Watchlist tab
+
+#### 💬 AI Review Chat
+- Click the floating chat bubble on any movie or TV show detail page
+- Use quick prompts or type your own questions about the media
+- Get instant AI-powered summaries and insights from user reviews
 
 #### 🤖 Smart Recommendations
 - Navigate to the "Smart Recommendations" tab
@@ -619,6 +640,7 @@ The recommendations are displayed in the "For You" tab of the landing page, alon
 - Answer timed trivia questions (30 seconds per question) about the selected content
 - Track your score and performance throughout the challenge
 - View your final results and statistics when the game is complete
+- Access your **Trivia History** from the profile menu to see all your past scores and performance levels over time
 - Challenge yourself again or try trivia for different movies and shows
 
 ---

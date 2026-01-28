@@ -1,5 +1,5 @@
 import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Movie, TvShow } from '../../models/media.model';
 import {MediaService} from '../../services/media/media.service';
 import {Subject, takeUntil} from 'rxjs';
@@ -23,7 +23,6 @@ import {Analytics, logEvent} from '@angular/fire/analytics';
 @Component({
   selector: 'app-landing-page',
   imports: [
-    CommonModule,
     SearchBarComponent,
     SearchResultsComponent,
     TabNavigationComponent,
@@ -32,7 +31,7 @@ import {Analytics, logEvent} from '@angular/fire/analytics';
     ForYouComponent,
     SmartRecommendationsComponent,
     GuessTheMovieComponent
-  ],
+],
   templateUrl: './landing-page.component.html',
   standalone: true,
   styleUrl: './landing-page.component.scss'

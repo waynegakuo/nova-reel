@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 export interface TabItem {
   label: string;
@@ -10,7 +10,7 @@ export interface TabItem {
 @Component({
   selector: 'app-tab-navigation',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './tab-navigation.component.html',
   styleUrl: './tab-navigation.component.scss'
 })

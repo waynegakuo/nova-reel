@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 export interface CategoryItem {
   label: string;
@@ -9,7 +9,7 @@ export interface CategoryItem {
 @Component({
   selector: 'app-category-selector',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './category-selector.component.html',
   styleUrl: './category-selector.component.scss'
 })
