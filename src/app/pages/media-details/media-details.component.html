@@ -692,8 +692,8 @@
 
   <!-- Trailer Modal -->
   @if (showTrailer() && trailerUrl()) {
-    <div class="trailer-modal-overlay" (click)="closeTrailer()">
-      <div class="trailer-modal-container" (click)="$event.stopPropagation()">
+    <div class="trailer-modal-overlay" [class.closing]="isTrailerClosing()" (click)="closeTrailer()">
+      <div class="trailer-modal-container" [class.closing]="isTrailerClosing()" (click)="$event.stopPropagation()">
         <button class="close-modal" (click)="closeTrailer()">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -714,8 +714,8 @@
 
   <!-- Cast Details Modal -->
   @if (isCastModalOpen()) {
-    <div class="modal-overlay" (click)="closeCastModal()">
-      <div class="modal-content cast-modal" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" [class.closing]="isCastModalClosing()" (click)="closeCastModal()">
+      <div class="modal-content cast-modal" [class.closing]="isCastModalClosing()" (click)="$event.stopPropagation()">
         <button class="modal-close" (click)="closeCastModal()">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>

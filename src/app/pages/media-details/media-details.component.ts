@@ -37,6 +37,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   tvShowDetails = signal<TvShowDetails | null>(null);
   trailerUrl = signal<SafeResourceUrl | null>(null);
   showTrailer = signal<boolean>(false);
+  isTrailerClosing = signal<boolean>(false);
   notification = signal<{message: string, type: 'success' | 'error'} | null>(null);
   isFavorited = signal<boolean>(false);
   isInWatchlist = signal<boolean>(false);
@@ -47,6 +48,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
 
   // Cast modal signals
   isCastModalOpen = signal<boolean>(false);
+  isCastModalClosing = signal<boolean>(false);
   selectedPerson = signal<PersonDetails | null>(null);
   isLoadingPerson = signal<boolean>(false);
   activeCastTab = signal<'movie' | 'tv'>('movie');
@@ -441,8 +443,12 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
    * Closes the trailer modal
    */
   closeTrailer(): void {
-    this.showTrailer.set(false);
-    this.trailerUrl.set(null);
+    this.isTrailerClosing.set(true);
+    setTimeout(() => {
+      this.showTrailer.set(false);
+      this.isTrailerClosing.set(false);
+      this.trailerUrl.set(null);
+    }, 300); // Matches animation duration
   }
 
   /**
@@ -764,8 +770,12 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
    * Closes the cast modal
    */
   closeCastModal(): void {
-    this.isCastModalOpen.set(false);
-    this.selectedPerson.set(null);
+    this.isCastModalClosing.set(true);
+    setTimeout(() => {
+      this.isCastModalOpen.set(false);
+      this.isCastModalClosing.set(false);
+      this.selectedPerson.set(null);
+    }, 300); // Matches animation duration
   }
 
   /**

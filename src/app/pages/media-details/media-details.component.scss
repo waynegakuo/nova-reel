@@ -37,8 +37,12 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out forwards;
   backdrop-filter: blur(5px);
+
+  &.closing {
+    animation: fadeOut 0.3s ease-in forwards;
+  }
 }
 
 .trailer-modal-container {
@@ -49,7 +53,11 @@
   border-radius: variables.$border-radius-md;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(variables.$primary-color, 0.2);
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.3s ease-out forwards;
+
+  &.closing {
+    animation: slideDown 0.3s ease-in forwards;
+  }
 
   .close-modal {
     position: absolute;
@@ -104,6 +112,22 @@
   }
 }
 
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -127,6 +151,11 @@
   z-index: 2000;
   backdrop-filter: blur(8px);
   padding: 20px;
+  animation: fadeIn 0.3s ease-out forwards;
+
+  &.closing {
+    animation: fadeOut 0.3s ease-in forwards;
+  }
 }
 
 .modal-content {
@@ -139,9 +168,13 @@
   position: relative;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.3s ease-out forwards;
   display: flex;
   flex-direction: column;
+
+  &.closing {
+    animation: slideDown 0.3s ease-in forwards;
+  }
 
   .modal-scroll-container {
     overflow-y: auto;
