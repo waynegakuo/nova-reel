@@ -723,73 +723,75 @@
           </svg>
         </button>
 
-        @if (isLoadingPerson()) {
-          <div class="modal-loading">
-            <div class="loading-spinner"></div>
-            <p>Loading cast details...</p>
-          </div>
-        } @else if (selectedPerson()) {
-          <div class="cast-details-modal">
-            <div class="cast-header">
-              <div class="cast-modal-image">
-                <img [src]="getImageUrl(selectedPerson()!.profile_path, 'profile')" [alt]="selectedPerson()!.name">
-              </div>
-              <div class="cast-modal-info">
-                <h2>{{ selectedPerson()!.name }}</h2>
-                @if (selectedPerson()!.birthday) {
-                  <p class="cast-meta">Born: {{ selectedPerson()!.birthday | date:'longDate' }} @if (selectedPerson()!.place_of_birth) { in {{ selectedPerson()!.place_of_birth }} }</p>
-                }
-                <p class="cast-dept">Known for: {{ selectedPerson()!.known_for_department }}</p>
-              </div>
+        <div class="modal-scroll-container">
+          @if (isLoadingPerson()) {
+            <div class="modal-loading">
+              <div class="loading-spinner"></div>
+              <p>Loading cast details...</p>
             </div>
-
-            <div class="cast-body">
-              @if (selectedPerson()!.biography) {
-                <div class="cast-bio">
-                  <h3>Biography</h3>
-                  <p>{{ selectedPerson()!.biography }}</p>
+          } @else if (selectedPerson()) {
+            <div class="cast-details-modal">
+              <div class="cast-header">
+                <div class="cast-modal-image">
+                  <img [src]="getImageUrl(selectedPerson()!.profile_path, 'profile')" [alt]="selectedPerson()!.name">
                 </div>
-              }
-
-              @if (selectedPerson()!.combined_credits) {
-                <div class="cast-credits">
-                  <div class="credits-tabs">
-                    <button class="tab-btn" [class.active]="activeCastTab() === 'movie'" (click)="setCastTab('movie')">Movies</button>
-                    <button class="tab-btn" [class.active]="activeCastTab() === 'tv'" (click)="setCastTab('tv')">TV Shows</button>
-                  </div>
-
-                  @if (getFilteredCredits().length > 0) {
-                    <div class="credits-grid">
-                      @for (credit of getFilteredCredits(); track credit.id + '-' + (credit.character || credit.job || '')) {
-                        <div class="credit-card" (click)="navigateToDetails(credit.title ? 'movie' : 'tvshow', credit.id); closeCastModal()">
-                          <div class="credit-image">
-                            <img [src]="getImageUrl(credit.poster_path, 'poster')" [alt]="credit.title || credit.name">
-                          </div>
-                          <div class="credit-info">
-                            <h4>{{ credit.title || credit.name }}</h4>
-                            <p>
-                              {{ (credit.release_date || credit.first_air_date) | date:'yyyy' }}
-                              @if (credit.name) {
-                                @if (credit.episode_count) {
-                                  <span> • {{ credit.episode_count }} {{ credit.episode_count === 1 ? 'episode' : 'episodes' }}</span>
-                                }
-                                @if (credit.season_number) {
-                                  <span> • Season {{ credit.season_number }}</span>
-                                }
-                              }
-                            </p>
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  } @else {
-                    <p class="no-credits">No {{ activeCastTab() === 'movie' ? 'movies' : 'TV shows' }} found for this cast member.</p>
+                <div class="cast-modal-info">
+                  <h2>{{ selectedPerson()!.name }}</h2>
+                  @if (selectedPerson()!.birthday) {
+                    <p class="cast-meta">Born: {{ selectedPerson()!.birthday | date:'longDate' }} @if (selectedPerson()!.place_of_birth) { in {{ selectedPerson()!.place_of_birth }} }</p>
                   }
+                  <p class="cast-dept">Known for: {{ selectedPerson()!.known_for_department }}</p>
                 </div>
-              }
+              </div>
+
+              <div class="cast-body">
+                @if (selectedPerson()!.biography) {
+                  <div class="cast-bio">
+                    <h3>Biography</h3>
+                    <p>{{ selectedPerson()!.biography }}</p>
+                  </div>
+                }
+
+                @if (selectedPerson()!.combined_credits) {
+                  <div class="cast-credits">
+                    <div class="credits-tabs">
+                      <button class="tab-btn" [class.active]="activeCastTab() === 'movie'" (click)="setCastTab('movie')">Movies</button>
+                      <button class="tab-btn" [class.active]="activeCastTab() === 'tv'" (click)="setCastTab('tv')">TV Shows</button>
+                    </div>
+
+                    @if (getFilteredCredits().length > 0) {
+                      <div class="credits-grid">
+                        @for (credit of getFilteredCredits(); track credit.id + '-' + (credit.character || credit.job || '')) {
+                          <div class="credit-card" (click)="navigateToDetails(credit.title ? 'movie' : 'tvshow', credit.id); closeCastModal()">
+                            <div class="credit-image">
+                              <img [src]="getImageUrl(credit.poster_path, 'poster')" [alt]="credit.title || credit.name">
+                            </div>
+                            <div class="credit-info">
+                              <h4>{{ credit.title || credit.name }}</h4>
+                              <p>
+                                {{ (credit.release_date || credit.first_air_date) | date:'yyyy' }}
+                                @if (credit.name) {
+                                  @if (credit.episode_count) {
+                                    <span> • {{ credit.episode_count }} {{ credit.episode_count === 1 ? 'episode' : 'episodes' }}</span>
+                                  }
+                                  @if (credit.season_number) {
+                                    <span> • Season {{ credit.season_number }}</span>
+                                  }
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <p class="no-credits">No {{ activeCastTab() === 'movie' ? 'movies' : 'TV shows' }} found for this cast member.</p>
+                    }
+                  </div>
+                }
+              </div>
             </div>
-          </div>
-        }
+          }
+        </div>
       </div>
     </div>
   }

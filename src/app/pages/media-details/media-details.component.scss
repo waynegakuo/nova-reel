@@ -135,32 +135,44 @@
   max-width: 800px;
   width: 100%;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden; // Changed from overflow-y: auto to hide scrollbar protrusion
   position: relative;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
+  .modal-scroll-container {
+    overflow-y: auto;
+    flex: 1;
+    padding-bottom: 20px;
 
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-  }
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    background: rgba(variables.$primary-color, 0.3);
-    border-radius: 4px;
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      margin: 10px 0; // Added margin to avoid overlap with rounded corners
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(variables.$primary-color, 0.3);
+      border-radius: 4px;
+
+      &:hover {
+        background: rgba(variables.$primary-color, 0.5);
+      }
+    }
   }
 }
 
 .modal-close {
-  position: sticky;
+  position: absolute;
   top: 15px;
   right: 15px;
-  float: right;
-  z-index: 10;
+  z-index: 100;
   background: rgba(0, 0, 0, 0.5);
   border: none;
   color: white;
@@ -172,6 +184,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0; // Prevent squishing if it's in a flex container
 
   &:hover {
     background: variables.$primary-color;
