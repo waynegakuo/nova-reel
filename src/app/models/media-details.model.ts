@@ -89,8 +89,8 @@ export interface PersonDetails {
 }
 
 export interface PersonCredits {
-  cast: (Movie | TvShow)[];
-  crew: (Movie | TvShow)[];
+  cast: (Movie | TvShow | any)[];
+  crew: (Movie | TvShow | any)[];
 }
 
 export interface Video {

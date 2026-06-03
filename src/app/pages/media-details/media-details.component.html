@@ -767,7 +767,17 @@
                           </div>
                           <div class="credit-info">
                             <h4>{{ credit.title || credit.name }}</h4>
-                            <p>{{ (credit.release_date || credit.first_air_date) | date:'yyyy' }}</p>
+                            <p>
+                              {{ (credit.release_date || credit.first_air_date) | date:'yyyy' }}
+                              @if (credit.name) {
+                                @if (credit.episode_count) {
+                                  <span> • {{ credit.episode_count }} {{ credit.episode_count === 1 ? 'episode' : 'episodes' }}</span>
+                                }
+                                @if (credit.season_number) {
+                                  <span> • Season {{ credit.season_number }}</span>
+                                }
+                              }
+                            </p>
                           </div>
                         </div>
                       }

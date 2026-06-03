@@ -786,8 +786,14 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         }
       })
       .filter((m: any) => m.poster_path) // Ensure it has a poster
-      .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
-      .slice(0, 12);
+      .sort((a: any, b: any) => {
+        // Sort by year descending, then popularity
+        const dateA = new Date(a.release_date || a.first_air_date || 0).getTime();
+        const dateB = new Date(b.release_date || b.first_air_date || 0).getTime();
+        if (dateB !== dateA) return dateB - dateA;
+        return (b.popularity || 0) - (a.popularity || 0);
+      })
+      .slice(0, 20);
   }
 
   setCastTab(tab: 'movie' | 'tv'): void {
