@@ -760,7 +760,7 @@
 
                   @if (getFilteredCredits().length > 0) {
                     <div class="credits-grid">
-                      @for (credit of getFilteredCredits(); track credit.id) {
+                      @for (credit of getFilteredCredits(); track credit.id + '-' + (credit.character || credit.job || '')) {
                         <div class="credit-card" (click)="navigateToDetails(credit.title ? 'movie' : 'tvshow', credit.id); closeCastModal()">
                           <div class="credit-image">
                             <img [src]="getImageUrl(credit.poster_path, 'poster')" [alt]="credit.title || credit.name">
