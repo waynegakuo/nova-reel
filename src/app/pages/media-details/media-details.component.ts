@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MediaService } from '../../services/media/media.service';
 import { TriviaService } from '../../services/trivia/trivia.service';
 import { AiReviewChatComponent } from '../../components/ai-review-chat/ai-review-chat.component';
-import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew } from '../../models/media-details.model';
+import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew, Video } from '../../models/media-details.model';
 import { WatchProvidersResponse } from '../../models/watch-providers.model';
 import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -394,6 +394,18 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     });
 
     return Array.from(uniqueCrewMembers.values());
+  }
+
+  /**
+   * Gets the key of the first video that is of type 'Trailer'
+   * @param videos - The array of videos
+   * @returns The key of the first trailer, or the first video key if no trailer is found, or null if no videos
+   */
+  getTrailerKey(videos: Video[]): string | null {
+    if (!videos || videos.length === 0) return null;
+
+    const trailer = videos.find(v => v.type === 'Trailer');
+    return trailer ? trailer.key : videos[0].key;
   }
 
   /**
