@@ -740,6 +740,9 @@
                   @if (selectedPerson()!.birthday) {
                     <p class="cast-meta">Born: {{ selectedPerson()!.birthday | date:'longDate' }} @if (selectedPerson()!.place_of_birth) { in {{ selectedPerson()!.place_of_birth }} }</p>
                   }
+                  @if (selectedPerson()!.deathday) {
+                    <p class="cast-meta">Died: {{ selectedPerson()!.deathday | date:'longDate' }}</p>
+                  }
                   <p class="cast-dept">Known for: {{ selectedPerson()!.known_for_department }}</p>
                 </div>
               </div>
