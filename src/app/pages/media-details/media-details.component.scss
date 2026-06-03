@@ -108,3 +108,246 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.cast-card, .video-card, .similar-card, .recommendation-card, .credit-card {
+  cursor: pointer;
+}
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(8px);
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: variables.$card-background-dark;
+  border-radius: variables.$border-radius-lg;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease-out;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(variables.$primary-color, 0.3);
+    border-radius: 4px;
+  }
+}
+
+.modal-close {
+  position: sticky;
+  top: 15px;
+  right: 15px;
+  float: right;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: variables.$primary-color;
+    transform: rotate(90deg);
+  }
+}
+
+.modal-loading {
+  padding: 60px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.cast-details-modal {
+  padding: 30px;
+
+  .cast-header {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .cast-modal-image {
+      width: 180px;
+      height: 270px;
+      flex-shrink: 0;
+      border-radius: variables.$border-radius-md;
+      overflow: hidden;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .cast-modal-info {
+      h2 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: white;
+      }
+
+      .cast-meta {
+        color: variables.$text-secondary-dark;
+        margin-bottom: 5px;
+      }
+
+      .cast-dept {
+        display: inline-block;
+        background: rgba(variables.$primary-color, 0.2);
+        color: variables.$primary-color;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-top: 10px;
+      }
+    }
+  }
+
+  .cast-body {
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: variables.$primary-color;
+      border-left: 4px solid variables.$primary-color;
+      padding-left: 15px;
+    }
+
+    .cast-bio {
+      margin-bottom: 40px;
+      p {
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.8);
+        white-space: pre-line;
+      }
+    }
+
+    .cast-credits {
+      .credits-tabs {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+
+        .tab-btn {
+          background: none;
+          border: none;
+          color: variables.$text-secondary-dark;
+          font-size: 1.2rem;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 5px 10px;
+          position: relative;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: white;
+          }
+
+          &.active {
+            color: variables.$primary-color;
+
+            &::after {
+              content: '';
+              position: absolute;
+              bottom: -11px;
+              left: 0;
+              width: 100%;
+              height: 3px;
+              background: variables.$primary-color;
+            }
+          }
+        }
+      }
+
+      .no-credits {
+        color: variables.$text-secondary-dark;
+        font-style: italic;
+        text-align: center;
+        padding: 40px 0;
+      }
+
+      .credits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .credit-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: variables.$border-radius-md;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: translateY(-5px);
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .credit-image {
+          height: 200px;
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .credit-info {
+          padding: 10px;
+          h4 {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white;
+          }
+          p {
+            font-size: 0.8rem;
+            color: variables.$text-secondary-dark;
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MediaService } from '../../services/media/media.service';
 import { TriviaService } from '../../services/trivia/trivia.service';
 import { AiReviewChatComponent } from '../../components/ai-review-chat/ai-review-chat.component';
-import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew, Video } from '../../models/media-details.model';
+import { MovieDetails, TvShowDetails, ProductionCompany, Network, Crew, Video, PersonDetails } from '../../models/media-details.model';
 import { WatchProvidersResponse } from '../../models/watch-providers.model';
 import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -44,6 +44,12 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   selectedCountry = signal<string>('');
   availableCountries = signal<string[]>([]);
   isWatchProvidersExpanded = signal<boolean>(true);
+
+  // Cast modal signals
+  isCastModalOpen = signal<boolean>(false);
+  selectedPerson = signal<PersonDetails | null>(null);
+  isLoadingPerson = signal<boolean>(false);
+  activeCastTab = signal<'movie' | 'tv'>('movie');
 
   // Authentication signals
   isAuthenticated = signal<boolean>(false);
@@ -725,6 +731,67 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         difficulty: triviaRequest.difficulty
       }
     });
+  }
+
+  /**
+   * Opens the cast modal and loads person details
+   * @param personId - The ID of the person to load
+   */
+  openCastModal(personId: number): void {
+    this.isCastModalOpen.set(true);
+    this.isLoadingPerson.set(true);
+    this.selectedPerson.set(null);
+    this.activeCastTab.set('movie'); // Reset to movies tab
+
+    this.mediaService.getPersonDetails(personId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (person) => {
+        this.selectedPerson.set(person);
+        this.isLoadingPerson.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading person details:', err);
+        this.isLoadingPerson.set(false);
+        this.notification.set({
+          message: 'Failed to load cast details. Please try again.',
+          type: 'error'
+        });
+        setTimeout(() => this.notification.set(null), 3000);
+      }
+    });
+  }
+
+  /**
+   * Closes the cast modal
+   */
+  closeCastModal(): void {
+    this.isCastModalOpen.set(false);
+    this.selectedPerson.set(null);
+  }
+
+  /**
+   * Filters person credits based on media type (Movies or TV Shows)
+   */
+  getFilteredCredits(): any[] {
+    const person = this.selectedPerson();
+    if (!person || !person.combined_credits || !person.combined_credits.cast) return [];
+
+    const type = this.activeCastTab();
+
+    return person.combined_credits.cast
+      .filter((item: any) => {
+        if (type === 'movie') {
+          return item.media_type === 'movie' || (item.title && !item.name);
+        } else {
+          return item.media_type === 'tv' || (item.name && !item.title);
+        }
+      })
+      .filter((m: any) => m.poster_path) // Ensure it has a poster
+      .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
+      .slice(0, 12);
+  }
+
+  setCastTab(tab: 'movie' | 'tv'): void {
+    this.activeCastTab.set(tab);
   }
 
   ngOnDestroy(): void {

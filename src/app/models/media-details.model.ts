@@ -75,6 +75,24 @@ export interface Credits {
   crew: Crew[];
 }
 
+export interface PersonDetails {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  profile_path: string | null;
+  known_for_department: string;
+  also_known_as: string[];
+  combined_credits?: PersonCredits;
+}
+
+export interface PersonCredits {
+  cast: (Movie | TvShow)[];
+  crew: (Movie | TvShow)[];
+}
+
 export interface Video {
   iso_639_1: string;
   iso_3166_1: string;

@@ -1,7 +1,7 @@
 import {EnvironmentInjector, inject, Injectable, runInInjectionContext} from '@angular/core';
 import {Observable, shareReplay, BehaviorSubject, switchMap, from, of, map, throwError, Subject} from 'rxjs';
 import {Movie, TvShow} from '../../models/media.model';
-import {MovieDetails, TvShowDetails, Favorite, Watchlist} from '../../models/media-details.model';
+import {MovieDetails, TvShowDetails, Favorite, Watchlist, PersonDetails} from '../../models/media-details.model';
 import {WatchProvidersResponse} from '../../models/watch-providers.model';
 import {AiRecommendation, AiRecommendationResponse} from '../../models/ai-recommendations.model';
 import {HttpClient} from '@angular/common/http';
@@ -29,6 +29,7 @@ export class MediaService {
   private tvShowCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
   private movieDetailsCache: Record<number, Observable<MovieDetails>> = {};
   private tvShowDetailsCache: Record<number, Observable<TvShowDetails>> = {};
+  private personDetailsCache: Record<number, Observable<PersonDetails>> = {};
   private aiRecommendationsCache: Observable<AiRecommendationResponse> | null = null;
   private searchCache: Record<string, Observable<(Movie | TvShow)[]>> = {};
   private guessMovieCache: Observable<any> | null = null;
@@ -38,6 +39,7 @@ export class MediaService {
   private refreshTVShowsCache$ = new BehaviorSubject<boolean>(true);
   private refreshMovieDetailsCache$ = new BehaviorSubject<boolean>(true);
   private refreshTVShowDetailsCache$ = new BehaviorSubject<boolean>(true);
+  private refreshPersonDetailsCache$ = new BehaviorSubject<boolean>(true);
   private refreshAiRecommendationsCache$ = new BehaviorSubject<boolean>(true);
   private refreshSearchCache$ = new BehaviorSubject<boolean>(true);
   private refreshGuessMovieCache$ = new BehaviorSubject<boolean>(true);
@@ -331,6 +333,52 @@ export class MediaService {
 
     // Trigger a refresh
     this.refreshTVShowDetailsCache$.next(true);
+  }
+
+  /**
+   * Fetches person details from TMDB API with caching
+   * @param personId - The ID of the person to fetch details for
+   * @param forceRefresh - Whether to force a refresh of the cache
+   * @returns An Observable containing the PersonDetails object
+   */
+  getPersonDetails(personId: number, forceRefresh: boolean = false): Observable<PersonDetails> {
+    if (forceRefresh) {
+      this.refreshPersonDetailsCache(personId);
+    }
+
+    if (!this.personDetailsCache[personId]) {
+      this.personDetailsCache[personId] = this.refreshPersonDetailsCache$.pipe(
+        switchMap(() => {
+          return new Observable<PersonDetails>(observer => {
+            this.getTmdbData('person', undefined, undefined, 'append_to_response=combined_credits', personId)
+              .then((response: any) => {
+                observer.next(response);
+                observer.complete();
+              })
+              .catch(error => {
+                console.error('Error fetching person details:', error);
+                observer.error(error);
+              });
+          });
+        }),
+        shareReplay(1)
+      );
+    }
+
+    return this.personDetailsCache[personId];
+  }
+
+  /**
+   * Refreshes the cache for a specific person's details
+   * @param personId - The ID of the person to refresh
+   */
+  refreshPersonDetailsCache(personId?: number): void {
+    if (personId) {
+      delete this.personDetailsCache[personId];
+    } else {
+      this.personDetailsCache = {};
+    }
+    this.refreshPersonDetailsCache$.next(true);
   }
 
   /**
