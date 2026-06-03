@@ -419,15 +419,24 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Opens a YouTube trailer in a modal or new window
+   * Opens a YouTube trailer in a modal
    * @param key - The YouTube video key
    */
   playTrailer(key: string): void {
     if (!key) return;
     logEvent(this.analytics, 'play_trailer', { media_type: this.mediaType(), media_id: this.mediaId(), video_key: key });
-    // For a real implementation, you might want to use a modal dialog
-    // For simplicity, we'll just open in a new window
-    window.open(`https://www.youtube.com/watch?v=${key}`, '_blank');
+
+    const url = `https://www.youtube.com/embed/${key}?autoplay=1`;
+    this.trailerUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+    this.showTrailer.set(true);
+  }
+
+  /**
+   * Closes the trailer modal
+   */
+  closeTrailer(): void {
+    this.showTrailer.set(false);
+    this.trailerUrl.set(null);
   }
 
   /**

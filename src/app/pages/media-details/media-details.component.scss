@@ -25,6 +25,85 @@
   }
 }
 
+// Trailer Modal Styles
+.trailer-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(5px);
+}
+
+.trailer-modal-container {
+  width: 90%;
+  max-width: 1000px;
+  position: relative;
+  background-color: variables.$card-background-dark;
+  border-radius: variables.$border-radius-md;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(variables.$primary-color, 0.2);
+  animation: slideUp 0.3s ease-out;
+
+  .close-modal {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, color 0.2s;
+
+    &:hover {
+      color: variables.$primary-color;
+      transform: scale(1.1);
+    }
+  }
+
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; // 16:9 Aspect Ratio
+    height: 0;
+    overflow: hidden;
+    border-radius: variables.$border-radius-md;
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
