@@ -205,7 +205,7 @@
           <section class="cast-section section-heading-global">
             <h2>Top Cast</h2>
             <div class="cast-grid">
-              @for (actor of movieDetails()!.credits.cast.slice(0, 19); track actor.id) {
+              @for (actor of movieDetails()!.credits.cast.slice(0, 9); track actor.id) {
                 <div class="cast-card" (click)="openCastModal(actor.id)">
                   <div class="cast-image">
                     <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
