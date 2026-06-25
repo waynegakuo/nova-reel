@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../../../styles/variables' as variables;
 
 // Container styles
@@ -395,5 +396,71 @@
         }
       }
     }
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin-bottom: 0 !important;
+
+    &::after {
+      bottom: -8px !important;
+    }
+  }
+}
+
+.toggle-cast-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: variables.$primary-color;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: variables.$border-radius-sm;
+
+  &:hover {
+    background: rgba(variables.$primary-color, 0.1);
+    color: color.adjust(variables.$primary-color, $lightness: 10%);
+
+    svg {
+      transform: translateY(2px);
+
+      &.rotated {
+        transform: rotate(180deg) translateY(2px);
+      }
+    }
+  }
+
+  svg {
+    transition: transform 0.3s ease;
+
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.additional-cast {
+  margin-top: 1.5rem;
+}
+
+.cast-actions-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 1rem;
   }
 }

@@ -45,6 +45,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   selectedCountry = signal<string>('');
   availableCountries = signal<string[]>([]);
   isWatchProvidersExpanded = signal<boolean>(true);
+  visibleCastCount = signal<number>(10);
 
   // Cast modal signals
   isCastModalOpen = signal<boolean>(false);
@@ -56,6 +57,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   // Authentication signals
   isAuthenticated = signal<boolean>(false);
   Object = Object;
+  Math = Math;
 
   // Subject for managing subscriptions
   private destroy$ = new Subject<void>();
@@ -465,6 +467,14 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
    */
   toggleWatchProviders(): void {
     this.isWatchProvidersExpanded.update(v => !v);
+  }
+
+  showMoreCast(): void {
+    this.visibleCastCount.update(v => v + 10);
+  }
+
+  showLessCast(): void {
+    this.visibleCastCount.set(10);
   }
 
   /**

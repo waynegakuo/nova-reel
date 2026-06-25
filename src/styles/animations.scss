@@ -53,3 +53,21 @@
 .animate-rotate-back-0 {
   animation: rotateBack0 300ms ease-in-out forwards;
 }
+
+// Expand/Collapse Utility
+.expand-collapse-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 400ms ease-in-out, opacity 400ms ease-in-out;
+  opacity: 0;
+  overflow: hidden;
+
+  &.expanded {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  > .expand-content {
+    min-height: 0;
+  }
+}

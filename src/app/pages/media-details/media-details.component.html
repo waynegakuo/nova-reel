@@ -203,9 +203,20 @@
         <!-- Cast Section -->
         @if (movieDetails()!.credits && movieDetails()!.credits.cast.length > 0) {
           <section class="cast-section section-heading-global">
-            <h2>Top Cast</h2>
+            <div class="section-header">
+              <h2>Top Cast</h2>
+              @if (visibleCastCount() > 10) {
+                <button class="btn btn-text toggle-cast-btn" (click)="showLessCast()">
+                  See Less
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rotated">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              }
+            </div>
+
             <div class="cast-grid">
-              @for (actor of movieDetails()!.credits.cast.slice(0, 9); track actor.id) {
+              @for (actor of movieDetails()!.credits.cast.slice(0, 10); track actor.id) {
                 <div class="cast-card" (click)="openCastModal(actor.id)">
                   <div class="cast-image">
                     <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
@@ -217,6 +228,50 @@
                 </div>
               }
             </div>
+
+            @for (batch of [].constructor(Math.ceil((movieDetails()!.credits.cast.length - 10) / 10)); track $index) {
+              @let batchIndex = $index;
+              @let start = 10 + batchIndex * 10;
+              @let end = start + 10;
+              <div class="expand-collapse-container" [class.expanded]="visibleCastCount() > start">
+                <div class="expand-content">
+                  <div class="cast-grid additional-cast">
+                    @for (actor of movieDetails()!.credits.cast.slice(start, end); track actor.id) {
+                      <div class="cast-card" (click)="openCastModal(actor.id)">
+                        <div class="cast-image">
+                          <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
+                        </div>
+                        <div class="cast-info">
+                          <h3>{{ actor.name }}</h3>
+                          <p>{{ actor.character }}</p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (movieDetails()!.credits.cast.length > 10) {
+              <div class="cast-actions-bottom">
+                @if (movieDetails()!.credits.cast.length > visibleCastCount()) {
+                  <button class="btn btn-text toggle-cast-btn" (click)="showMoreCast()">
+                    See More
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                }
+                @if (visibleCastCount() > 10) {
+                  <button class="btn btn-text toggle-cast-btn" (click)="showLessCast()">
+                    See Less
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rotated">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                }
+              </div>
+            }
           </section>
         }
 
@@ -545,9 +600,20 @@
         <!-- Cast Section -->
         @if (tvShowDetails()!.credits && tvShowDetails()!.credits.cast.length > 0) {
           <section class="cast-section section-heading-global">
-            <h2>Top Cast</h2>
+            <div class="section-header">
+              <h2>Top Cast</h2>
+              @if (visibleCastCount() > 10) {
+                <button class="btn btn-text toggle-cast-btn" (click)="showLessCast()">
+                  See Less
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rotated">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              }
+            </div>
+
             <div class="cast-grid">
-              @for (actor of tvShowDetails()!.credits.cast.slice(0, 6); track actor.id) {
+              @for (actor of tvShowDetails()!.credits.cast.slice(0, 10); track actor.id) {
                 <div class="cast-card" (click)="openCastModal(actor.id)">
                   <div class="cast-image">
                     <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
@@ -559,6 +625,50 @@
                 </div>
               }
             </div>
+
+            @for (batch of [].constructor(Math.ceil((tvShowDetails()!.credits.cast.length - 10) / 10)); track $index) {
+              @let batchIndex = $index;
+              @let start = 10 + batchIndex * 10;
+              @let end = start + 10;
+              <div class="expand-collapse-container" [class.expanded]="visibleCastCount() > start">
+                <div class="expand-content">
+                  <div class="cast-grid additional-cast">
+                    @for (actor of tvShowDetails()!.credits.cast.slice(start, end); track actor.id) {
+                      <div class="cast-card" (click)="openCastModal(actor.id)">
+                        <div class="cast-image">
+                          <img [src]="getImageUrl(actor.profile_path, 'profile')" [alt]="actor.name">
+                        </div>
+                        <div class="cast-info">
+                          <h3>{{ actor.name }}</h3>
+                          <p>{{ actor.character }}</p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (tvShowDetails()!.credits.cast.length > 10) {
+              <div class="cast-actions-bottom">
+                @if (tvShowDetails()!.credits.cast.length > visibleCastCount()) {
+                  <button class="btn btn-text toggle-cast-btn" (click)="showMoreCast()">
+                    See More
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                }
+                @if (visibleCastCount() > 10) {
+                  <button class="btn btn-text toggle-cast-btn" (click)="showLessCast()">
+                    See Less
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rotated">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                }
+              </div>
+            }
           </section>
         }
 
