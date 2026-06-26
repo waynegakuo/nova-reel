@@ -29,6 +29,7 @@ export class SearchResultsComponent {
   // Outputs
   @Output() pageChange = new EventEmitter<number>();
   @Output() resultClick = new EventEmitter<{ item: Movie | TvShow, type: 'movie' | 'tv' }>();
+  @Output() switchType = new EventEmitter<'movie' | 'tv'>();
 
   // Signals
   searchResults = signal<(Movie | TvShow)[]>([]);
@@ -121,5 +122,13 @@ export class SearchResultsComponent {
     if (prevPage >= 1) {
       this.goToPage(prevPage);
     }
+  }
+
+  /**
+   * Switches the search type (movie <-> tv)
+   */
+  onSwitchType(): void {
+    const nextType = this.searchType() === 'movie' ? 'tv' : 'movie';
+    this.switchType.emit(nextType);
   }
 }

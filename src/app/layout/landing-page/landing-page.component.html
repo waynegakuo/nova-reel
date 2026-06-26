@@ -27,6 +27,7 @@
           [maxPages]="MAX_PAGES"
           (pageChange)="goToSearchPage($event)"
           (resultClick)="navigateToDetails($event.item, $event.type)"
+          (switchType)="setActiveTab($event === 'movie' ? 'Movies' : 'TV Shows')"
         ></app-search-results>
       }
     }

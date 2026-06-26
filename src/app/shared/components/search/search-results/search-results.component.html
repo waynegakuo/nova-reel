@@ -52,6 +52,9 @@
   </div>
 } @else {
   <div class="no-results">
-    <p>No results found for "{{ searchQuery() }}"</p>
+    <p>No results found for "{{ searchQuery() }}" in {{ searchType() === 'movie' ? 'Movies' : 'TV Shows' }}</p>
+    <button class="btn btn-primary btn-switch-type" (click)="onSwitchType()">
+      Search in {{ searchType() === 'movie' ? 'TV Shows' : 'Movies' }}
+    </button>
   </div>
 }

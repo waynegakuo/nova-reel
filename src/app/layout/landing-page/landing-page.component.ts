@@ -247,6 +247,11 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   setActiveTab(tab: string): void {
     this.activeTab.set(tab);
 
+    // If we are currently showing search results, re-run the search with the new tab's type
+    if (this.showSearchResults() && this.searchQuery()) {
+      this.onSearch(this.searchQuery());
+    }
+
     // Load favorites when the Favorites tab is selected
     if (tab === 'Favorites') {
       this.loadFavorites();
