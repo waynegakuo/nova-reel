@@ -37,6 +37,8 @@ yarn-error.log
 testem.log
 /typings
 .junie/guidelines.md
+.junie/memory
+.junie/plans
 
 # System files
 .DS_Store
