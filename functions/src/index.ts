@@ -10,7 +10,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {HttpsError, onCall, onCallGenkit} from "firebase-functions/v2/https";
+import {HttpsError, onCall, onCallGenkit, onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { logger as genkitLogger } from 'genkit/logging'; // Import Genkit's logger
 import {defineSecret} from 'firebase-functions/params';
@@ -875,4 +875,117 @@ export const aiReviewChat = onCallGenkit(
     timeoutSeconds: 60,
   },
   _aiReviewChatLogic
+);
+
+// --- SSR meta-tag injection for social media link previews ---
+//
+// Fetches the index.html from Firebase Hosting (using the request's own host, so
+// it works correctly for both the live channel and any PR preview channel), injects
+// TMDB-sourced Open Graph / Twitter Card tags, and returns the modified page.
+// Regular users still get the full Angular SPA; crawlers see rich previews.
+
+const indexHtmlCache = new Map<string, { content: string; timestamp: number }>();
+const INDEX_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+async function fetchIndexHtml(host: string): Promise<string> {
+  const cached = indexHtmlCache.get(host);
+  if (cached && Date.now() - cached.timestamp < INDEX_CACHE_TTL_MS) {
+    return cached.content;
+  }
+  const response = await axios.get<string>(`https://${host}/index.html`, {
+    timeout: 4000,
+    responseType: 'text',
+  });
+  const content = response.data;
+  indexHtmlCache.set(host, { content, timestamp: Date.now() });
+  return content;
+}
+
+export const ssrMediaDetails = onRequest(
+  {
+    // africa-south1 is not supported for Firebase Hosting rewrites (Cloud Run constraint).
+    // europe-west1 is the closest supported region for African users.
+    region: 'europe-west1',
+    secrets: [TMDB_BEARER_TOKEN],
+  },
+  async (req, res) => {
+    const match = req.path.match(/^\/details\/(movie|tvshow)\/(\d+)/);
+    if (!match) {
+      res.status(404).send('Not found');
+      return;
+    }
+
+    const type = match[1] as 'movie' | 'tvshow';
+    const id = parseInt(match[2], 10);
+    const tmdbType = type === 'tvshow' ? 'tv' : 'movie';
+    // Firebase Hosting sets X-Forwarded-Host to the original Hosting URL (e.g.
+    // nova-reels.web.app or a PR preview channel). The Host header contains the
+    // internal Cloud Run URL, which is useless here.
+    const reqHost =
+      (req.headers['x-forwarded-host'] as string) ||
+      (req.headers['host'] as string) ||
+      'nova-reels.web.app';
+    const pageUrl = `https://${reqHost}/details/${type}/${id}`;
+
+    try {
+      const [mediaData, indexHtml] = await Promise.all([
+        executeTmdbRequest(
+          constructTmdbUrl(tmdbType, { id }),
+          `ssrMediaDetails(${type}/${id})`
+        ),
+        fetchIndexHtml(reqHost),
+      ]);
+
+      const rawTitle = String(mediaData.title || mediaData.name || 'Nova Reel');
+      const rawOverview = String(mediaData.overview || '');
+      const releaseDate = String(mediaData.release_date || mediaData.first_air_date || '');
+      const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
+
+      const safeTitle = escapeHtml(rawTitle);
+      const fullTitle = year ? `${safeTitle} (${year}) | Nova Reel` : `${safeTitle} | Nova Reel`;
+      const safeDescription = escapeHtml(
+        rawOverview.length > 160
+          ? rawOverview.slice(0, 157) + '...'
+          : rawOverview || `Watch ${rawTitle} on Nova Reel`
+      );
+      const imagePath = String(mediaData.backdrop_path || mediaData.poster_path || '');
+      const imageUrl = imagePath
+        ? `https://image.tmdb.org/t/p/w1280${imagePath}`
+        : `https://${reqHost}/assets/images/og-default.png`;
+      const ogType = type === 'movie' ? 'video.movie' : 'video.tv_show';
+
+      let html = indexHtml;
+      html = html.replace(/(<title>)[^<]*(<\/title>)/, `$1${fullTitle}$2`);
+      html = html.replace(/(<meta\s+name="description"\s+content=")[^"]*"/, `$1${safeDescription}"`);
+      html = html.replace(/(<meta\s+property="og:title"\s+content=")[^"]*"/, `$1${fullTitle}"`);
+      html = html.replace(/(<meta\s+property="og:description"\s+content=")[^"]*"/, `$1${safeDescription}"`);
+      html = html.replace(/(<meta\s+property="og:type"\s+content=")[^"]*"/, `$1${ogType}"`);
+      html = html.replace(/(<meta\s+property="og:url"\s+content=")[^"]*"/, `$1${pageUrl}"`);
+      html = html.replace(/(<meta\s+property="og:image"\s+content=")[^"]*"/, `$1${imageUrl}"`);
+      html = html.replace(/(<meta\s+name="twitter:title"\s+content=")[^"]*"/, `$1${fullTitle}"`);
+      html = html.replace(/(<meta\s+name="twitter:description"\s+content=")[^"]*"/, `$1${safeDescription}"`);
+      html = html.replace(/(<meta\s+name="twitter:image"\s+content=")[^"]*"/, `$1${imageUrl}"`);
+
+      res.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+      res.set('Content-Type', 'text/html; charset=utf-8');
+      res.send(html);
+    } catch (error) {
+      logger.error(`SSR meta details error for ${type}/${id}:`, error);
+      // Best-effort fallback: serve unmodified index.html so Angular still boots
+      try {
+        const fallbackHtml = await fetchIndexHtml(reqHost);
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.send(fallbackHtml);
+      } catch {
+        res.redirect(302, pageUrl);
+      }
+    }
+  }
 );

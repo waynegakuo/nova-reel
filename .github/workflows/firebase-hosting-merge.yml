@@ -21,3 +21,11 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_NOVA_REELS }}
           channelId: live
           projectId: nova-reels
+      - name: Install Functions dependencies
+        run: npm ci --force --prefix functions
+      - name: Deploy Firebase Functions
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NOVA_REELS }}' > /tmp/firebase-sa.json
+          npx firebase-tools@latest deploy --only functions --project nova-reels --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
