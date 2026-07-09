@@ -835,13 +835,11 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     const title = isMovie ? (details as MovieDetails).title : (details as TvShowDetails).name;
     const description = details.overview;
     const image = this.getImageUrl(details.backdrop_path || details.poster_path, 'backdrop');
-    const url = window.location.href;
 
     this.seoService.updateSeoData({
       title,
       description,
       image,
-      url,
       type: isMovie ? 'video.movie' : 'video.tv_show'
     });
 
