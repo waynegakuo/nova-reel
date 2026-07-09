@@ -25,6 +25,11 @@
     ],
     "rewrites": [
       {
+        "source": "/details/**",
+        "function": "ssrMediaDetails",
+        "region": "africa-south1"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
