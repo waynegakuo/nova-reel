@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
+  siteUrl: 'https://nova-reels.web.app',
   firebaseConfig: {
     apiKey: "AIzaSyChGxzLHydbRQrDQvz7H1Ncnb_SiffHMXI",
     authDomain: "nova-reels.firebaseapp.com",

@@ -19,6 +19,8 @@ import { ForYouComponent } from '../../components/for-you/for-you.component';
 import { SmartRecommendationsComponent } from '../../components/smart-recommendations/smart-recommendations.component';
 import { GuessTheMovieComponent } from '../../components/guess-the-movie/guess-the-movie.component';
 import {Analytics, logEvent} from '@angular/fire/analytics';
+import { SeoService } from '../../services/seo/seo.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-landing-page',
@@ -86,6 +88,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
   // Analytics
   fireAnalytics = inject(Analytics);
+  private seoService = inject(SeoService);
 
   // Tab configuration for new TabNavigationComponent
   get tabsConfig(): TabItem[] {
@@ -128,6 +131,25 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.seoService.updateSeoData({
+      title: 'Nova Reel - Your Movie Hub',
+      description: 'Discover movies and TV shows, get AI-powered recommendations, and manage your watchlist on Nova Reel.',
+      url: environment.siteUrl,
+      type: 'website'
+    });
+    this.seoService.setJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Nova Reel',
+      url: environment.siteUrl,
+      description: 'Your ultimate movie and TV show hub with AI-powered recommendations.',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${environment.siteUrl}/?q={search_term_string}`,
+        'query-input': 'required name=search_term_string'
+      }
+    });
+
     this.loadMovies('popular');
     this.loadTVShows('popular');
 
@@ -145,6 +167,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeJsonLd();
     // Complete the subject to unsubscribe from all subscriptions
     this.destroy$.next();
     this.destroy$.complete();

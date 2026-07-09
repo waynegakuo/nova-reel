@@ -11,6 +11,8 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {Subject, takeUntil} from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
 import { Analytics, logEvent } from '@angular/fire/analytics';
+import { SeoService } from '../../services/seo/seo.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-media-details',
@@ -27,6 +29,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private authService = inject(AuthService);
   private analytics = inject(Analytics);
+  private seoService = inject(SeoService);
 
   // Signals
   mediaType = signal<'movie' | 'tvshow'>('movie');
@@ -116,6 +119,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         next: (details) => {
           this.movieDetails.set(details);
           this.isLoading.set(false);
+          this.updateSeo(details);
 
           // Check if this movie is in favorites and watchlist
           this.checkFavoriteStatus();
@@ -133,6 +137,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         next: (details) => {
           this.tvShowDetails.set(details);
           this.isLoading.set(false);
+          this.updateSeo(details);
 
           // Check if this TV show is in favorites and watchlist
           this.checkFavoriteStatus();
@@ -820,7 +825,89 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
     this.activeCastTab.set(tab);
   }
 
+  private updateSeo(details: MovieDetails | TvShowDetails): void {
+    const isMovie = this.mediaType() === 'movie';
+    const movie = details as MovieDetails;
+    const tvShow = details as TvShowDetails;
+
+    const title = isMovie ? movie.title : tvShow.name;
+    const releaseDate = isMovie ? movie.release_date : tvShow.first_air_date;
+    const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
+    const genres = details.genres?.map(g => g.name).join(', ') || '';
+
+    const rawDescription = details.overview?.trim();
+    const description = rawDescription
+      ? (rawDescription.length > 160 ? rawDescription.slice(0, 157) + '...' : rawDescription)
+      : `Watch ${title} on Nova Reel`;
+
+    const imagePath = details.backdrop_path || details.poster_path;
+    const imageUrl = imagePath ? `https://image.tmdb.org/t/p/w1280${imagePath}` : undefined;
+
+    const pageUrl = `${environment.siteUrl}/details/${this.mediaType()}/${this.mediaId()}`;
+
+    this.seoService.updateSeoData({
+      title: year ? `${title} (${year})` : title,
+      description,
+      image: imageUrl,
+      url: pageUrl,
+      type: isMovie ? 'video.movie' : 'video.tv_show',
+      keywords: [title, genres, isMovie ? 'movie' : 'TV show', 'watch online', 'Nova Reel']
+        .filter(Boolean)
+        .join(', ')
+    });
+
+    const directors = details.credits?.crew
+      ?.filter(c => c.job === 'Director')
+      .map(c => ({ '@type': 'Person', name: c.name }));
+
+    const actors = details.credits?.cast
+      ?.slice(0, 5)
+      .map(c => ({ '@type': 'Person', name: c.name }));
+
+    const rating = details.vote_count > 0
+      ? {
+          '@type': 'AggregateRating',
+          ratingValue: details.vote_average.toFixed(1),
+          ratingCount: details.vote_count,
+          bestRating: '10',
+          worstRating: '0'
+        }
+      : undefined;
+
+    const jsonLd = isMovie
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Movie',
+          name: movie.title,
+          description: details.overview,
+          image: imageUrl,
+          datePublished: movie.release_date,
+          genre: details.genres?.map(g => g.name),
+          ...(rating && { aggregateRating: rating }),
+          ...(directors?.length && { director: directors }),
+          ...(actors?.length && { actor: actors }),
+          url: pageUrl
+        }
+      : {
+          '@context': 'https://schema.org',
+          '@type': 'TVSeries',
+          name: tvShow.name,
+          description: details.overview,
+          image: imageUrl,
+          datePublished: tvShow.first_air_date,
+          genre: details.genres?.map(g => g.name),
+          numberOfEpisodes: tvShow.number_of_episodes,
+          numberOfSeasons: tvShow.number_of_seasons,
+          ...(rating && { aggregateRating: rating }),
+          ...(actors?.length && { actor: actors }),
+          url: pageUrl
+        };
+
+    this.seoService.setJsonLd(jsonLd);
+  }
+
   ngOnDestroy(): void {
+    this.seoService.removeJsonLd();
     // Complete the subject to unsubscribe from all subscriptions
     this.destroy$.next();
     this.destroy$.complete();
