@@ -26,7 +26,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "function": "ssr_nova_reel"
       }
     ]
   }

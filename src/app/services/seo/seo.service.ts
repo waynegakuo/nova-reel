@@ -30,7 +30,7 @@ export class SeoService {
     const title = data.title ? `${data.title} | Nova Reel` : this.defaultTitle;
     const description = data.description || this.defaultDescription;
     const image = data.image || this.defaultImage;
-    const url = data.url || (isPlatformBrowser(this.platformId) ? this.document.location.href : 'https://nova-reel.web.app/');
+    const url = data.url || (isPlatformBrowser(this.platformId) ? this.document.location.href : '');
     const type = data.type || 'website';
     const twitterCard = data.twitterCard || 'summary_large_image';
 

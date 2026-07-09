@@ -10,7 +10,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {HttpsError, onCall, onCallGenkit} from "firebase-functions/v2/https";
+import {HttpsError, onCall, onCallGenkit, onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { logger as genkitLogger } from 'genkit/logging'; // Import Genkit's logger
 import {defineSecret} from 'firebase-functions/params';
@@ -29,6 +29,20 @@ const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY'); // *** NEW: Define Gemini
 
 // Initialize Firebase Admin SDK
 initializeApp();
+
+/**
+ * Handle Angular SSR request
+ */
+export const ssr_nova_reel = onRequest({
+  secrets: [TMDB_BEARER_TOKEN, GEMINI_API_KEY],
+  memory: '1GiB',
+}, async (req, res) => {
+  const { reqHandler } = await import(
+    // @ts-ignore
+    '../../dist/nova-reel/server/server.mjs'
+  ) as any;
+  await reqHandler(req, res);
+});
 const db = getFirestore();
 const storage = getStorage();
 
