@@ -18,6 +18,7 @@ import { FavoritesComponent } from '../../components/favorites/favorites.compone
 import { ForYouComponent } from '../../components/for-you/for-you.component';
 import { SmartRecommendationsComponent } from '../../components/smart-recommendations/smart-recommendations.component';
 import { GuessTheMovieComponent } from '../../components/guess-the-movie/guess-the-movie.component';
+import { SeoService } from '../../services/seo/seo.service';
 import {Analytics, logEvent} from '@angular/fire/analytics';
 
 @Component({
@@ -86,6 +87,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
   // Analytics
   fireAnalytics = inject(Analytics);
+  private seoService = inject(SeoService);
 
   // Tab configuration for new TabNavigationComponent
   get tabsConfig(): TabItem[] {
@@ -128,6 +130,19 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.seoService.updateSeoData();
+    this.seoService.setJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Nova Reel',
+      url: 'https://nova-reel.web.app/', // Adjust if different
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://nova-reel.web.app/?q={search_term_string}',
+        'query-input': 'required name=search_term_string'
+      }
+    });
+
     this.loadMovies('popular');
     this.loadTVShows('popular');
 
@@ -145,9 +160,9 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Complete the subject to unsubscribe from all subscriptions
     this.destroy$.next();
     this.destroy$.complete();
+    this.seoService.removeJsonLd();
   }
 
   /**

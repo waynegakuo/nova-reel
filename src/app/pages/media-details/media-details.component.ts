@@ -10,6 +10,7 @@ import { TriviaGameRequest } from '../../models/trivia.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import {Subject, takeUntil} from 'rxjs';
 import { AuthService } from '../../services/auth/auth.service';
+import { SeoService } from '../../services/seo/seo.service';
 import { Analytics, logEvent } from '@angular/fire/analytics';
 
 @Component({
@@ -26,6 +27,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   private triviaService = inject(TriviaService);
   private sanitizer = inject(DomSanitizer);
   private authService = inject(AuthService);
+  private seoService = inject(SeoService);
   private analytics = inject(Analytics);
 
   // Signals
@@ -116,6 +118,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         next: (details) => {
           this.movieDetails.set(details);
           this.isLoading.set(false);
+          this.updateSeo(details);
 
           // Check if this movie is in favorites and watchlist
           this.checkFavoriteStatus();
@@ -133,6 +136,7 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
         next: (details) => {
           this.tvShowDetails.set(details);
           this.isLoading.set(false);
+          this.updateSeo(details);
 
           // Check if this TV show is in favorites and watchlist
           this.checkFavoriteStatus();
@@ -821,8 +825,44 @@ export class MediaDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Complete the subject to unsubscribe from all subscriptions
     this.destroy$.next();
     this.destroy$.complete();
+    this.seoService.removeJsonLd();
+  }
+
+  private updateSeo(details: MovieDetails | TvShowDetails): void {
+    const isMovie = this.mediaType() === 'movie';
+    const title = isMovie ? (details as MovieDetails).title : (details as TvShowDetails).name;
+    const description = details.overview;
+    const image = this.getImageUrl(details.backdrop_path || details.poster_path, 'backdrop');
+    const url = window.location.href;
+
+    this.seoService.updateSeoData({
+      title,
+      description,
+      image,
+      url,
+      type: isMovie ? 'video.movie' : 'video.tv_show'
+    });
+
+    const jsonLd: any = {
+      '@context': 'https://schema.org',
+      '@type': isMovie ? 'Movie' : 'TVSeries',
+      name: title,
+      description: description,
+      image: image,
+      datePublished: isMovie ? (details as MovieDetails).release_date : (details as TvShowDetails).first_air_date,
+    };
+
+    if (details.vote_average) {
+      jsonLd.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: details.vote_average,
+        bestRating: '10',
+        ratingCount: details.vote_count
+      };
+    }
+
+    this.seoService.setJsonLd(jsonLd);
   }
 }
