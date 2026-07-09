@@ -925,7 +925,13 @@ export const ssrMediaDetails = onRequest(
     const type = match[1] as 'movie' | 'tvshow';
     const id = parseInt(match[2], 10);
     const tmdbType = type === 'tvshow' ? 'tv' : 'movie';
-    const reqHost = (req.headers['host'] as string) || 'nova-reels.web.app';
+    // Firebase Hosting sets X-Forwarded-Host to the original Hosting URL (e.g.
+    // nova-reels.web.app or a PR preview channel). The Host header contains the
+    // internal Cloud Run URL, which is useless here.
+    const reqHost =
+      (req.headers['x-forwarded-host'] as string) ||
+      (req.headers['host'] as string) ||
+      'nova-reels.web.app';
     const pageUrl = `https://${reqHost}/details/${type}/${id}`;
 
     try {
