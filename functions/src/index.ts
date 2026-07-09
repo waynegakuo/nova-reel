@@ -910,7 +910,9 @@ async function fetchIndexHtml(host: string): Promise<string> {
 
 export const ssrMediaDetails = onRequest(
   {
-    region: 'africa-south1',
+    // africa-south1 is not supported for Firebase Hosting rewrites (Cloud Run constraint).
+    // europe-west1 is the closest supported region for African users.
+    region: 'europe-west1',
     secrets: [TMDB_BEARER_TOKEN],
   },
   async (req, res) => {

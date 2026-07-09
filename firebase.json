@@ -27,7 +27,7 @@
       {
         "source": "/details/**",
         "function": "ssrMediaDetails",
-        "region": "africa-south1"
+        "region": "europe-west1"
       },
       {
         "source": "**",
