@@ -16,6 +16,7 @@ jobs:
           node-version: '24.18.0'
       - run: npm ci --force && npm run build --force
       - run: npm ci --prefix functions --force
+      - run: cp -r dist/nova-reel/server functions/dist-server && cp -r dist/nova-reel/browser functions/browser
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

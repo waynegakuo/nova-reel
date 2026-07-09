@@ -39,7 +39,7 @@ export const ssr_nova_reel = onRequest({
 }, async (req, res) => {
   const { reqHandler } = await import(
     // @ts-ignore
-    '../../dist/nova-reel/server/server.mjs'
+    '../dist-server/server.mjs'
   ) as any;
   await reqHandler(req, res);
 });
